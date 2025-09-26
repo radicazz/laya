@@ -54,6 +54,12 @@ int main() {
 
 ---
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines and code style.
+
+---
+
 ## License
 
-This project falls under the MIT License. See [LICENSE](LICENSE) for details.
+This project falls under the MIT License. See [LICENSE.txt](LICENSE.txt) for details.
