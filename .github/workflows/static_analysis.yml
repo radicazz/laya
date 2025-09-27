@@ -1,0 +1,76 @@
+name: Static Analysis
+
+on:
+  push:
+    branches: [ master, develop ]
+  pull_request:
+    branches: [ master, develop ]
+  workflow_dispatch:
+
+jobs:
+  static-analysis:
+    name: Static Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          clang-tidy-14 \
+          cppcheck \
+          build-essential \
+          cmake \
+          ninja-build \
+          pkg-config \
+          libx11-dev \
+          libxext-dev \
+          libxrandr-dev \
+          libxcursor-dev \
+          libxfixes-dev \
+          libxi-dev \
+          libxss-dev \
+          libwayland-dev \
+          libxkbcommon-dev \
+          libdrm-dev \
+          libgl1-mesa-dev \
+          libgles2-mesa-dev \
+          libegl1-mesa-dev \
+          libdbus-1-dev \
+          libudev-dev
+
+    - name: Run clang-tidy
+      run: |
+        # Create compile_commands.json
+        cmake -B build \
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+          -DLAYA_SDL_METHOD=submodule \
+          -DLAYA_BUILD_SHARED=ON \
+          -DCMAKE_CXX_STANDARD=20 \
+          -DCMAKE_CXX_STANDARD_REQUIRED=ON
+
+        # Run clang-tidy on source files
+        find src include -name "*.cpp" -o -name "*.hpp" | \
+        xargs clang-tidy-14 -p build --config-file=.clang-tidy > clang-tidy-report.txt 2>&1 || true
+
+    - name: Run cppcheck
+      run: |
+        cppcheck --enable=all --inconclusive --xml --xml-version=2 \
+          --suppress=missingIncludeSystem \
+          --suppress=unmatchedSuppression \
+          --suppress=unusedFunction \
+          src/ include/ 2> cppcheck-report.xml || true
+
+    - name: Upload static analysis results
+      uses: actions/upload-artifact@v4
+      with:
+        name: static-analysis-results
+        path: |
+          clang-tidy-report.txt
+          cppcheck-report.xml
+        retention-days: 30

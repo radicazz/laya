@@ -1,11 +1,14 @@
 # laya
 
-![C++20](https://img.shields.io/badge/C%2B%2B-20-00599C?logo=cplusplus&logoColor=white)
-![SDL3](https://img.shields.io/badge/SDL-3-2C2C2C?logo=SimpleDirectMediaLayer&logoColor=white)
-![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
-[![MSVC Release](https://img.shields.io/github/actions/workflow/status/radicazz/laya/ci.yml?label=MSVC&job=msvc-Release)](https://github.com/radicazz/laya/actions/workflows/ci.yml)
-[![GCC Release](https://img.shields.io/github/actions/workflow/status/radicazz/laya/ci.yml?label=GCC&job=gcc-Release)](https://github.com/radicazz/laya/actions/workflows/ci.yml)
-[![Clang Release](https://img.shields.io/github/actions/workflow/status/radicazz/laya/ci.yml?label=Clang&job=clang-Release)](https://github.com/radicazz/laya/actions/workflows/ci.yml)
+![C++20](https://img.shields.io/badge/C%2B%2B-20-064F8C?logo=cplusplus&logoColor=white)
+![SDL3](https://img.shields.io/badge/SDL-3-064F8C?logo=files&logoColor=white)
+![CMake](https://img.shields.io/badge/CMake-3.21-064F8C?logo=cmake&logoColor=white)
+![License: MIT](https://img.shields.io/badge/License-MIT-orange?logo=open-source-initiative&logoColor=white)
+
+<!--
+[![Windows Build](https://github.com/radicazz/laya/actions/workflows/build_windows.yml/badge.svg?branch=)](https://github.com/radicazz/laya/actions/workflows/build_windows.yml)
+[![Linux Build](https://github.com/radicazz/laya/actions/workflows/build_linux.yml/badge.svg?branch=)](https://github.com/radicazz/laya/actions/workflows/build_linux.yml)
+-->
 
 An intuitive wrapper that seamlessly integrates [SDL](https://github.com/libsdl-org/SDL) with modern C++.
 

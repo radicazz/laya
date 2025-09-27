@@ -1,18 +1,14 @@
-name: CI
+name: Linux Builds
 
 on:
   push:
     branches: [ master, develop ]
   pull_request:
     branches: [ master, develop ]
-
-env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: Debug
+  workflow_dispatch:
 
 jobs:
-  # Ubuntu builds (run on all branches)
-  build-ubuntu:
+  build-linux:
     name: ${{ matrix.compiler }}-${{ matrix.build_type }}
     runs-on: ubuntu-latest
 
@@ -26,8 +22,8 @@ jobs:
             cc: gcc-11
             cxx: g++-11
           - compiler: clang
-            cc: clang-14
-            cxx: clang++-14
+            cc: clang-15
+            cxx: clang++-15
 
     steps:
     - name: Checkout code
@@ -101,10 +97,10 @@ jobs:
       run: |
         sudo apt-get install -y gcc-11 g++-11
 
-    - name: Install Ubuntu Clang 14
+    - name: Install Ubuntu Clang 15
       if: matrix.compiler == 'clang'
       run: |
-        sudo apt-get install -y clang-14 clang++-14
+        sudo apt-get install -y clang-15 clang++-15 libc++-15-dev libc++abi-15-dev
 
     - name: Set up environment variables
       run: |
@@ -130,6 +126,12 @@ jobs:
           cmake_args+=(-DCMAKE_CXX_FLAGS="--coverage -g -O0")
         fi
 
+        # Use libc++ for Clang to avoid libstdc++ C++20 chrono issues
+        if [[ "${{ matrix.compiler }}" == "clang" ]]; then
+          cmake_args+=(-DCMAKE_CXX_FLAGS="-stdlib=libc++")
+          cmake_args+=(-DCMAKE_EXE_LINKER_FLAGS="-stdlib=libc++ -lc++abi")
+        fi
+
         cmake "${cmake_args[@]}"
 
     - name: Build
@@ -146,6 +148,17 @@ jobs:
       run: |
         # Test that examples can be executed (they should exit quickly)
         timeout 10s ./examples/hello_laya || true
+
+    - name: Run benchmarks
+      if: matrix.build_type == 'Release'
+      working-directory: build
+      run: |
+        # Create benchmark results directory
+        mkdir -p ../benchmark-results
+
+        # Run performance tests and capture output
+        ./tests/laya_benchmarks --test-suite=performance --reporters=json --out=../benchmark-results/benchmarks-${{ matrix.compiler }}.json || true
+        ./tests/laya_benchmarks --test-suite=performance --reporters=console > ../benchmark-results/benchmarks-${{ matrix.compiler }}.txt || true
 
     - name: Generate coverage report
       if: matrix.build_type == 'Debug' && matrix.compiler == 'gcc'
@@ -166,151 +179,20 @@ jobs:
         fail_ci_if_error: false
 
     - name: Upload build artifacts
-      if: matrix.build_type == 'Release'
       uses: actions/upload-artifact@v4
       with:
-        name: laya-ubuntu-${{ matrix.compiler }}-${{ matrix.build_type }}
+        name: laya-linux-${{ matrix.compiler }}-${{ matrix.build_type }}
         path: |
           build/src/
           build/examples/
           !build/**/*.o
-        retention-days: 7
+        retention-days: 30
 
-  # Windows build (only run on master branch)
-  build-windows:
-    name: msvc-${{ matrix.build_type }}
-    runs-on: windows-latest
-    if: github.ref == 'refs/heads/master'
-
-    strategy:
-      fail-fast: false
-      matrix:
-        build_type: [Debug, Release]
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
-        fetch-depth: 0
-
-    - name: Cache SDL3 build
-      uses: actions/cache@v4
-      with:
-        path: |
-          build/external
-          external/SDL/build
-          external/SDL_image/build
-          external/SDL_ttf/build
-        key: windows-msvc-sdl3-${{ hashFiles('external/SDL/**', 'external/SDL_image/**', 'external/SDL_ttf/**') }}
-        restore-keys: |
-          windows-msvc-sdl3-
-
-    - name: Setup MSVC
-      uses: microsoft/setup-msbuild@v1.3
-
-    - name: Configure CMake
-      run: |
-        cmake -B build `
-          -G "Visual Studio 17 2022" -A x64 `
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
-          -DLAYA_BUILD_TESTS=ON `
-          -DLAYA_BUILD_EXAMPLES=ON `
-          -DLAYA_SDL_METHOD=submodule `
-          -DLAYA_BUILD_SHARED=ON `
-          -DCMAKE_CXX_STANDARD=20 `
-          -DCMAKE_CXX_STANDARD_REQUIRED=ON
-
-    - name: Build
-      run: |
-        cmake --build build --config ${{ matrix.build_type }} --parallel
-
-    - name: Test
-      working-directory: build
-      run: |
-        ctest --build-config ${{ matrix.build_type }} --output-on-failure --parallel
-
-    - name: Run examples
-      working-directory: build
-      run: |
-        # Test that examples can be executed (they should exit quickly)
-        $process = Start-Process -FilePath ".\examples\${{ matrix.build_type }}\hello_laya.exe" -PassThru -ErrorAction SilentlyContinue
-        if ($process) {
-          $process | Wait-Process -Timeout 10 -ErrorAction SilentlyContinue
-          if (!$process.HasExited) {
-            $process | Stop-Process -Force
-          }
-        }
-
-    - name: Upload build artifacts
+    - name: Upload benchmark results
       if: matrix.build_type == 'Release'
       uses: actions/upload-artifact@v4
       with:
-        name: laya-windows-msvc-${{ matrix.build_type }}
+        name: benchmark-results-linux-${{ matrix.compiler }}
         path: |
-          build/src/
-          build/examples/
-          !build/**/*.obj
-          !build/**/*.pdb
-        retention-days: 7
-
-  static-analysis:
-    name: Static Analysis
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
-
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          clang-tidy-14 \
-          cppcheck \
-          build-essential \
-          cmake \
-          ninja-build \
-          pkg-config \
-          libx11-dev \
-          libxext-dev \
-          libxrandr-dev \
-          libxcursor-dev \
-          libxfixes-dev \
-          libxi-dev \
-          libxss-dev \
-          libwayland-dev \
-          libxkbcommon-dev \
-          libdrm-dev \
-          libgl1-mesa-dev \
-          libgles2-mesa-dev \
-          libegl1-mesa-dev \
-          libdbus-1-dev \
-          libudev-dev
-
-    - name: Run clang-tidy
-      run: |
-        # Create compile_commands.json
-        cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DLAYA_SDL_METHOD=submodule -DLAYA_BUILD_SHARED=ON -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_STANDARD_REQUIRED=ON
-
-        # Run clang-tidy on source files
-        find src include -name "*.cpp" -o -name "*.hpp" | \
-        xargs clang-tidy-14 -p build --config-file=.clang-tidy || true
-
-    - name: Run cppcheck
-      run: |
-        cppcheck --enable=all --inconclusive --xml --xml-version=2 \
-          --suppress=missingIncludeSystem \
-          --suppress=unmatchedSuppression \
-          --suppress=unusedFunction \
-          src/ include/ 2> cppcheck-report.xml || true
-
-    - name: Upload static analysis results
-      uses: actions/upload-artifact@v4
-      with:
-        name: static-analysis-results
-        path: |
-          cppcheck-report.xml
-        retention-days: 7
+          benchmark-results/
+        retention-days: 30

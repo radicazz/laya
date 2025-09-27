@@ -1,0 +1,107 @@
+name: Windows Builds
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master, develop ]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    name: msvc-${{ matrix.build_type }}
+    runs-on: windows-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: [Debug, Release]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 0
+
+    - name: Cache SDL3 build
+      uses: actions/cache@v4
+      with:
+        path: |
+          build/external
+          external/SDL/build
+          external/SDL_image/build
+          external/SDL_ttf/build
+        key: windows-msvc-sdl3-${{ hashFiles('external/SDL/**', 'external/SDL_image/**', 'external/SDL_ttf/**') }}
+        restore-keys: |
+          windows-msvc-sdl3-
+
+    - name: Setup MSVC
+      uses: microsoft/setup-msbuild@v1.3
+
+    - name: Configure CMake
+      run: |
+        cmake -B build `
+          -G "Visual Studio 17 2022" -A x64 `
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
+          -DLAYA_BUILD_TESTS=ON `
+          -DLAYA_BUILD_EXAMPLES=ON `
+          -DLAYA_SDL_METHOD=submodule `
+          -DLAYA_BUILD_SHARED=ON `
+          -DCMAKE_CXX_STANDARD=20 `
+          -DCMAKE_CXX_STANDARD_REQUIRED=ON
+
+    - name: Build
+      run: |
+        cmake --build build --config ${{ matrix.build_type }} --parallel
+
+    - name: Test
+      working-directory: build
+      run: |
+        ctest --build-config ${{ matrix.build_type }} --output-on-failure --parallel
+
+    - name: Run examples
+      working-directory: build
+      run: |
+        # Test that examples can be executed (they should exit quickly)
+        $process = Start-Process -FilePath ".\examples\${{ matrix.build_type }}\hello_laya.exe" -PassThru -ErrorAction SilentlyContinue
+        if ($process) {
+          $process | Wait-Process -Timeout 10 -ErrorAction SilentlyContinue
+          if (!$process.HasExited) {
+            $process | Stop-Process -Force
+          }
+        }
+
+    - name: Run benchmarks
+      if: matrix.build_type == 'Release'
+      working-directory: build
+      run: |
+        # Create benchmark results directory
+        New-Item -ItemType Directory -Force -Path ..\benchmark-results
+
+        # Run performance tests and capture output
+        $benchmarkExe = ".\tests\${{ matrix.build_type }}\laya_benchmarks.exe"
+        if (Test-Path $benchmarkExe) {
+          & $benchmarkExe --test-suite=performance --reporters=json --out=..\benchmark-results\benchmarks-msvc.json
+          & $benchmarkExe --test-suite=performance --reporters=console > ..\benchmark-results\benchmarks-msvc.txt
+        }
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: laya-windows-msvc-${{ matrix.build_type }}
+        path: |
+          build/src/
+          build/examples/
+          !build/**/*.obj
+          !build/**/*.pdb
+        retention-days: 30
+
+    - name: Upload benchmark results
+      if: matrix.build_type == 'Release'
+      uses: actions/upload-artifact@v4
+      with:
+        name: benchmark-results-windows-msvc
+        path: |
+          benchmark-results/
+        retention-days: 30
