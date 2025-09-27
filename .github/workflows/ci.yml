@@ -110,7 +110,13 @@ jobs:
           libdbus-1-dev \
           libibus-1.0-dev \
           libudev-dev \
-          fcitx-libs-dev
+          fcitx-libs-dev \
+          libfreetype6-dev \
+          libharfbuzz-dev \
+          libpng-dev \
+          libjpeg-dev \
+          libtiff-dev \
+          zlib1g-dev
 
     - name: Install Ubuntu GCC 11
       if: matrix.os == 'ubuntu-latest' && matrix.compiler == 'gcc'
@@ -156,6 +162,7 @@ jobs:
           -DLAYA_BUILD_TESTS=ON
           -DLAYA_BUILD_EXAMPLES=ON
           -DLAYA_SDL_METHOD=submodule
+          -DLAYA_BUILD_SHARED=ON
         )
 
         # Add generator for different platforms
@@ -254,7 +261,7 @@ jobs:
     - name: Run clang-tidy
       run: |
         # Create compile_commands.json
-        cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DLAYA_SDL_METHOD=submodule
+        cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DLAYA_SDL_METHOD=submodule -DLAYA_BUILD_SHARED=ON
 
         # Run clang-tidy on source files
         find src include -name "*.cpp" -o -name "*.hpp" | \

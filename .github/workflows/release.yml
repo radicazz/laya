@@ -181,6 +181,7 @@ jobs:
           -DLAYA_BUILD_EXAMPLES=ON
           -DLAYA_SDL_METHOD=submodule
           -DLAYA_INSTALL=ON
+          -DLAYA_BUILD_SHARED=ON
         )
 
         # Platform-specific configuration

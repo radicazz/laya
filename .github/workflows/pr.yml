@@ -36,7 +36,13 @@ jobs:
           gcc-11 \
           g++-11 \
           clang-format-14 \
-          clang-tidy-14
+          clang-tidy-14 \
+          libfreetype6-dev \
+          libharfbuzz-dev \
+          libpng-dev \
+          libjpeg-dev \
+          libtiff-dev \
+          zlib1g-dev
 
     - name: Check code formatting
       run: |
@@ -52,6 +58,7 @@ jobs:
           -DLAYA_BUILD_TESTS=ON \
           -DLAYA_BUILD_EXAMPLES=ON \
           -DLAYA_SDL_METHOD=submodule \
+          -DLAYA_BUILD_SHARED=ON \
           -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
     - name: Build
@@ -125,7 +132,13 @@ jobs:
           libxfixes-dev \
           libxi-dev \
           libgl1-mesa-dev \
-          libegl1-mesa-dev
+          libegl1-mesa-dev \
+          libfreetype6-dev \
+          libharfbuzz-dev \
+          libpng-dev \
+          libjpeg-dev \
+          libtiff-dev \
+          zlib1g-dev
 
     - name: Install macOS dependencies
       if: matrix.os == 'macos-latest'
@@ -145,6 +158,7 @@ jobs:
           -DLAYA_BUILD_TESTS=ON
           -DLAYA_BUILD_EXAMPLES=ON
           -DLAYA_SDL_METHOD=submodule
+          -DLAYA_BUILD_SHARED=ON
         )
 
         if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then

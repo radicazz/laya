@@ -92,6 +92,7 @@ jobs:
           -DLAYA_BUILD_TESTS=ON \
           -DLAYA_BUILD_EXAMPLES=OFF \
           -DLAYA_SDL_METHOD=submodule \
+          -DLAYA_BUILD_SHARED=ON \
           ${{ matrix.cmake_args }}
 
         if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
@@ -110,6 +111,7 @@ jobs:
           -DLAYA_BUILD_TESTS=ON \
           -DLAYA_BUILD_EXAMPLES=OFF \
           -DLAYA_SDL_METHOD=submodule \
+          -DLAYA_BUILD_SHARED=ON \
           ${{ matrix.cmake_args }}
 
         if [[ "${{ matrix.os }}" == "windows-latest" ]]; then

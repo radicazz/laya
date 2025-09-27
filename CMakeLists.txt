@@ -10,6 +10,7 @@ project(laya
 option(LAYA_BUILD_TESTS "Build laya tests" ON)
 option(LAYA_BUILD_EXAMPLES "Build laya examples" ON)
 option(LAYA_INSTALL "Generate install target" ON)
+option(LAYA_BUILD_SHARED "Build laya as shared library" ON)
 
 # SDL3 consumption options
 set(LAYA_SDL_METHOD "submodule" CACHE STRING "Method to consume SDL3")
@@ -31,7 +32,12 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(SetupSDL3)
 
 # Define laya library
-add_library(laya STATIC)
+if(LAYA_BUILD_SHARED)
+    add_library(laya SHARED)
+else()
+    add_library(laya STATIC)
+endif()
+
 add_library(laya::laya ALIAS laya)
 
 # Configure laya target
@@ -49,6 +55,28 @@ target_link_libraries(laya
 )
 
 target_compile_features(laya PUBLIC cxx_std_20)
+
+# Configure shared library properties
+if(LAYA_BUILD_SHARED)
+    # Generate export header for proper symbol visibility on Windows
+    include(GenerateExportHeader)
+    generate_export_header(laya
+        EXPORT_FILE_NAME "${CMAKE_CURRENT_BINARY_DIR}/include/laya/export.h"
+    )
+
+    # Add the generated export header to include directories
+    target_include_directories(laya
+        PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+    )
+
+    # Set library version properties
+    set_target_properties(laya PROPERTIES
+        VERSION ${PROJECT_VERSION}
+        SOVERSION ${PROJECT_VERSION_MAJOR}
+        WINDOWS_EXPORT_ALL_SYMBOLS TRUE
+    )
+endif()
 
 # Add subdirectories
 add_subdirectory(src)
