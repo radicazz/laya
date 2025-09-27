@@ -67,7 +67,7 @@ jobs:
         fetch-depth: 0
 
     - name: Cache SDL3 build
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           build/external
@@ -225,7 +225,7 @@ jobs:
 
     - name: Upload build artifacts
       if: matrix.build_type == 'Release'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: laya-${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.build_type }}
         path: |
@@ -269,7 +269,7 @@ jobs:
           src/ include/ 2> cppcheck-report.xml || true
 
     - name: Upload static analysis results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: static-analysis-results
         path: |

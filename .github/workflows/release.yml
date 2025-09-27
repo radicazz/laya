@@ -59,15 +59,22 @@ jobs:
 
     - name: Create Release
       id: create_release
-      uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ steps.get_version.outputs.VERSION }}
-        release_name: laya ${{ steps.get_version.outputs.VERSION }}
-        body_path: changelog.md
-        draft: false
-        prerelease: ${{ contains(steps.get_version.outputs.VERSION, 'alpha') || contains(steps.get_version.outputs.VERSION, 'beta') || contains(steps.get_version.outputs.VERSION, 'rc') }}
+      run: |
+        # Create release using GitHub CLI
+        PRERELEASE_FLAG=""
+        if [[ "${{ steps.get_version.outputs.VERSION }}" == *"alpha"* ]] || [[ "${{ steps.get_version.outputs.VERSION }}" == *"beta"* ]] || [[ "${{ steps.get_version.outputs.VERSION }}" == *"rc"* ]]; then
+          PRERELEASE_FLAG="--prerelease"
+        fi
+
+        gh release create "${{ steps.get_version.outputs.VERSION }}" \
+          --title "laya ${{ steps.get_version.outputs.VERSION }}" \
+          --notes-file changelog.md \
+          $PRERELEASE_FLAG
+
+        # Output version for other jobs
+        echo "VERSION=${{ steps.get_version.outputs.VERSION }}" >> $GITHUB_OUTPUT
 
   build-release:
     name: Build Release (${{ matrix.os }}-${{ matrix.arch }})
@@ -254,14 +261,11 @@ jobs:
         fi
 
     - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ needs.create-release.outputs.upload_url }}
-        asset_path: ${{ env.ASSET_PATH }}
-        asset_name: ${{ env.ASSET_PATH }}
-        asset_content_type: ${{ env.ASSET_CONTENT_TYPE }}
+      run: |
+        # Upload asset using GitHub CLI
+        gh release upload "${{ steps.get_version.outputs.VERSION }}" "${{ env.ASSET_PATH }}"
 
   build-source:
     name: Build Source Package
@@ -308,14 +312,11 @@ jobs:
         echo "SOURCE_ARCHIVE=${ARCHIVE_NAME}.tar.gz" >> $GITHUB_ENV
 
     - name: Upload Source Archive
-      uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ needs.create-release.outputs.upload_url }}
-        asset_path: ${{ env.SOURCE_ARCHIVE }}
-        asset_name: ${{ env.SOURCE_ARCHIVE }}
-        asset_content_type: application/gzip
+      run: |
+        # Upload source archive using GitHub CLI
+        gh release upload "${{ steps.get_version.outputs.VERSION }}" "${{ env.SOURCE_ARCHIVE }}"
 
   update-documentation:
     name: Update Documentation
