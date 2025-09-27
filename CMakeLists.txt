@@ -28,7 +28,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Include SDL3 setup
-include(cmake/SetupSDL3.cmake)
+include(SetupSDL3)
 
 # Define laya library
 add_library(laya STATIC)

@@ -12,3 +12,8 @@
 	path = external/SDL_ttf
 	url = https://github.com/libsdl-org/SDL_ttf.git
 	branch = release-3.2.x
+
+[submodule "external/doctest"]
+	path = external/doctest
+	url = https://github.com/doctest/doctest.git
+	branch = v2.4.12
