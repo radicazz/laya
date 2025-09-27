@@ -104,18 +104,6 @@ jobs:
             artifact_name: laya-windows-x86
             cmake_generator: "Visual Studio 17 2022"
 
-          # macOS builds
-          - os: macos-latest
-            arch: x64
-            compiler: clang
-            artifact_name: laya-macos-x64
-            cmake_generator: "Ninja"
-          - os: macos-13
-            arch: x64
-            compiler: clang
-            artifact_name: laya-macos-x64-legacy
-            cmake_generator: "Ninja"
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -161,11 +149,6 @@ jobs:
           libegl1-mesa-dev \
           libdbus-1-dev \
           libudev-dev
-
-    - name: Install macOS dependencies
-      if: startsWith(matrix.os, 'macos')
-      run: |
-        brew install cmake ninja pkg-config
 
     - name: Setup MSVC
       if: matrix.os == 'windows-latest'

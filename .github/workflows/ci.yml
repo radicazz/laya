@@ -120,6 +120,8 @@ jobs:
           -DLAYA_BUILD_EXAMPLES=ON
           -DLAYA_SDL_METHOD=submodule
           -DLAYA_BUILD_SHARED=ON
+          -DCMAKE_CXX_STANDARD=20
+          -DCMAKE_CXX_STANDARD_REQUIRED=ON
           -G "Ninja"
         )
 
@@ -149,8 +151,9 @@ jobs:
       if: matrix.build_type == 'Debug' && matrix.compiler == 'gcc'
       run: |
         sudo apt-get install -y lcov
-        lcov --capture --directory build --output-file coverage.info
-        lcov --remove coverage.info '/usr/*' '*/external/*' '*/tests/*' --output-file coverage.info
+        # Use the same GCC version for gcov as used for building
+        lcov --gcov-tool gcov-11 --capture --directory build --output-file coverage.info
+        lcov --gcov-tool gcov-11 --remove coverage.info '/usr/*' '*/external/*' '*/tests/*' --output-file coverage.info
         lcov --list coverage.info
 
     - name: Upload coverage to Codecov
@@ -175,7 +178,7 @@ jobs:
 
   # Windows build (only run on master branch)
   build-windows:
-    name: windows-msvc-${{ matrix.build_type }}
+    name: msvc-${{ matrix.build_type }}
     runs-on: windows-latest
     if: github.ref == 'refs/heads/master'
 
@@ -214,7 +217,9 @@ jobs:
           -DLAYA_BUILD_TESTS=ON `
           -DLAYA_BUILD_EXAMPLES=ON `
           -DLAYA_SDL_METHOD=submodule `
-          -DLAYA_BUILD_SHARED=ON
+          -DLAYA_BUILD_SHARED=ON `
+          -DCMAKE_CXX_STANDARD=20 `
+          -DCMAKE_CXX_STANDARD_REQUIRED=ON
 
     - name: Build
       run: |
@@ -229,7 +234,13 @@ jobs:
       working-directory: build
       run: |
         # Test that examples can be executed (they should exit quickly)
-        Start-Process -FilePath ".\examples\${{ matrix.build_type }}\hello_laya.exe" -Wait -Timeout 10 -ErrorAction SilentlyContinue
+        $process = Start-Process -FilePath ".\examples\${{ matrix.build_type }}\hello_laya.exe" -PassThru -ErrorAction SilentlyContinue
+        if ($process) {
+          $process | Wait-Process -Timeout 10 -ErrorAction SilentlyContinue
+          if (!$process.HasExited) {
+            $process | Stop-Process -Force
+          }
+        }
 
     - name: Upload build artifacts
       if: matrix.build_type == 'Release'
@@ -256,12 +267,33 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y clang-tidy-14 cppcheck
+        sudo apt-get install -y \
+          clang-tidy-14 \
+          cppcheck \
+          build-essential \
+          cmake \
+          ninja-build \
+          pkg-config \
+          libx11-dev \
+          libxext-dev \
+          libxrandr-dev \
+          libxcursor-dev \
+          libxfixes-dev \
+          libxi-dev \
+          libxss-dev \
+          libwayland-dev \
+          libxkbcommon-dev \
+          libdrm-dev \
+          libgl1-mesa-dev \
+          libgles2-mesa-dev \
+          libegl1-mesa-dev \
+          libdbus-1-dev \
+          libudev-dev
 
     - name: Run clang-tidy
       run: |
         # Create compile_commands.json
-        cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DLAYA_SDL_METHOD=submodule -DLAYA_BUILD_SHARED=ON
+        cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DLAYA_SDL_METHOD=submodule -DLAYA_BUILD_SHARED=ON -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_STANDARD_REQUIRED=ON
 
         # Run clang-tidy on source files
         find src include -name "*.cpp" -o -name "*.hpp" | \

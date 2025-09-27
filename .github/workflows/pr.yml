@@ -37,6 +37,21 @@ jobs:
           g++-11 \
           clang-format-14 \
           clang-tidy-14 \
+          libx11-dev \
+          libxext-dev \
+          libxrandr-dev \
+          libxcursor-dev \
+          libxfixes-dev \
+          libxi-dev \
+          libxss-dev \
+          libwayland-dev \
+          libxkbcommon-dev \
+          libdrm-dev \
+          libgl1-mesa-dev \
+          libgles2-mesa-dev \
+          libegl1-mesa-dev \
+          libdbus-1-dev \
+          libudev-dev \
           libfreetype6-dev \
           libharfbuzz-dev \
           libpng-dev \
@@ -68,6 +83,8 @@ jobs:
           -DLAYA_BUILD_EXAMPLES=ON \
           -DLAYA_SDL_METHOD=submodule \
           -DLAYA_BUILD_SHARED=ON \
+          -DCMAKE_CXX_STANDARD=20 \
+          -DCMAKE_CXX_STANDARD_REQUIRED=ON \
           -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
     - name: Build
@@ -152,7 +169,9 @@ jobs:
           -DLAYA_BUILD_TESTS=ON \
           -DLAYA_BUILD_EXAMPLES=ON \
           -DLAYA_SDL_METHOD=submodule \
-          -DLAYA_BUILD_SHARED=ON
+          -DLAYA_BUILD_SHARED=ON \
+          -DCMAKE_CXX_STANDARD=20 \
+          -DCMAKE_CXX_STANDARD_REQUIRED=ON
 
     - name: Build
       run: |
@@ -195,7 +214,9 @@ jobs:
           -DLAYA_BUILD_TESTS=ON `
           -DLAYA_BUILD_EXAMPLES=ON `
           -DLAYA_SDL_METHOD=submodule `
-          -DLAYA_BUILD_SHARED=ON
+          -DLAYA_BUILD_SHARED=ON `
+          -DCMAKE_CXX_STANDARD=20 `
+          -DCMAKE_CXX_STANDARD_REQUIRED=ON
 
     - name: Build
       run: |

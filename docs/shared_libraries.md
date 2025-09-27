@@ -23,8 +23,7 @@ When `LAYA_BUILD_SHARED=ON` (the default), laya builds as a shared library along
 
 The build system automatically copies all required shared libraries to executable directories:
 
-``bash
-
+```bash
 examples/Debug/
 ├── hello_laya.exe
 ├── laya.dll
@@ -38,7 +37,6 @@ tests/Debug/
 ├── SDL3.dll
 ├── SDL3_image.dll
 └── SDL3_ttf.dll
-
 ```
 
 ## Platform-Specific Behavior
