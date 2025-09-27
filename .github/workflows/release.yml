@@ -1,0 +1,355 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v0.1.0)'
+        required: true
+        type: string
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      release_id: ${{ steps.create_release.outputs.id }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Get version
+      id: get_version
+      run: |
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Generate changelog
+      id: changelog
+      run: |
+        # Generate changelog from git commits since last tag
+        LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+        if [[ -n "$LAST_TAG" ]]; then
+          CHANGELOG=$(git log --pretty=format:"- %s (%h)" $LAST_TAG..HEAD)
+        else
+          CHANGELOG=$(git log --pretty=format:"- %s (%h)" --max-count=20)
+        fi
+
+        # Save changelog to file for multiline output
+        cat > changelog.md << EOF
+        ## What's Changed
+
+        $CHANGELOG
+
+        **Full Changelog**: https://github.com/${{ github.repository }}/compare/$LAST_TAG...${{ steps.get_version.outputs.VERSION }}
+        EOF
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.get_version.outputs.VERSION }}
+        release_name: laya ${{ steps.get_version.outputs.VERSION }}
+        body_path: changelog.md
+        draft: false
+        prerelease: ${{ contains(steps.get_version.outputs.VERSION, 'alpha') || contains(steps.get_version.outputs.VERSION, 'beta') || contains(steps.get_version.outputs.VERSION, 'rc') }}
+
+  build-release:
+    name: Build Release (${{ matrix.os }}-${{ matrix.arch }})
+    runs-on: ${{ matrix.os }}
+    needs: create-release
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Linux builds
+          - os: ubuntu-latest
+            arch: x64
+            compiler: gcc-11
+            artifact_name: laya-linux-x64
+            cmake_generator: "Ninja"
+
+          # Windows builds
+          - os: windows-latest
+            arch: x64
+            compiler: msvc
+            artifact_name: laya-windows-x64
+            cmake_generator: "Visual Studio 17 2022"
+          - os: windows-latest
+            arch: x86
+            compiler: msvc
+            artifact_name: laya-windows-x86
+            cmake_generator: "Visual Studio 17 2022"
+
+          # macOS builds
+          - os: macos-latest
+            arch: x64
+            compiler: clang
+            artifact_name: laya-macos-x64
+            cmake_generator: "Ninja"
+          - os: macos-13
+            arch: x64
+            compiler: clang
+            artifact_name: laya-macos-x64-legacy
+            cmake_generator: "Ninja"
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Get version
+      id: get_version
+      shell: bash
+      run: |
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Install Ubuntu dependencies
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          ninja-build \
+          pkg-config \
+          gcc-11 \
+          g++-11 \
+          libasound2-dev \
+          libpulse-dev \
+          libaudio-dev \
+          libx11-dev \
+          libxext-dev \
+          libxrandr-dev \
+          libxcursor-dev \
+          libxfixes-dev \
+          libxi-dev \
+          libxss-dev \
+          libwayland-dev \
+          libxkbcommon-dev \
+          libdrm-dev \
+          libgl1-mesa-dev \
+          libgles2-mesa-dev \
+          libegl1-mesa-dev \
+          libdbus-1-dev \
+          libudev-dev
+
+    - name: Install macOS dependencies
+      if: startsWith(matrix.os, 'macos')
+      run: |
+        brew install cmake ninja pkg-config
+
+    - name: Setup MSVC
+      if: matrix.os == 'windows-latest'
+      uses: microsoft/setup-msbuild@v1.3
+
+    - name: Configure CMake
+      shell: bash
+      run: |
+        cmake_args=(
+          -B build
+          -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+          -DLAYA_BUILD_TESTS=OFF
+          -DLAYA_BUILD_EXAMPLES=ON
+          -DLAYA_SDL_METHOD=submodule
+          -DLAYA_INSTALL=ON
+        )
+
+        # Platform-specific configuration
+        if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+          cmake_args+=(-G "${{ matrix.cmake_generator }}" -DCMAKE_C_COMPILER=gcc-11 -DCMAKE_CXX_COMPILER=g++-11)
+        elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+          if [[ "${{ matrix.arch }}" == "x86" ]]; then
+            cmake_args+=(-G "${{ matrix.cmake_generator }}" -A Win32)
+          else
+            cmake_args+=(-G "${{ matrix.cmake_generator }}" -A x64)
+          fi
+        else
+          cmake_args+=(-G "${{ matrix.cmake_generator }}")
+        fi
+
+        # Add version information
+        cmake_args+=(-DLAYA_VERSION="${{ steps.get_version.outputs.VERSION }}")
+
+        cmake "${cmake_args[@]}"
+
+    - name: Build
+      shell: bash
+      run: |
+        if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+          cmake --build build --config ${{ env.BUILD_TYPE }} --parallel --target ALL_BUILD
+        else
+          cmake --build build --parallel
+        fi
+
+    - name: Install
+      shell: bash
+      run: |
+        if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+          cmake --install build --config ${{ env.BUILD_TYPE }} --prefix install
+        else
+          cmake --install build --prefix install
+        fi
+
+    - name: Create package
+      shell: bash
+      run: |
+        # Create release package
+        mkdir -p package
+
+        # Copy installed files
+        cp -r install/* package/
+
+        # Copy documentation
+        cp README.md package/
+        cp LICENSE.txt package/
+        cp CONTRIBUTING.md package/
+
+        # Copy examples source code
+        mkdir -p package/examples
+        cp -r examples/* package/examples/
+
+        # Create version info file
+        cat > package/VERSION.txt << EOF
+        laya ${{ steps.get_version.outputs.VERSION }}
+        Built on: $(date)
+        Platform: ${{ matrix.os }}-${{ matrix.arch }}
+        Compiler: ${{ matrix.compiler }}
+        SDL3 Version: $(grep "SDL_VERSION" external/SDL/include/SDL3/SDL_version.h | head -1 | cut -d'"' -f2 || echo "Unknown")
+        EOF
+
+    - name: Create archive
+      shell: bash
+      run: |
+        cd package
+        if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+          7z a -tzip "../${{ matrix.artifact_name }}.zip" .
+          echo "ASSET_PATH=${{ matrix.artifact_name }}.zip" >> $GITHUB_ENV
+          echo "ASSET_CONTENT_TYPE=application/zip" >> $GITHUB_ENV
+        else
+          tar -czf "../${{ matrix.artifact_name }}.tar.gz" .
+          echo "ASSET_PATH=${{ matrix.artifact_name }}.tar.gz" >> $GITHUB_ENV
+          echo "ASSET_CONTENT_TYPE=application/gzip" >> $GITHUB_ENV
+        fi
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: ${{ env.ASSET_PATH }}
+        asset_name: ${{ env.ASSET_PATH }}
+        asset_content_type: ${{ env.ASSET_CONTENT_TYPE }}
+
+  build-source:
+    name: Build Source Package
+    runs-on: ubuntu-latest
+    needs: create-release
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Get version
+      id: get_version
+      run: |
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Create source package
+      run: |
+        # Create source archive with submodules
+        VERSION_NO_V=$(echo "${{ steps.get_version.outputs.VERSION }}" | sed 's/^v//')
+        ARCHIVE_NAME="laya-${VERSION_NO_V}-source"
+
+        # Create temporary directory
+        mkdir -p /tmp/source-package
+
+        # Copy source files (excluding build artifacts and git)
+        rsync -av \
+          --exclude='.git' \
+          --exclude='build/' \
+          --exclude='*.user' \
+          --exclude='.vs/' \
+          --exclude='.vscode/' \
+          . "/tmp/source-package/${ARCHIVE_NAME}/"
+
+        # Create archive
+        cd /tmp/source-package
+        tar -czf "${GITHUB_WORKSPACE}/${ARCHIVE_NAME}.tar.gz" "${ARCHIVE_NAME}/"
+
+        echo "SOURCE_ARCHIVE=${ARCHIVE_NAME}.tar.gz" >> $GITHUB_ENV
+
+    - name: Upload Source Archive
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: ${{ env.SOURCE_ARCHIVE }}
+        asset_name: ${{ env.SOURCE_ARCHIVE }}
+        asset_content_type: application/gzip
+
+  update-documentation:
+    name: Update Documentation
+    runs-on: ubuntu-latest
+    needs: [create-release, build-release]
+    if: success()
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Get version
+      id: get_version
+      run: |
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Update README with latest release
+      run: |
+        # Update README.md with latest release information
+        sed -i "s/version [0-9]\+\.[0-9]\+\.[0-9]\+/version $(echo ${{ steps.get_version.outputs.VERSION }} | sed 's/^v//')/g" README.md || true
+
+        # Commit changes if any
+        if git diff --quiet; then
+          echo "No changes to commit"
+        else
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add README.md
+          git commit -m "Update README for release ${{ steps.get_version.outputs.VERSION }}" || true
+          git push || true
+        fi

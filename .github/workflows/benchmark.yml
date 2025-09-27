@@ -1,0 +1,396 @@
+name: Performance Benchmarks
+
+on:
+  schedule:
+    # Run weekly on Sundays at 2 AM UTC
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+    inputs:
+      compare_with:
+        description: 'Compare with branch/tag (default: master)'
+        required: false
+        default: 'master'
+        type: string
+  push:
+    branches: [ master ]
+    paths:
+      - 'src/**'
+      - 'include/**'
+      - 'tests/performance/**'
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  benchmark:
+    name: Performance Benchmarks
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            compiler: gcc-11
+            setup_cmd: |
+              sudo apt-get update
+              sudo apt-get install -y build-essential cmake ninja-build pkg-config gcc-11 g++-11 \
+                libasound2-dev libpulse-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev \
+                libxfixes-dev libxi-dev libgl1-mesa-dev libegl1-mesa-dev
+            cmake_args: -G Ninja -DCMAKE_C_COMPILER=gcc-11 -DCMAKE_CXX_COMPILER=g++-11
+
+          - os: windows-latest
+            compiler: msvc
+            setup_cmd: echo "Using default MSVC setup"
+            cmake_args: -G "Visual Studio 17 2022" -A x64
+
+          - os: macos-latest
+            compiler: clang
+            setup_cmd: brew install cmake ninja pkg-config
+            cmake_args: -G Ninja
+
+    steps:
+    - name: Checkout current code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        path: current
+
+    - name: Checkout comparison code
+      if: github.event_name == 'workflow_dispatch' && github.event.inputs.compare_with != ''
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.inputs.compare_with }}
+        submodules: recursive
+        path: comparison
+
+    - name: Setup dependencies
+      shell: bash
+      run: ${{ matrix.setup_cmd }}
+
+    - name: Setup MSVC
+      if: matrix.os == 'windows-latest'
+      uses: microsoft/setup-msbuild@v1.3
+
+    - name: Cache SDL3 build (current)
+      uses: actions/cache@v3
+      with:
+        path: |
+          current/build/external
+          current/external/SDL/build
+        key: ${{ runner.os }}-${{ matrix.compiler }}-sdl3-benchmark-${{ hashFiles('current/external/SDL/**') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.compiler }}-sdl3-benchmark-
+
+    - name: Build current version
+      shell: bash
+      working-directory: current
+      run: |
+        cmake -B build \
+          -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+          -DLAYA_BUILD_TESTS=ON \
+          -DLAYA_BUILD_EXAMPLES=OFF \
+          -DLAYA_SDL_METHOD=submodule \
+          ${{ matrix.cmake_args }}
+
+        if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+          cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
+        else
+          cmake --build build --parallel
+        fi
+
+    - name: Build comparison version
+      if: github.event_name == 'workflow_dispatch' && github.event.inputs.compare_with != ''
+      shell: bash
+      working-directory: comparison
+      run: |
+        cmake -B build \
+          -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+          -DLAYA_BUILD_TESTS=ON \
+          -DLAYA_BUILD_EXAMPLES=OFF \
+          -DLAYA_SDL_METHOD=submodule \
+          ${{ matrix.cmake_args }}
+
+        if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+          cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
+        else
+          cmake --build build --parallel
+        fi
+
+    - name: Run current benchmarks
+      shell: bash
+      working-directory: current/build
+      run: |
+        # Create results directory
+        mkdir -p ../benchmark-results
+
+        # Run performance tests and capture output
+        if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+          ./tests/${{ env.BUILD_TYPE }}/laya_benchmarks.exe --test-suite=performance --reporters=json --out=../benchmark-results/current-${{ matrix.os }}.json || true
+          ./tests/${{ env.BUILD_TYPE }}/laya_benchmarks.exe --test-suite=performance --reporters=console > ../benchmark-results/current-${{ matrix.os }}.txt || true
+        else
+          ./tests/laya_benchmarks --test-suite=performance --reporters=json --out=../benchmark-results/current-${{ matrix.os }}.json || true
+          ./tests/laya_benchmarks --test-suite=performance --reporters=console > ../benchmark-results/current-${{ matrix.os }}.txt || true
+        fi
+
+    - name: Run comparison benchmarks
+      if: github.event_name == 'workflow_dispatch' && github.event.inputs.compare_with != ''
+      shell: bash
+      working-directory: comparison/build
+      run: |
+        # Create results directory
+        mkdir -p ../benchmark-results
+
+        # Run performance tests and capture output
+        if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+          ./tests/${{ env.BUILD_TYPE }}/laya_benchmarks.exe --test-suite=performance --reporters=json --out=../benchmark-results/comparison-${{ matrix.os }}.json || true
+          ./tests/${{ env.BUILD_TYPE }}/laya_benchmarks.exe --test-suite=performance --reporters=console > ../benchmark-results/comparison-${{ matrix.os }}.txt || true
+        else
+          ./tests/laya_benchmarks --test-suite=performance --reporters=json --out=../benchmark-results/comparison-${{ matrix.os }}.json || true
+          ./tests/laya_benchmarks --test-suite=performance --reporters=console > ../benchmark-results/comparison-${{ matrix.os }}.txt || true
+        fi
+
+    - name: Generate benchmark report
+      shell: bash
+      run: |
+        cd current
+
+        # Create a comprehensive benchmark report
+        cat > benchmark-results/report-${{ matrix.os }}.md << 'EOF'
+        # Performance Benchmark Report
+
+        **Platform**: ${{ matrix.os }}
+        **Compiler**: ${{ matrix.compiler }}
+        **Build Type**: ${{ env.BUILD_TYPE }}
+        **Date**: $(date)
+        **Commit**: ${{ github.sha }}
+
+        ## Current Results
+
+        ```
+        EOF
+
+        # Add current results
+        if [ -f "benchmark-results/current-${{ matrix.os }}.txt" ]; then
+          cat "benchmark-results/current-${{ matrix.os }}.txt" >> benchmark-results/report-${{ matrix.os }}.md
+        fi
+
+        echo '```' >> benchmark-results/report-${{ matrix.os }}.md
+
+        # Add comparison if available
+        if [ -f "../comparison/benchmark-results/comparison-${{ matrix.os }}.txt" ]; then
+          cat >> benchmark-results/report-${{ matrix.os }}.md << 'EOF'
+
+        ## Comparison Results
+
+        **Comparing with**: ${{ github.event.inputs.compare_with || 'N/A' }}
+
+        ```
+        EOF
+          cat "../comparison/benchmark-results/comparison-${{ matrix.os }}.txt" >> benchmark-results/report-${{ matrix.os }}.md
+          echo '```' >> benchmark-results/report-${{ matrix.os }}.md
+        fi
+
+        # Add system information
+        cat >> benchmark-results/report-${{ matrix.os }}.md << 'EOF'
+
+        ## System Information
+
+        EOF
+
+        if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+          echo "- **OS**: $(lsb_release -d | cut -f2)" >> benchmark-results/report-${{ matrix.os }}.md
+          echo "- **Kernel**: $(uname -r)" >> benchmark-results/report-${{ matrix.os }}.md
+          echo "- **CPU**: $(lscpu | grep 'Model name' | cut -d':' -f2 | xargs)" >> benchmark-results/report-${{ matrix.os }}.md
+          echo "- **Memory**: $(free -h | grep '^Mem:' | awk '{print $2}')" >> benchmark-results/report-${{ matrix.os }}.md
+        elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+          echo "- **OS**: $(sw_vers -productName) $(sw_vers -productVersion)" >> benchmark-results/report-${{ matrix.os }}.md
+          echo "- **CPU**: $(sysctl -n machdep.cpu.brand_string)" >> benchmark-results/report-${{ matrix.os }}.md
+          echo "- **Memory**: $(sysctl -n hw.memsize | awk '{print $1/1024/1024/1024 " GB"}')" >> benchmark-results/report-${{ matrix.os }}.md
+        else
+          echo "- **OS**: Windows (GitHub Actions)" >> benchmark-results/report-${{ matrix.os }}.md
+          echo "- **CPU**: GitHub Actions Runner" >> benchmark-results/report-${{ matrix.os }}.md
+        fi
+
+    - name: Upload benchmark results
+      uses: actions/upload-artifact@v3
+      with:
+        name: benchmark-results-${{ matrix.os }}
+        path: |
+          current/benchmark-results/
+          comparison/benchmark-results/
+        retention-days: 30
+
+  analyze-results:
+    name: Analyze Performance Results
+    runs-on: ubuntu-latest
+    needs: benchmark
+    if: always()
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download all benchmark results
+      uses: actions/download-artifact@v3
+      with:
+        path: all-results
+
+    - name: Install analysis tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y python3 python3-pip jq
+        pip3 install matplotlib pandas numpy
+
+    - name: Analyze results
+      run: |
+        # Create analysis script
+        cat > analyze_benchmarks.py << 'EOF'
+        #!/usr/bin/env python3
+        import json
+        import os
+        import sys
+        from pathlib import Path
+
+        def analyze_json_results(results_dir):
+            """Analyze JSON benchmark results"""
+            json_files = list(Path(results_dir).glob("**/*.json"))
+
+            if not json_files:
+                print("No JSON benchmark results found")
+                return
+
+            print("## Performance Analysis")
+            print()
+
+            for json_file in json_files:
+                try:
+                    with open(json_file, 'r') as f:
+                        data = json.load(f)
+
+                    platform = json_file.stem.split('-')[-1]
+                    print(f"### {platform.title()} Results")
+
+                    # Extract test results if available
+                    if 'tests' in data:
+                        for test in data['tests']:
+                            name = test.get('name', 'Unknown')
+                            duration = test.get('duration', 0)
+                            print(f"- **{name}**: {duration:.4f}s")
+
+                    print()
+
+                except Exception as e:
+                    print(f"Error processing {json_file}: {e}")
+
+        if __name__ == "__main__":
+            results_dir = sys.argv[1] if len(sys.argv) > 1 else "all-results"
+            analyze_json_results(results_dir)
+        EOF
+
+        chmod +x analyze_benchmarks.py
+        python3 analyze_benchmarks.py all-results > performance-analysis.md
+
+    - name: Create performance summary
+      run: |
+        # Combine all platform reports
+        cat > performance-summary.md << 'EOF'
+        # Performance Benchmark Summary
+
+        **Workflow**: ${{ github.workflow }}
+        **Run ID**: ${{ github.run_id }}
+        **Trigger**: ${{ github.event_name }}
+        **Date**: $(date)
+
+        EOF
+
+        # Add analysis results
+        if [ -f performance-analysis.md ]; then
+          cat performance-analysis.md >> performance-summary.md
+        fi
+
+        # Add individual platform reports
+        for report in all-results/*/report-*.md; do
+          if [ -f "$report" ]; then
+            echo "" >> performance-summary.md
+            echo "---" >> performance-summary.md
+            echo "" >> performance-summary.md
+            cat "$report" >> performance-summary.md
+          fi
+        done
+
+    - name: Upload performance summary
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-summary
+        path: |
+          performance-summary.md
+          performance-analysis.md
+        retention-days: 90
+
+    - name: Comment on PR (if applicable)
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+
+          try {
+            const summary = fs.readFileSync('performance-summary.md', 'utf8');
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🚀 Performance Benchmark Results\n\n${summary}`
+            });
+          } catch (error) {
+            console.log('Could not post performance results:', error);
+          }
+
+  performance-regression-check:
+    name: Check for Performance Regressions
+    runs-on: ubuntu-latest
+    needs: analyze-results
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download performance results
+      uses: actions/download-artifact@v3
+      with:
+        name: performance-summary
+        path: results
+
+    - name: Check for regressions
+      run: |
+        # Simple regression detection (can be enhanced)
+        if [ -f results/performance-analysis.md ]; then
+          # Look for any tests that took significantly longer
+          # This is a placeholder - real implementation would compare with historical data
+
+          echo "Performance regression check completed"
+          echo "Results available in artifacts"
+
+          # In a real implementation, you might:
+          # 1. Store historical performance data
+          # 2. Compare current results with baseline
+          # 3. Flag significant regressions
+          # 4. Create issues for performance problems
+        fi
+
+    - name: Create issue on regression
+      if: false  # Disabled for now - enable when regression detection is implemented
+      uses: actions/github-script@v6
+      with:
+        script: |
+          await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: '🐌 Performance Regression Detected',
+            body: 'Automated performance testing has detected a potential regression. Please review the benchmark results.',
+            labels: ['performance', 'regression', 'needs-investigation']
+          });

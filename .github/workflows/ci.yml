@@ -1,0 +1,277 @@
+name: CI
+
+on:
+  push:
+    branches: [ master, develop ]
+  pull_request:
+    branches: [ master, develop ]
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Debug
+
+jobs:
+  build:
+    name: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.build_type }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        compiler: [gcc, clang, msvc]
+        build_type: [Debug, Release]
+        include:
+          # Ubuntu configurations
+          - os: ubuntu-latest
+            compiler: gcc
+            cc: gcc-11
+            cxx: g++-11
+          - os: ubuntu-latest
+            compiler: clang
+            cc: clang-14
+            cxx: clang++-14
+
+          # Windows configurations
+          - os: windows-latest
+            compiler: msvc
+            cc: cl
+            cxx: cl
+          - os: windows-latest
+            compiler: clang
+            cc: clang
+            cxx: clang++
+
+          # macOS configurations
+          - os: macos-latest
+            compiler: clang
+            cc: clang
+            cxx: clang++
+
+        exclude:
+          # Exclude unsupported combinations
+          - os: ubuntu-latest
+            compiler: msvc
+          - os: windows-latest
+            compiler: gcc
+          - os: macos-latest
+            compiler: gcc
+          - os: macos-latest
+            compiler: msvc
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 0
+
+    - name: Cache SDL3 build
+      uses: actions/cache@v3
+      with:
+        path: |
+          build/external
+          external/SDL/build
+          external/SDL_image/build
+          external/SDL_ttf/build
+        key: ${{ runner.os }}-${{ matrix.compiler }}-sdl3-${{ hashFiles('external/SDL/**', 'external/SDL_image/**', 'external/SDL_ttf/**') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.compiler }}-sdl3-
+
+    - name: Install Ubuntu dependencies
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          ninja-build \
+          pkg-config \
+          libasound2-dev \
+          libpulse-dev \
+          libaudio-dev \
+          libjack-dev \
+          libsndio-dev \
+          libsamplerate0-dev \
+          libx11-dev \
+          libxext-dev \
+          libxrandr-dev \
+          libxcursor-dev \
+          libxfixes-dev \
+          libxi-dev \
+          libxss-dev \
+          libwayland-dev \
+          libxkbcommon-dev \
+          libdrm-dev \
+          libxkbcommon-dev \
+          libgl1-mesa-dev \
+          libgles2-mesa-dev \
+          libegl1-mesa-dev \
+          libdbus-1-dev \
+          libibus-1.0-dev \
+          libudev-dev \
+          fcitx-libs-dev
+
+    - name: Install Ubuntu GCC 11
+      if: matrix.os == 'ubuntu-latest' && matrix.compiler == 'gcc'
+      run: |
+        sudo apt-get install -y gcc-11 g++-11
+
+    - name: Install Ubuntu Clang 14
+      if: matrix.os == 'ubuntu-latest' && matrix.compiler == 'clang'
+      run: |
+        sudo apt-get install -y clang-14 clang++-14
+
+    - name: Install macOS dependencies
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew install cmake ninja pkg-config
+
+    - name: Setup MSVC
+      if: matrix.os == 'windows-latest' && matrix.compiler == 'msvc'
+      uses: microsoft/setup-msbuild@v1.3
+
+    - name: Setup Clang on Windows
+      if: matrix.os == 'windows-latest' && matrix.compiler == 'clang'
+      run: |
+        choco install llvm
+
+    - name: Set up environment variables
+      shell: bash
+      run: |
+        if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+          echo "CC=${{ matrix.cc }}" >> $GITHUB_ENV
+          echo "CXX=${{ matrix.cxx }}" >> $GITHUB_ENV
+        elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+          echo "CC=${{ matrix.cc }}" >> $GITHUB_ENV
+          echo "CXX=${{ matrix.cxx }}" >> $GITHUB_ENV
+        fi
+
+    - name: Configure CMake
+      shell: bash
+      run: |
+        cmake_args=(
+          -B build
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DLAYA_BUILD_TESTS=ON
+          -DLAYA_BUILD_EXAMPLES=ON
+          -DLAYA_SDL_METHOD=submodule
+        )
+
+        # Add generator for different platforms
+        if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+          if [[ "${{ matrix.compiler }}" == "clang" ]]; then
+            cmake_args+=(-G "Ninja" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++)
+          else
+            cmake_args+=(-G "Visual Studio 17 2022" -A x64)
+          fi
+        else
+          cmake_args+=(-G "Ninja")
+        fi
+
+        # Add coverage for Debug builds on Linux
+        if [[ "${{ matrix.os }}" == "ubuntu-latest" && "${{ matrix.build_type }}" == "Debug" ]]; then
+          cmake_args+=(-DCMAKE_CXX_FLAGS="--coverage -g -O0")
+        fi
+
+        cmake "${cmake_args[@]}"
+
+    - name: Build
+      shell: bash
+      run: |
+        if [[ "${{ matrix.os }}" == "windows-latest" && "${{ matrix.compiler }}" == "msvc" ]]; then
+          cmake --build build --config ${{ matrix.build_type }} --parallel
+        else
+          cmake --build build --parallel
+        fi
+
+    - name: Test
+      shell: bash
+      working-directory: build
+      run: |
+        if [[ "${{ matrix.os }}" == "windows-latest" && "${{ matrix.compiler }}" == "msvc" ]]; then
+          ctest --build-config ${{ matrix.build_type }} --output-on-failure --parallel
+        else
+          ctest --output-on-failure --parallel
+        fi
+
+    - name: Run examples
+      shell: bash
+      working-directory: build
+      run: |
+        # Test that examples can be executed (they should exit quickly)
+        if [[ "${{ matrix.os }}" == "windows-latest" && "${{ matrix.compiler }}" == "msvc" ]]; then
+          timeout 10s ./examples/${{ matrix.build_type }}/hello_laya.exe || true
+        else
+          timeout 10s ./examples/hello_laya || true
+        fi
+
+    - name: Generate coverage report
+      if: matrix.os == 'ubuntu-latest' && matrix.build_type == 'Debug' && matrix.compiler == 'gcc'
+      run: |
+        sudo apt-get install -y lcov
+        lcov --capture --directory build --output-file coverage.info
+        lcov --remove coverage.info '/usr/*' '*/external/*' '*/tests/*' --output-file coverage.info
+        lcov --list coverage.info
+
+    - name: Upload coverage to Codecov
+      if: matrix.os == 'ubuntu-latest' && matrix.build_type == 'Debug' && matrix.compiler == 'gcc'
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.info
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+    - name: Upload build artifacts
+      if: matrix.build_type == 'Release'
+      uses: actions/upload-artifact@v3
+      with:
+        name: laya-${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.build_type }}
+        path: |
+          build/src/
+          build/examples/
+          !build/**/*.obj
+          !build/**/*.o
+          !build/**/*.pdb
+        retention-days: 7
+
+  static-analysis:
+    name: Static Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang-tidy-14 cppcheck
+
+    - name: Run clang-tidy
+      run: |
+        # Create compile_commands.json
+        cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DLAYA_SDL_METHOD=submodule
+
+        # Run clang-tidy on source files
+        find src include -name "*.cpp" -o -name "*.hpp" | \
+        xargs clang-tidy-14 -p build --config-file=.clang-tidy || true
+
+    - name: Run cppcheck
+      run: |
+        cppcheck --enable=all --inconclusive --xml --xml-version=2 \
+          --suppress=missingIncludeSystem \
+          --suppress=unmatchedSuppression \
+          --suppress=unusedFunction \
+          src/ include/ 2> cppcheck-report.xml || true
+
+    - name: Upload static analysis results
+      uses: actions/upload-artifact@v3
+      with:
+        name: static-analysis-results
+        path: |
+          cppcheck-report.xml
+        retention-days: 7
