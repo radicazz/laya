@@ -19,32 +19,45 @@ By carefully wrapping SDL in a modern C++20 interface, *laya* aims to provide:
 
 ---
 
-## Example
+## Building
 
-The following snippet demonstrates the planned usage of *laya* to create a window and a renderer, handle events and perform rendering.
+### Prerequisites
 
-```cpp
-int laya_app() {
-    laya::init();
+- CMake 3.21 or later
+- C++20 compatible compiler (MSVC 2022, GCC 11+, Clang 14+)
+- Git (for submodules)
 
-    laya::window win("hello, laya", {800, 600});
-    laya::renderer ren(win);
+### Quick Start
 
-    bool running = true;
-    while (running) {
-        for (auto ev : laya::poll_events()) {
-            if (ev.is<laya::quit_event>()) {
-                running = false;
-            }
-        }
+```bash
+# Clone with submodules
+git clone --recursive https://github.com/radicazz/laya.git
+cd laya
 
-        ren.clear();
-        // draw things here
-        ren.present();
-    }
+# Configure and build
+cmake -B build
+cmake --build build --config Debug
 
-    laya::quit();
-}
+# Run the example
+build/examples/Debug/hello_laya.exe  # Windows
+# or
+build/examples/hello_laya            # Linux/macOS
+```
+
+### Build Options
+
+```bash
+# Choose SDL3 integration method
+cmake -B build -DLAYA_SDL_METHOD=submodule  # Default
+cmake -B build -DLAYA_SDL_METHOD=system     # System-installed SDL3
+cmake -B build -DLAYA_SDL_METHOD=vcpkg      # vcpkg package manager
+
+# Disable extensions (enabled by default)
+cmake -B build -DLAYA_USE_SDL_IMAGE=OFF -DLAYA_USE_SDL_TTF=OFF
+
+# Build configuration
+cmake --build build --config Debug    # Debug build
+cmake --build build --config Release  # Release build
 ```
 
 ---
