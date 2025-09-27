@@ -23,7 +23,8 @@ When `LAYA_BUILD_SHARED=ON` (the default), laya builds as a shared library along
 
 The build system automatically copies all required shared libraries to executable directories:
 
-```
+``bash
+
 examples/Debug/
 ├── hello_laya.exe
 ├── laya.dll
@@ -37,6 +38,7 @@ tests/Debug/
 ├── SDL3.dll
 ├── SDL3_image.dll
 └── SDL3_ttf.dll
+
 ```
 
 ## Platform-Specific Behavior
@@ -98,10 +100,12 @@ This creates larger executables but with no external dependencies.
 
 All CI workflows automatically build with shared libraries:
 
-- Faster builds due to incremental compilation
+- **Ubuntu builds**: Run on all branches with GCC and Clang compilers
+- **Windows builds**: Run only on master branch with MSVC compiler  
+- **Headless testing**: Uses Xvfb virtual display for graphics-free CI
+- **Faster builds**: Incremental compilation and smart caching
 - Tests run with the same library configuration as examples
 - Release artifacts include all necessary DLLs/shared libraries
-- **Ubuntu runners**: Include essential dev packages for graphics/audio
 - **Dependency verification**: Post-build `ldd` checks ensure proper linking
 
 ## Distribution
@@ -139,8 +143,10 @@ sudo apt-get install -y \
   libgl1-mesa-glx libegl1-mesa \
   libdbus-1-3
 
-# For headless/server systems (if running without display)
-export DISPLAY=:99  # Use virtual display if needed
+# For headless/server systems (CI/testing without display)
+sudo apt-get install -y xvfb
+export DISPLAY=:99
+Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
 ```
 
 ### Deployment on clean Ubuntu systems

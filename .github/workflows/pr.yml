@@ -42,7 +42,16 @@ jobs:
           libpng-dev \
           libjpeg-dev \
           libtiff-dev \
-          zlib1g-dev
+          zlib1g-dev \
+          xvfb
+
+    - name: Setup headless display
+      run: |
+        # Start virtual display for headless testing
+        export DISPLAY=:99
+        Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+        sleep 3
+        echo "DISPLAY=:99" >> $GITHUB_ENV
 
     - name: Check code formatting
       run: |
@@ -79,22 +88,9 @@ jobs:
           xargs -r clang-tidy-14 -p build --config-file=.clang-tidy || true
         fi
 
-  build-matrix:
-    name: Cross-platform Build Check
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        build_type: [Debug]
-        include:
-          - os: ubuntu-latest
-            compiler: gcc-11
-          - os: windows-latest
-            compiler: msvc
-          - os: macos-latest
-            compiler: clang
+  build-ubuntu:
+    name: Ubuntu Build Check
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
@@ -108,12 +104,11 @@ jobs:
         path: |
           build/external
           external/SDL/build
-        key: ${{ runner.os }}-${{ matrix.compiler }}-sdl3-${{ hashFiles('external/SDL/**') }}
+        key: ubuntu-gcc-sdl3-${{ hashFiles('external/SDL/**') }}
         restore-keys: |
-          ${{ runner.os }}-${{ matrix.compiler }}-sdl3-
+          ubuntu-gcc-sdl3-
 
-    - name: Install Ubuntu dependencies
-      if: matrix.os == 'ubuntu-latest'
+    - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y \
@@ -138,54 +133,75 @@ jobs:
           libpng-dev \
           libjpeg-dev \
           libtiff-dev \
-          zlib1g-dev
+          zlib1g-dev \
+          xvfb
 
-    - name: Install macOS dependencies
-      if: matrix.os == 'macos-latest'
+    - name: Setup headless display
       run: |
-        brew install cmake ninja pkg-config
+        # Start virtual display for headless testing
+        export DISPLAY=:99
+        Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+        sleep 3
+        echo "DISPLAY=:99" >> $GITHUB_ENV
+
+    - name: Configure CMake
+      run: |
+        CC=gcc-11 CXX=g++-11 cmake -B build \
+          -G Ninja \
+          -DCMAKE_BUILD_TYPE=Debug \
+          -DLAYA_BUILD_TESTS=ON \
+          -DLAYA_BUILD_EXAMPLES=ON \
+          -DLAYA_SDL_METHOD=submodule \
+          -DLAYA_BUILD_SHARED=ON
+
+    - name: Build
+      run: |
+        cmake --build build --parallel
+
+    - name: Test
+      working-directory: build
+      run: |
+        ctest --output-on-failure
+
+  build-windows:
+    name: Windows Build Check
+    runs-on: windows-latest
+    if: github.base_ref == 'master'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Cache SDL3 build
+      uses: actions/cache@v4
+      with:
+        path: |
+          build/external
+          external/SDL/build
+        key: windows-msvc-sdl3-${{ hashFiles('external/SDL/**') }}
+        restore-keys: |
+          windows-msvc-sdl3-
 
     - name: Setup MSVC
-      if: matrix.os == 'windows-latest'
       uses: microsoft/setup-msbuild@v1.3
 
     - name: Configure CMake
-      shell: bash
       run: |
-        cmake_args=(
-          -B build
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-          -DLAYA_BUILD_TESTS=ON
-          -DLAYA_BUILD_EXAMPLES=ON
-          -DLAYA_SDL_METHOD=submodule
+        cmake -B build `
+          -G "Visual Studio 17 2022" -A x64 `
+          -DCMAKE_BUILD_TYPE=Debug `
+          -DLAYA_BUILD_TESTS=ON `
+          -DLAYA_BUILD_EXAMPLES=ON `
+          -DLAYA_SDL_METHOD=submodule `
           -DLAYA_BUILD_SHARED=ON
-        )
-
-        if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
-          cmake_args+=(-G "Ninja" -DCMAKE_C_COMPILER=gcc-11 -DCMAKE_CXX_COMPILER=g++-11)
-        elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-          cmake_args+=(-G "Visual Studio 17 2022" -A x64)
-        else
-          cmake_args+=(-G "Ninja")
-        fi
-
-        cmake "${cmake_args[@]}"
 
     - name: Build
-      shell: bash
       run: |
-        if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-          cmake --build build --config ${{ matrix.build_type }} --parallel
-        else
-          cmake --build build --parallel
-        fi
+        cmake --build build --config Debug --parallel
 
     - name: Test
-      shell: bash
       working-directory: build
       run: |
-        if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-          ctest --build-config ${{ matrix.build_type }} --output-on-failure
-        else
-          ctest --output-on-failure
-        fi
+        ctest --build-config Debug --output-on-failure

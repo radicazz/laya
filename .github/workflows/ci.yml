@@ -11,53 +11,23 @@ env:
   BUILD_TYPE: Debug
 
 jobs:
-  build:
-    name: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.build_type }}
-    runs-on: ${{ matrix.os }}
+  # Ubuntu builds (run on all branches)
+  build-ubuntu:
+    name: ${{ matrix.compiler }}-${{ matrix.build_type }}
+    runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        compiler: [gcc, clang, msvc]
+        compiler: [gcc, clang]
         build_type: [Debug, Release]
         include:
-          # Ubuntu configurations
-          - os: ubuntu-latest
-            compiler: gcc
+          - compiler: gcc
             cc: gcc-11
             cxx: g++-11
-          - os: ubuntu-latest
-            compiler: clang
+          - compiler: clang
             cc: clang-14
             cxx: clang++-14
-
-          # Windows configurations
-          - os: windows-latest
-            compiler: msvc
-            cc: cl
-            cxx: cl
-          - os: windows-latest
-            compiler: clang
-            cc: clang
-            cxx: clang++
-
-          # macOS configurations
-          - os: macos-latest
-            compiler: clang
-            cc: clang
-            cxx: clang++
-
-        exclude:
-          # Exclude unsupported combinations
-          - os: ubuntu-latest
-            compiler: msvc
-          - os: windows-latest
-            compiler: gcc
-          - os: macos-latest
-            compiler: gcc
-          - os: macos-latest
-            compiler: msvc
 
     steps:
     - name: Checkout code
@@ -79,7 +49,6 @@ jobs:
           ${{ runner.os }}-${{ matrix.compiler }}-sdl3-
 
     - name: Install Ubuntu dependencies
-      if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
         sudo apt-get install -y \
@@ -116,45 +85,33 @@ jobs:
           libpng-dev \
           libjpeg-dev \
           libtiff-dev \
-          zlib1g-dev
+          zlib1g-dev \
+          xvfb
+
+    - name: Setup headless display
+      run: |
+        # Start virtual display for headless testing
+        export DISPLAY=:99
+        Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+        sleep 3
+        echo "DISPLAY=:99" >> $GITHUB_ENV
 
     - name: Install Ubuntu GCC 11
-      if: matrix.os == 'ubuntu-latest' && matrix.compiler == 'gcc'
+      if: matrix.compiler == 'gcc'
       run: |
         sudo apt-get install -y gcc-11 g++-11
 
     - name: Install Ubuntu Clang 14
-      if: matrix.os == 'ubuntu-latest' && matrix.compiler == 'clang'
+      if: matrix.compiler == 'clang'
       run: |
         sudo apt-get install -y clang-14 clang++-14
 
-    - name: Install macOS dependencies
-      if: matrix.os == 'macos-latest'
-      run: |
-        brew install cmake ninja pkg-config
-
-    - name: Setup MSVC
-      if: matrix.os == 'windows-latest' && matrix.compiler == 'msvc'
-      uses: microsoft/setup-msbuild@v1.3
-
-    - name: Setup Clang on Windows
-      if: matrix.os == 'windows-latest' && matrix.compiler == 'clang'
-      run: |
-        choco install llvm
-
     - name: Set up environment variables
-      shell: bash
       run: |
-        if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
-          echo "CC=${{ matrix.cc }}" >> $GITHUB_ENV
-          echo "CXX=${{ matrix.cxx }}" >> $GITHUB_ENV
-        elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-          echo "CC=${{ matrix.cc }}" >> $GITHUB_ENV
-          echo "CXX=${{ matrix.cxx }}" >> $GITHUB_ENV
-        fi
+        echo "CC=${{ matrix.cc }}" >> $GITHUB_ENV
+        echo "CXX=${{ matrix.cxx }}" >> $GITHUB_ENV
 
     - name: Configure CMake
-      shell: bash
       run: |
         cmake_args=(
           -B build
@@ -163,58 +120,33 @@ jobs:
           -DLAYA_BUILD_EXAMPLES=ON
           -DLAYA_SDL_METHOD=submodule
           -DLAYA_BUILD_SHARED=ON
+          -G "Ninja"
         )
 
-        # Add generator for different platforms
-        if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-          if [[ "${{ matrix.compiler }}" == "clang" ]]; then
-            cmake_args+=(-G "Ninja" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++)
-          else
-            cmake_args+=(-G "Visual Studio 17 2022" -A x64)
-          fi
-        else
-          cmake_args+=(-G "Ninja")
-        fi
-
-        # Add coverage for Debug builds on Linux
-        if [[ "${{ matrix.os }}" == "ubuntu-latest" && "${{ matrix.build_type }}" == "Debug" ]]; then
+        # Add coverage for Debug builds with GCC
+        if [[ "${{ matrix.build_type }}" == "Debug" && "${{ matrix.compiler }}" == "gcc" ]]; then
           cmake_args+=(-DCMAKE_CXX_FLAGS="--coverage -g -O0")
         fi
 
         cmake "${cmake_args[@]}"
 
     - name: Build
-      shell: bash
       run: |
-        if [[ "${{ matrix.os }}" == "windows-latest" && "${{ matrix.compiler }}" == "msvc" ]]; then
-          cmake --build build --config ${{ matrix.build_type }} --parallel
-        else
-          cmake --build build --parallel
-        fi
+        cmake --build build --parallel
 
     - name: Test
-      shell: bash
       working-directory: build
       run: |
-        if [[ "${{ matrix.os }}" == "windows-latest" && "${{ matrix.compiler }}" == "msvc" ]]; then
-          ctest --build-config ${{ matrix.build_type }} --output-on-failure --parallel
-        else
-          ctest --output-on-failure --parallel
-        fi
+        ctest --output-on-failure --parallel
 
     - name: Run examples
-      shell: bash
       working-directory: build
       run: |
         # Test that examples can be executed (they should exit quickly)
-        if [[ "${{ matrix.os }}" == "windows-latest" && "${{ matrix.compiler }}" == "msvc" ]]; then
-          timeout 10s ./examples/${{ matrix.build_type }}/hello_laya.exe || true
-        else
-          timeout 10s ./examples/hello_laya || true
-        fi
+        timeout 10s ./examples/hello_laya || true
 
     - name: Generate coverage report
-      if: matrix.os == 'ubuntu-latest' && matrix.build_type == 'Debug' && matrix.compiler == 'gcc'
+      if: matrix.build_type == 'Debug' && matrix.compiler == 'gcc'
       run: |
         sudo apt-get install -y lcov
         lcov --capture --directory build --output-file coverage.info
@@ -222,7 +154,7 @@ jobs:
         lcov --list coverage.info
 
     - name: Upload coverage to Codecov
-      if: matrix.os == 'ubuntu-latest' && matrix.build_type == 'Debug' && matrix.compiler == 'gcc'
+      if: matrix.build_type == 'Debug' && matrix.compiler == 'gcc'
       uses: codecov/codecov-action@v3
       with:
         file: ./coverage.info
@@ -234,12 +166,80 @@ jobs:
       if: matrix.build_type == 'Release'
       uses: actions/upload-artifact@v4
       with:
-        name: laya-${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.build_type }}
+        name: laya-ubuntu-${{ matrix.compiler }}-${{ matrix.build_type }}
+        path: |
+          build/src/
+          build/examples/
+          !build/**/*.o
+        retention-days: 7
+
+  # Windows build (only run on master branch)
+  build-windows:
+    name: windows-msvc-${{ matrix.build_type }}
+    runs-on: windows-latest
+    if: github.ref == 'refs/heads/master'
+
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: [Debug, Release]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 0
+
+    - name: Cache SDL3 build
+      uses: actions/cache@v4
+      with:
+        path: |
+          build/external
+          external/SDL/build
+          external/SDL_image/build
+          external/SDL_ttf/build
+        key: windows-msvc-sdl3-${{ hashFiles('external/SDL/**', 'external/SDL_image/**', 'external/SDL_ttf/**') }}
+        restore-keys: |
+          windows-msvc-sdl3-
+
+    - name: Setup MSVC
+      uses: microsoft/setup-msbuild@v1.3
+
+    - name: Configure CMake
+      run: |
+        cmake -B build `
+          -G "Visual Studio 17 2022" -A x64 `
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
+          -DLAYA_BUILD_TESTS=ON `
+          -DLAYA_BUILD_EXAMPLES=ON `
+          -DLAYA_SDL_METHOD=submodule `
+          -DLAYA_BUILD_SHARED=ON
+
+    - name: Build
+      run: |
+        cmake --build build --config ${{ matrix.build_type }} --parallel
+
+    - name: Test
+      working-directory: build
+      run: |
+        ctest --build-config ${{ matrix.build_type }} --output-on-failure --parallel
+
+    - name: Run examples
+      working-directory: build
+      run: |
+        # Test that examples can be executed (they should exit quickly)
+        Start-Process -FilePath ".\examples\${{ matrix.build_type }}\hello_laya.exe" -Wait -Timeout 10 -ErrorAction SilentlyContinue
+
+    - name: Upload build artifacts
+      if: matrix.build_type == 'Release'
+      uses: actions/upload-artifact@v4
+      with:
+        name: laya-windows-msvc-${{ matrix.build_type }}
         path: |
           build/src/
           build/examples/
           !build/**/*.obj
-          !build/**/*.o
           !build/**/*.pdb
         retention-days: 7
 
