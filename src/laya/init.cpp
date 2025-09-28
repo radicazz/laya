@@ -1,5 +1,8 @@
 #include <laya/init.hpp>
+
 #include <stdexcept>
+#include <string>  // For clang builds.
+
 #include <SDL3/SDL.h>
 
 namespace laya {
