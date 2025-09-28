@@ -3,24 +3,23 @@
 > [!IMPORTANT]
 > This document is a work in progress and subject to change.
 
-This document serves as a comprehensive roadmap for the development of laya, a modern C++20 wrapper for SDL3. It outlines the project's evolution from initial setup through stable release, with detailed milestones and feature implementations.
+Here is a comprehensive roadmap for the development of the project, a modern C++20 wrapper for SDL3. It outlines the  evolution from initial setup through stable release, with detailed milestones and feature implementations.
 
 ---
 
 ## Project Vision
 
-laya aims to be the definitive C++20 interface to SDL3, providing:
+laya aims to be a definitive C++20 interface to SDL3, providing:
 
-- **Zero-overhead abstractions** that compile to identical assembly as raw SDL3
+- **Lowest-cost abstractions** that add minimal overhead
 - **Modern C++ safety** with RAII, strong typing, and exception handling
-- **Complete SDL3 coverage** ensuring no functionality is lost
+- **Complete SDL3 coverage** ensuring no functionality is lost (long-term goal)
 - **Intuitive APIs** that feel natural to C++ developers
 
 ---
 
-## 🚀 Phase 0: Foundation (v0.0.x)
+## 🚀 Phase 1: Foundation (v0.0.x)
 
-**Timeline**: Weeks 1-3  
 **Goal**: Establish robust development infrastructure
 
 ### 1. Project Creation ✅
@@ -32,9 +31,6 @@ laya aims to be the definitive C++20 interface to SDL3, providing:
 
 ### 2. Build System ✅
 
-**Target**: Week 2  
-**Priority**: Critical
-
 - [x] Create root `CMakeLists.txt` with C++20 support
 - [x] Implement SDL3 integration options (submodule, system, vcpkg)
 - [x] Configure modern CMake 3.21+ with target-based design
@@ -42,22 +38,12 @@ laya aims to be the definitive C++20 interface to SDL3, providing:
 - [x] Create minimal "Hello laya" example for build validation
 - [x] Add SDL3_image and SDL3_ttf submodule support (core ready, extensions for Week 3)
 
-**Success Criteria**: ✅ COMPLETED
+### 3. Testing Framework ✅
 
-- ✅ Builds successfully on Windows (other platforms ready)
-- ✅ Can build SDL3 via submodules (default method)
-- ✅ Modern CMake best practices implemented
-- ✅ Working example application validates integration
-
-### 3. Testing Framework 🟡
-
-**Target**: Week 2-3  
-**Priority**: Critical
-
-- [ ] Integrate doctest testing framework
-- [ ] Create comprehensive test structure (unit, integration, performance)
-- [ ] Set up CTest integration
-- [ ] Write initial framework validation tests
+- [x] Integrate doctest testing framework
+- [x] Create comprehensive test structure (unit, integration, performance)
+- [x] Set up CTest integration
+- [x] Write initial framework validation tests
 
 **Test Structure**:
 
@@ -66,27 +52,27 @@ tests/
 ├── unit/           # Component-specific tests
 ├── integration/    # Cross-component tests  
 ├── performance/    # Benchmarks vs raw SDL3
-└── examples/       # Example code validation
+└── utils/          # Utility functions and helpers
 ```
 
-### 4. Continuous Integration 🟡
+### 4. Continuous Integration ✅
 
-**Target**: Week 3  
-**Priority**: High
-
-- [ ] GitHub Actions workflows for all platforms
-- [ ] Multi-compiler matrix (GCC, Clang, MSVC)
-- [ ] Dependency caching for faster builds
-- [ ] Coverage reporting integration
-- [ ] Automated artifact generation
+- [x] GitHub Actions workflows for all platforms
+- [x] Multi-compiler matrix (GCC, Clang, MSVC)
+- [x] Dependency caching for faster builds
+- [x] Coverage reporting integration
+- [x] Automated artifact generation
 
 **CI Matrix**:
 
-| Platform | Compilers | Build Types |
-|----------|-----------|-------------|
-| Ubuntu | GCC 11+, Clang 14+ | Debug, Release |
-| Windows | MSVC 2022, Clang | Debug, Release |
-| macOS | Clang 14+ | Debug, Release |
+Status | Platform | Compilers | Build Types |
+----------|-----------|-------------|-------------|
+✅ | Ubuntu | GCC 11+, Clang 15+ | Debug, Release |
+✅ | Windows | MSVC 2022, Clang | Debug, Release |
+❌️ | macOS | Clang 15+ | Debug, Release |
+
+> [!NOTE]
+> Current CI supports MSVC, GCC, and Clang - all the major compilers. macOS is theoretically supported, but not yet tested.
 
 ### 5. Planning & Design ✅
 
@@ -98,16 +84,13 @@ tests/
 
 ---
 
-## 🛠️ Phase 1: Core Systems (v0.1.x - v0.4.x)
+## 🛠️ Phase 2: Core Systems (v0.1.x - v0.4.x)
 
-**Timeline**: Weeks 4-12  
 **Goal**: Implement fundamental SDL3 wrappers
 
 ### v0.1.0: Initialization & Error Handling 🔴
 
-**Target**: Week 4  
 **Priority**: Critical  
-**Effort**: 5-7 days
 
 **Core Features**:
 
@@ -133,9 +116,7 @@ auto version = laya::context::version();
 
 ### v0.2.0: Window Management 🔴
 
-**Target**: Week 6  
 **Priority**: Critical  
-**Effort**: 7-10 days
 
 **Core Features**:
 
@@ -162,9 +143,7 @@ auto current_size = win.size();
 
 ### v0.3.0: 2D Rendering 🔴
 
-**Target**: Week 9  
 **Priority**: Critical  
-**Effort**: 10-14 days
 
 **Core Features**:
 
@@ -192,9 +171,7 @@ ren.present();
 
 ### v0.4.0: Event Handling 🔴
 
-**Target**: Week 12  
 **Priority**: Critical  
-**Effort**: 12-16 days
 
 **Core Features**:
 
@@ -226,14 +203,11 @@ for (const auto& event : laya::poll_events()) {
 
 ## 🎨 Phase 2: Graphics & Media (v0.5.x - v0.6.x)
 
-**Timeline**: Weeks 13-17  
 **Goal**: Complete multimedia capabilities
 
 ### v0.5.0: Textures & Surfaces 🟡
 
-**Target**: Week 15  
 **Priority**: Important  
-**Effort**: 8-12 days
 
 **Core Features**:
 
@@ -250,9 +224,7 @@ for (const auto& event : laya::poll_events()) {
 
 ### v0.6.0: Audio System 🟡
 
-**Target**: Week 17  
 **Priority**: Important  
-**Effort**: 10-14 days
 
 **Core Features**:
 
@@ -271,14 +243,11 @@ for (const auto& event : laya::poll_events()) {
 
 ## 🎮 Phase 3: Input Systems (v0.7.x)
 
-**Timeline**: Weeks 18-19  
 **Goal**: Complete input handling
 
 ### v0.7.0: Advanced Input 🟡
 
-**Target**: Week 19  
 **Priority**: Important  
-**Effort**: 8-10 days
 
 **Core Features**:
 
@@ -297,14 +266,11 @@ for (const auto& event : laya::poll_events()) {
 
 ## 🚀 Phase 4: Advanced Features (v0.8.x - v0.9.x)
 
-**Timeline**: Weeks 20-24  
 **Goal**: Modern graphics and system integration
 
 ### v0.8.0: GPU Rendering 🟢
 
-**Target**: Week 22  
 **Priority**: Nice-to-Have  
-**Effort**: 15-20 days
 
 **Core Features**:
 
@@ -321,9 +287,7 @@ for (const auto& event : laya::poll_events()) {
 
 ### v0.9.0: Threading & File I/O 🟢
 
-**Target**: Week 24  
 **Priority**: Nice-to-Have  
-**Effort**: 6-8 days
 
 **Core Features**:
 
@@ -341,12 +305,10 @@ for (const auto& event : laya::poll_events()) {
 
 ## 🎯 Phase 5: Polish & Release (v1.0.0)
 
-**Timeline**: Weeks 25-27  
 **Goal**: Production-ready stable release
 
 ### v1.0.0: Stable Release 🟢
 
-**Target**: Week 27  
 **Priority**: Critical for Release
 
 **Documentation & Examples**:
@@ -410,28 +372,6 @@ for (const auto& event : laya::poll_events()) {
 
 ---
 
-## 📊 Success Metrics
-
-### Development Metrics
-
-- **Code Coverage**: >90% for core functionality
-- **Build Time**: <5 minutes for full build
-- **Test Execution**: <30 seconds for full test suite
-
-### Quality Metrics
-
-- **Memory Leaks**: Zero in comprehensive test suite
-- **Performance Overhead**: <5% compared to raw SDL3
-- **API Completeness**: >95% SDL3 coverage by v1.0
-
-### Community Metrics
-
-- **Documentation Coverage**: 100% public API
-- **Example Coverage**: All major use cases
-- **Issue Response Time**: <48 hours
-
----
-
 ## 🎯 Dependency Graph
 
 ```bash
@@ -474,10 +414,10 @@ Window Management (v0.2.0)
 
 This roadmap serves as a living document that will be updated as development progresses. Each milestone includes specific success criteria and will be marked complete only when all requirements are met.
 
-**Current Status**: Foundation Phase - Build System Complete ✅
+**Current Status**: Foundation Phase Complete ✅
 
 **Next Milestone**: Testing Framework Setup (Week 2-3)
 
-For detailed implementation plans, see the `docs/implementation_plans/` directory.
-For API usage examples, see the `docs/mockups/` directory.
-For technical details, see `docs/wrapping_techniques.md`.
+For detailed implementation plans, see the `design/implementation_plans/` directory.
+For API usage examples, see the `design/mockups/` directory.
+For technical details, see `design/wrapping_techniques.md`.

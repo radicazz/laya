@@ -4,10 +4,30 @@ root = true
 
 [*]
 charset = utf-8
-end_of_line = crlf
+end_of_line = lf
 insert_final_newline = true
+indent_style = space
+indent_size = 4
 trim_trailing_whitespace = true
 
 [*.md]
 trim_trailing_whitespace = false
 insert_final_newline = true
+
+#
+# Scripting files
+#
+
+[*.sh]
+end_of_line = lf
+indent_style = space
+indent_size = 4
+
+[*.bat]
+end_of_line = crlf
+indent_style = tab
+
+[*.ps1]
+end_of_line = crlf
+indent_style = space
+indent_size = 2
