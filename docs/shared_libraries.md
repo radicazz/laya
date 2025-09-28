@@ -156,20 +156,3 @@ Our shared libraries are **mostly self-contained** but may require these minimal
 **System**: `libdbus-1-3`, `libc6`
 
 These are typically pre-installed on desktop Ubuntu but may need installation on minimal/server images.
-
-### Testing Unix deployment
-
-Use the provided test script to verify deployment on Ubuntu systems:
-
-```bash
-# From the project root directory
-./scripts/test-unix-deployment.sh
-```
-
-This script will:
-
-- Check system dependencies
-- Build the project with shared libraries  
-- Verify library deployment and RPATH setup
-- Test runtime execution
-- Provide deployment recommendations

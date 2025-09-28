@@ -11,6 +11,9 @@ on:
         required: true
         type: string
 
+env:
+  ACT: 'false'
+
 jobs:
   create-release:
     name: Create Release
@@ -115,6 +118,7 @@ jobs:
             .
 
     - name: Upload source archive
+      if: ${{ env.ACT != 'true' }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |

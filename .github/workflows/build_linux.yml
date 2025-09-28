@@ -1,4 +1,4 @@
-name: Linux Builds
+name: Linux (GCC/Clang)
 
 on:
   push:
@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ master, develop ]
   workflow_dispatch:
+
+env:
+  ACT: 'false'
 
 jobs:
   build-linux:
@@ -170,7 +173,7 @@ jobs:
         lcov --list coverage.info
 
     - name: Upload coverage to Codecov
-      if: matrix.build_type == 'Debug' && matrix.compiler == 'gcc'
+      if: ${{ matrix.build_type == 'Debug' && matrix.compiler == 'gcc' && env.ACT != 'true' }}
       uses: codecov/codecov-action@v3
       with:
         file: ./coverage.info
@@ -179,6 +182,7 @@ jobs:
         fail_ci_if_error: false
 
     - name: Upload build artifacts
+      if: ${{ env.ACT != 'true' }}
       uses: actions/upload-artifact@v4
       with:
         name: laya-linux-${{ matrix.compiler }}-${{ matrix.build_type }}
@@ -189,7 +193,7 @@ jobs:
         retention-days: 30
 
     - name: Upload benchmark results
-      if: matrix.build_type == 'Release'
+      if: ${{ matrix.build_type == 'Release' && env.ACT != 'true' }}
       uses: actions/upload-artifact@v4
       with:
         name: benchmark-results-linux-${{ matrix.compiler }}
