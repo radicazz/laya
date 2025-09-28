@@ -51,8 +51,8 @@ else()
     target_compile_options(laya_tests PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
-# Copy shared libraries to test executable directory for runtime
-laya_copy_shared_libs(laya_tests)
+# Copy SDL shared libraries to test executable directory for runtime
+laya_copy_sdl_shared_libs(laya_tests)
 
 # Register tests with CTest
 # Try to use doctest's CMake integration if available
@@ -91,8 +91,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
         $<$<CXX_COMPILER_ID:MSVC>:/O2 /DNDEBUG>
     )
 
-    # Copy shared libraries to benchmark executable directory for runtime
-    laya_copy_shared_libs(laya_benchmarks)
+    # Copy SDL shared libraries to benchmark executable directory for runtime
+    laya_copy_sdl_shared_libs(laya_benchmarks)
 
     add_test(NAME laya_benchmarks COMMAND laya_benchmarks --test-suite=performance)
 endif()

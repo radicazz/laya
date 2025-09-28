@@ -20,8 +20,8 @@
 
 <div align="center">
     <p>
+        <a href="docs/quick_start.md">Quick Start</a> •
         <a href="examples">Examples</a> •
-        <a href="docs">Getting Started</a> •
         <a href="https://github.com/radicazz/laya/releases">Releases</a> •
         <a href="docs/design/roadmap.md">Roadmap</a>
     </p>

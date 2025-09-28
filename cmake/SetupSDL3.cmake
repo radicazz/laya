@@ -1,5 +1,24 @@
 # SDL3 setup based on consumption method
 
+# Skip SDL setup if parent project provides targets
+if(LAYA_SDL_TARGETS_PROVIDED)
+    # Verify that required targets exist
+    if(NOT TARGET SDL3::SDL3)
+        message(FATAL_ERROR "LAYA_SDL_TARGETS_PROVIDED is ON but SDL3::SDL3 target not found")
+    endif()
+
+    if(LAYA_USE_SDL_IMAGE AND NOT TARGET SDL3::SDL3_image)
+        message(FATAL_ERROR "LAYA_USE_SDL_IMAGE is ON but SDL3::SDL3_image target not found")
+    endif()
+
+    if(LAYA_USE_SDL_TTF AND NOT TARGET SDL3::SDL3_ttf)
+        message(FATAL_ERROR "LAYA_USE_SDL_TTF is ON but SDL3::SDL3_ttf target not found")
+    endif()
+
+    message(STATUS "Using SDL targets provided by parent project")
+    return()
+endif()
+
 if(LAYA_SDL_METHOD STREQUAL "submodule")
     # Git submodule method (default)
     if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/external/SDL/CMakeLists.txt")
@@ -148,26 +167,6 @@ elseif(LAYA_SDL_METHOD STREQUAL "system")
         find_package(SDL3_ttf REQUIRED)
     endif()
 
-elseif(LAYA_SDL_METHOD STREQUAL "vcpkg")
-    # vcpkg package manager
-    find_package(SDL3 CONFIG REQUIRED)
-
-    if(LAYA_USE_SDL_IMAGE)
-        find_package(SDL3-image CONFIG REQUIRED)
-
-        if(NOT TARGET SDL3::SDL3_image)
-            add_library(SDL3::SDL3_image ALIAS SDL3_image::SDL3_image)
-        endif()
-    endif()
-
-    if(LAYA_USE_SDL_TTF)
-        find_package(SDL3-ttf CONFIG REQUIRED)
-
-        if(NOT TARGET SDL3::SDL3_ttf)
-            add_library(SDL3::SDL3_ttf ALIAS SDL3_ttf::SDL3_ttf)
-        endif()
-    endif()
-
 else()
     message(FATAL_ERROR "Unknown SDL method: ${LAYA_SDL_METHOD}")
 endif()
@@ -185,19 +184,11 @@ if(LAYA_USE_SDL_TTF AND NOT TARGET SDL3::SDL3_ttf)
     message(FATAL_ERROR "SDL3::SDL3_ttf target not found")
 endif()
 
-# Function to copy shared libraries to executable directory and set RPATH
-function(laya_copy_shared_libs target_name)
-    if(LAYA_SDL_METHOD STREQUAL "submodule" AND LAYA_BUILD_SHARED)
+# Function to copy SDL shared libraries to executable directory and set RPATH
+function(laya_copy_sdl_shared_libs target_name)
+    if(LAYA_SDL_METHOD STREQUAL "submodule")
         # On Windows, copy DLLs to executable directory
         if(WIN32)
-            # Copy laya shared library
-            add_custom_command(TARGET ${target_name} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                $<TARGET_FILE:laya>
-                $<TARGET_FILE_DIR:${target_name}>
-                COMMENT "Copying laya shared library to ${target_name} directory"
-            )
-
             # Copy SDL3 shared library
             if(TARGET SDL3-shared)
                 add_custom_command(TARGET ${target_name} POST_BUILD
@@ -237,23 +228,6 @@ function(laya_copy_shared_libs target_name)
                 BUILD_RPATH "\$ORIGIN"
                 SKIP_BUILD_RPATH FALSE
                 BUILD_WITH_INSTALL_RPATH FALSE
-            )
-
-            # Also ensure our shared libraries can find each other
-            if(TARGET laya AND LAYA_BUILD_SHARED)
-                set_target_properties(laya PROPERTIES
-                    BUILD_RPATH_USE_ORIGIN TRUE
-                    INSTALL_RPATH "\$ORIGIN"
-                    BUILD_RPATH "\$ORIGIN"
-                )
-            endif()
-
-            # Copy laya shared library
-            add_custom_command(TARGET ${target_name} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                $<TARGET_FILE:laya>
-                $<TARGET_FILE_DIR:${target_name}>
-                COMMENT "Copying laya shared library to ${target_name} directory"
             )
 
             # Copy SDL3 shared library

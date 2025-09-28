@@ -1,12 +1,14 @@
 # Building
 
+The following document provides detailed instructions on building the Laya library, including prerequisites, build options, testing, and best practices for different use cases.
+
 ## Prerequisites
 
 - CMake 3.21 or later
-- C++20 compatible compiler (MSVC 2022, GCC 11+, Clang 14+)
+- C++20 compatible compiler (MSVC 2022, GCC 11+, Clang 15+)
 - Git (for submodules)
 
-## Quick Start
+## Building with Examples
 
 ```bash
 # Clone with submodules
@@ -15,7 +17,7 @@ cd laya
 
 # Configure and build
 cmake -B build
-cmake --build build --config Debug
+cmake --build build --config Debug # or Release
 
 # Run the example
 build/examples/Debug/hello_laya.exe  # Windows
@@ -29,7 +31,6 @@ build/examples/hello_laya            # Linux/macOS
 # Choose SDL3 integration method
 cmake -B build -DLAYA_SDL_METHOD=submodule  # Default
 cmake -B build -DLAYA_SDL_METHOD=system     # System-installed SDL3
-cmake -B build -DLAYA_SDL_METHOD=vcpkg      # vcpkg package manager
 
 # Disable extensions (enabled by default)
 cmake -B build -DLAYA_USE_SDL_IMAGE=OFF -DLAYA_USE_SDL_TTF=OFF

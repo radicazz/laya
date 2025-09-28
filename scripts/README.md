@@ -33,3 +33,12 @@ act --n            # list jobs, don’t run
 ```
 
 ## unix-health-check.sh
+
+A comprehensive health check script for Unix-like systems. It verifies the presence and versions of essential development tools and libraries, ensuring your environment is correctly set up for building and running the project.
+
+```bash
+./scripts/unix_health_checks.sh
+
+# To automatically install missing dependencies (requires sudo)
+./scripts/unix_health_checks.sh --install-missing
+```
