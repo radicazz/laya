@@ -1,6 +1,7 @@
 ### Project Specific ###
 private/
 build/
+.vscode/
 
 # Created by https://www.toptal.com/developers/gitignore/api/c++,cmake,visualstudio,visualstudiocode,windows,linux,macos,clion
 # Edit at https://www.toptal.com/developers/gitignore?templates=c++,cmake,visualstudio,visualstudiocode,windows,linux,macos,clion

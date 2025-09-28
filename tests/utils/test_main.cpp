@@ -3,15 +3,15 @@
 
 // Global test configuration
 namespace {
-    struct GlobalTestSetup {
-        GlobalTestSetup() {
-            // Global test setup if needed
-        }
+struct global_test_context {
+    global_test_context() {
+        // Global test setup if needed
+    }
 
-        ~GlobalTestSetup() {
-            // Global test cleanup if needed
-        }
-    };
+    ~global_test_context() {
+        // Global test cleanup if needed
+    }
+};
 
-    GlobalTestSetup g_test_setup;
+global_test_context g_test_setup;
 }  // namespace

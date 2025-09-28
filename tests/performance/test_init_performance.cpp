@@ -1,7 +1,8 @@
-#include <doctest/doctest.h>
-#include <laya/init.hpp>
 #include <chrono>
 #include <vector>
+
+#include <doctest/doctest.h>
+#include <laya/laya.hpp>
 
 TEST_SUITE("performance") {
     TEST_CASE("init/quit performance benchmark") {
@@ -12,8 +13,8 @@ TEST_SUITE("performance") {
         for (int i = 0; i < iterations; ++i) {
             auto start = std::chrono::high_resolution_clock::now();
 
-            laya::init();
-            laya::quit();
+            laya::create(laya::subsystem::video);
+            laya::destroy();
 
             auto end = std::chrono::high_resolution_clock::now();
             auto duration = std::chrono::duration<double, std::milli>(end - start);

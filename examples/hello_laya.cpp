@@ -1,14 +1,15 @@
-#include <laya/init.hpp>
 #include <iostream>
+
+#include <laya/laya.hpp>
 
 int main() {
     try {
         std::cout << "Initializing laya..." << std::endl;
-        laya::init();
+        laya::create(laya::subsystem::video);
         std::cout << "laya initialized successfully!" << std::endl;
 
         std::cout << "Shutting down laya..." << std::endl;
-        laya::quit();
+        laya::destroy();
         std::cout << "laya shut down successfully!" << std::endl;
 
         return 0;
