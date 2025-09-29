@@ -1,18 +1,20 @@
 # Quick Start
 
-Laya is a C++20 game framework that simplifies game development by providing a high-level API built on top of SDL3. This guide will help you integrate Laya into your CMake-based project.
+Welcome to the quick start guide for integrating the Laya library into your C++ project. This will cover the basics of adding Laya as a dependency, configuring it, and using it in your application.
 
-## Option 1: Git Submodule (Recommended)
+## Option 1: Git Submodule
 
 Add the repositiory as a git submodule:
 
 ```bash
+cd your_project_root
+
 # Assuming your project uses `external/` for dependencies
 git submodule add https://github.com/radicazz/laya.git external/laya
 git submodule update --init --recursive
 ```
 
-Then, update your `CMakeLists.txt` to include Laya:
+Then, update your `CMakeLists.txt` to include, build and link against Laya:
 
 ```cmake
 # CMakeLists.txt
