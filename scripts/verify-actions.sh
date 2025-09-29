@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-#===============================================================================
-# File: actions.sh
+#============================================================================elif [[ -x "$REPO_ROOT/bin/docker" ]]; then
 # Description: Local 'act' / Docker sanity check helper for the laya project.
 # - Verifies 'act' is available on PATH or in ./bin/act
 # - Verifies Docker is installed and the current user can access the daemon
@@ -29,9 +28,9 @@ opinionated installs. Output uses icons: ✓ = ok, ✗ = missing, ⚠ = warning.
 EOF
 }
 
-# basic arg parsing
+# Basic argument parsing
 INSTALL_MISSING=0
-while [ $# -gt 0 ]; do
+while [[ $# -gt 0 ]]; do
     case "$1" in
         -h|--help)
             usage
@@ -57,13 +56,13 @@ ACT_PATH=""
 # Prefer system act, fallback to repository-local bin/act or .bin/act
 if command -v act >/dev/null 2>&1; then
     ACT_PATH="$(command -v act)"
-elif [ -x "$REPO_ROOT/bin/act" ]; then
+elif [[ -x "$REPO_ROOT/bin/act" ]]; then
     ACT_PATH="$REPO_ROOT/bin/act"
-elif [ -x "$REPO_ROOT/.bin/act" ]; then
+elif [[ -x "$REPO_ROOT/.bin/act" ]]; then
     ACT_PATH="$REPO_ROOT/.bin/act"
 fi
 
-if [ -n "$ACT_PATH" ]; then
+if [[ -n "$ACT_PATH" ]]; then
     ACT_VER="$($ACT_PATH --version 2>/dev/null | head -n1 || true)"
     printf "✓ act: available -> %s %s\n" "$ACT_PATH" "$ACT_VER"
 else
@@ -75,7 +74,7 @@ Recommended install options:
   - Or download a release binary and place it at ./bin/act (repo-local use).
   - On Windows, download the release and run via WSL.
 ACT_HINT
-    if [ $INSTALL_MISSING -eq 1 ]; then
+    if [[ $INSTALL_MISSING -eq 1 ]]; then
         echo "Attempting to install 'act' (developer convenience)..."
         if command -v brew >/dev/null 2>&1; then
             brew install act || echo "brew install act failed"
@@ -116,7 +115,7 @@ Possible fixes:
   - Start docker on Linux: sudo systemctl start docker
   - Check socket permissions: ls -l /var/run/docker.sock
 DOCK_HINT
-        if [ $INSTALL_MISSING -eq 1 ]; then
+        if [[ $INSTALL_MISSING -eq 1 ]]; then
             echo "Attempting to add user to 'docker' group (requires sudo)..."
             if command -v sudo >/dev/null 2>&1; then
                 sudo usermod -aG docker "$USER" || echo "usermod failed"
@@ -134,7 +133,7 @@ Recommended install options:
   - Official docs: https://docs.docker.com/get-docker/
   - Windows: Install Docker Desktop and enable WSL 2 integration
 DOCK_INSTALL
-    if [ $INSTALL_MISSING -eq 1 ]; then
+    if [[ $INSTALL_MISSING -eq 1 ]]; then
         echo "Attempting to install Docker (developer convenience)..."
         if command -v apt-get >/dev/null 2>&1 && command -v sudo >/dev/null 2>&1; then
             sudo apt-get update && sudo apt-get install -y --no-install-recommends docker.io || echo "apt install docker.io failed"

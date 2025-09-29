@@ -1,0 +1,17 @@
+# tools/pyproject.toml
+# Easily manage development dependencies using `uv`
+# https://pypi.org/project/uv/
+
+[project]
+name = "laya-pytools"
+version = "0.1.0"
+description = "Development tools for the laya project"
+requires-python = ">=3.11"
+
+# Group dependencies for uv package manager.
+# Use 'uv sync --group <group>' to install specific groups
+# Use 'uv sync --all-groups' to install all groups.
+[dependency-groups]
+dev = ["pre-commit>=3.5.0"]
+format = ["clang-format==17.*"]
+lint = ["clang-tidy==17.*"]
