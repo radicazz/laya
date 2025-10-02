@@ -1,8 +1,8 @@
+#
+# https://clang.llvm.org/extra/clang-tidy/
+#
+
 ---
-
-# clang-tidy configuration for laya
-
-# Modern C++20 SDL3 wrapper
 
 Checks: >
   -*,
@@ -52,50 +52,49 @@ Checks: >
   -readability-uppercase-literal-suffix
 
 CheckOptions:
-
-- key: readability-identifier-naming.NamespaceCase
+  - key: readability-identifier-naming.NamespaceCase
     value: lower_case
-- key: readability-identifier-naming.ClassCase
+  - key: readability-identifier-naming.ClassCase
     value: lower_case
-- key: readability-identifier-naming.StructCase
+  - key: readability-identifier-naming.StructCase
     value: lower_case
-- key: readability-identifier-naming.TemplateParameterCase
+  - key: readability-identifier-naming.TemplateParameterCase
     value: CamelCase
-- key: readability-identifier-naming.FunctionCase
+  - key: readability-identifier-naming.FunctionCase
     value: lower_case
-- key: readability-identifier-naming.VariableCase
+  - key: readability-identifier-naming.VariableCase
     value: lower_case
-- key: readability-identifier-naming.ClassMemberCase
+  - key: readability-identifier-naming.ClassMemberCase
     value: lower_case
-- key: readability-identifier-naming.ClassMemberPrefix
+  - key: readability-identifier-naming.ClassMemberPrefix
     value: m_
-- key: readability-identifier-naming.PrivateMemberPrefix
+  - key: readability-identifier-naming.PrivateMemberPrefix
     value: m_
-- key: readability-identifier-naming.ProtectedMemberPrefix
+  - key: readability-identifier-naming.ProtectedMemberPrefix
     value: m_
-- key: readability-identifier-naming.EnumConstantCase
+  - key: readability-identifier-naming.EnumConstantCase
     value: lower_case
-- key: readability-identifier-naming.ConstexprVariableCase
+  - key: readability-identifier-naming.ConstexprVariableCase
     value: lower_case
-- key: readability-identifier-naming.GlobalConstantCase
+  - key: readability-identifier-naming.GlobalConstantCase
     value: lower_case
-- key: readability-identifier-naming.MemberConstantCase
+  - key: readability-identifier-naming.MemberConstantCase
     value: lower_case
-- key: readability-identifier-naming.StaticConstantCase
+  - key: readability-identifier-naming.StaticConstantCase
     value: lower_case
-- key: cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
+  - key: cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
     value: true
-- key: modernize-loop-convert.MaxCopySize
+  - key: modernize-loop-convert.MaxCopySize
     value: 16
-- key: modernize-loop-convert.MinConfidence
+  - key: modernize-loop-convert.MinConfidence
     value: reasonable
-- key: modernize-loop-convert.NamingStyle
+  - key: modernize-loop-convert.NamingStyle
     value: lower_case
-- key: modernize-pass-by-value.IncludeStyle
+  - key: modernize-pass-by-value.IncludeStyle
     value: llvm
-- key: modernize-replace-auto-ptr.IncludeStyle
+  - key: modernize-replace-auto-ptr.IncludeStyle
     value: llvm
-- key: modernize-use-nullptr.NullMacros
+  - key: modernize-use-nullptr.NullMacros
     value: 'NULL'
 
 WarningsAsErrors: ''

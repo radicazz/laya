@@ -11,7 +11,7 @@ Various tools to help with development, formatting, testing and more within the 
 
 ## Requirments
 
-- Python 3.11 or higher
+- Python 3.12 or higher
 - [uv](https://uv.readthedocs.io/en/latest/) (Python package manager)
 
 ## Setup
@@ -23,7 +23,5 @@ The following scripts will install and configure the necessary tools for your en
 .\scripts\Verify-Tools.ps1 -InstallMissing
 ```
 
-```bash
-# Linux / macOS (Bash)
-./scripts/verify-tools.sh --install-missing
-```
+> [!NOTE]
+> Unix (Linux/macOS) currently does not have a script to verify and install missing tools but it is planned.
