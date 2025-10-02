@@ -66,7 +66,7 @@ jobs:
       working-directory: build
       run: |
         # Test that examples can be executed (they should exit quickly)
-        $process = Start-Process -FilePath ".\examples\${{ matrix.build_type }}\hello_laya.exe" -PassThru -ErrorAction SilentlyContinue
+        $process = Start-Process -FilePath ".\examples\events\${{ matrix.build_type }}\laya_examples_events.exe" -PassThru -ErrorAction SilentlyContinue
         if ($process) {
           $process | Wait-Process -Timeout 10 -ErrorAction SilentlyContinue
           if (!$process.HasExited) {

@@ -22,8 +22,8 @@ jobs:
         build_type: [Debug, Release]
         include:
           - compiler: gcc
-            cc: gcc-11
-            cxx: g++-11
+            cc: gcc-13
+            cxx: g++-13
           - compiler: clang
             cc: clang-18
             cxx: clang++-18
@@ -95,10 +95,12 @@ jobs:
         sleep 3
         echo "DISPLAY=:99" >> $GITHUB_ENV
 
-    - name: Install Ubuntu GCC 11
+    - name: Install Ubuntu GCC 13
       if: matrix.compiler == 'gcc'
       run: |
-        sudo apt-get install -y gcc-11 g++-11
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+        sudo apt-get update
+        sudo apt-get install -y gcc-13 g++-13
 
     - name: Install Ubuntu Clang 18
       if: matrix.compiler == 'clang'
@@ -153,7 +155,7 @@ jobs:
       working-directory: build
       run: |
         # Test that examples can be executed (they should exit quickly)
-        timeout 10s ./examples/hello_laya || true
+        timeout 10s ./examples/events/laya_examples_events || true
 
     - name: Run benchmarks
       if: matrix.build_type == 'Release'
@@ -171,8 +173,8 @@ jobs:
       run: |
         sudo apt-get install -y lcov
         # Use the same GCC version for gcov as used for building
-        lcov --gcov-tool gcov-11 --capture --directory build --output-file coverage.info
-        lcov --gcov-tool gcov-11 --remove coverage.info '/usr/*' '*/external/*' '*/tests/*' --output-file coverage.info
+        lcov --gcov-tool gcov-13 --capture --directory build --output-file coverage.info
+        lcov --gcov-tool gcov-13 --remove coverage.info '/usr/*' '*/external/*' '*/tests/*' --output-file coverage.info
         lcov --list coverage.info
 
     - name: Upload coverage to Codecov
