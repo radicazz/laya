@@ -23,7 +23,7 @@ struct quit_event {
 
 /// Window events (resize, move, close, etc.)
 struct window_event {
-    enum class type : uint8_t {
+    enum class type {
         shown,         ///< Window has been shown
         hidden,        ///< Window has been hidden
         exposed,       ///< Window has been exposed and should be redrawn
@@ -55,7 +55,7 @@ struct window_event {
 
 /// Keyboard events
 struct key_event {
-    enum class state : uint8_t { pressed, released };
+    enum class state { pressed, released };
 
     uint32_t timestamp;
     uint32_t window_id;
@@ -96,7 +96,7 @@ struct mouse_motion_event {
 
 /// Mouse button events
 struct mouse_button_event {
-    enum class state : uint8_t { pressed, released };
+    enum class state { pressed, released };
     enum class button : uint8_t { left = 1, middle = 2, right = 3, x1 = 4, x2 = 5 };
 
     uint32_t timestamp;
@@ -134,7 +134,7 @@ struct joystick_axis_event {
 
 /// Joystick button events
 struct joystick_button_event {
-    enum class state : uint8_t { pressed, released };
+    enum class state { pressed, released };
 
     uint32_t timestamp;
     uint32_t which;      ///< The joystick instance id

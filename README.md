@@ -77,21 +77,22 @@ With *laya*, making a cross-platform window application with a 2D renderer is as
 #include <laya/laya.hpp>
 
 int main() {
-    // Handles initialization and cleanup of SDL subsystems with RAII.
+    // Initialize SDL and free when out of scope
     laya::context ctx(laya::subsystem::video);
+    laya::window window("Hello, Laya!", {800, 600});
 
-    laya::window app({800, 600});
+    bool running = true;
 
-    while (app.run()) {
-        while (app.events.poll()) {
-            if (app.events.type == laya::events::quit) {
-                app.quit();
+    while (running) {
+        for (const auto& event : laya::poll_events()) {
+            // Destroy the window when requested
+            if (auto* quit = std::get_if<laya::quit_event>(&event)) {
+                running = false;
+                break;
             }
         }
 
-        app.render_clear(laya::colors::black);
-        app.render_add_text("Hello, Laya!", 350, 280, laya::colors::white);
-        app.render_present();
+        // Render here
     }
 }
 ```

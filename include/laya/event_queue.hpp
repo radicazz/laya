@@ -17,27 +17,17 @@ public:
     event_range();
 
     /// Iterator support for range-based for loops
-    auto begin() const {
-        return m_events.begin();
-    }
-    auto end() const {
-        return m_events.end();
-    }
+    auto begin() const;
+    auto end() const;
 
     /// Check if any events are available
-    bool empty() const {
-        return m_events.empty();
-    }
+    bool empty() const;
 
     /// Get the number of events
-    size_t size() const {
-        return m_events.size();
-    }
+    size_t size() const;
 
     /// Access events by index
-    const event& operator[](size_t index) const {
-        return m_events[index];
-    }
+    const event& operator[](size_t index) const;
 
 private:
     std::vector<event> m_events;
@@ -67,5 +57,29 @@ void flush_events();
 /// @param min_type Minimum event type to flush (SDL event type)
 /// @param max_type Maximum event type to flush (SDL event type)
 void flush_events(uint32_t min_type, uint32_t max_type);
+
+// ============================================================================
+// event_range inline implementations
+// ============================================================================
+
+inline auto event_range::begin() const {
+    return m_events.begin();
+}
+
+inline auto event_range::end() const {
+    return m_events.end();
+}
+
+inline bool event_range::empty() const {
+    return m_events.empty();
+}
+
+inline size_t event_range::size() const {
+    return m_events.size();
+}
+
+inline const event& event_range::operator[](size_t index) const {
+    return m_events[index];
+}
 
 }  // namespace laya
