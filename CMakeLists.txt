@@ -6,23 +6,40 @@ project(laya
     LANGUAGES CXX
 )
 
-# Check if this is the main project
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-    set(LAYA_IS_ROOT_PROJECT ON)
-else()
-    set(LAYA_IS_ROOT_PROJECT OFF)
-endif()
+# Determine if laya is being consumed as a submodule or as a root project
+if(PROJECT_IS_TOP_LEVEL)
+    # Prohibit in-source builds
+    if(CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
+        message(FATAL_ERROR "In-source builds are not allowed. Please create a build directory and run CMake from there.")
+    endif()
 
-# Prevent in-source builds when this is the root project
-if(LAYA_IS_ROOT_PROJECT AND CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
-    message(FATAL_ERROR "In-source builds are not allowed. Please create a build directory and run CMake from there.")
+    # Enable compile commands for tools like clang-tidy
+    # Only supported by Ninja and Makefile generators
+    if(NOT CMAKE_GENERATOR MATCHES "Visual Studio" AND NOT CMAKE_GENERATOR MATCHES "Xcode")
+        set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+        # Copy compile_commands.json to root directory after generation
+        add_custom_target(copy_compile_commands ALL
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${CMAKE_BINARY_DIR}/compile_commands.json
+            ${CMAKE_SOURCE_DIR}/compile_commands.json
+            COMMENT "Copying compile_commands.json to project root"
+            VERBATIM
+        )
+    else()
+        message(WARNING
+            "Generator '${CMAKE_GENERATOR}' does not support CMAKE_EXPORT_COMPILE_COMMANDS. "
+            "compile_commands.json will not be generated. "
+            "Consider using Ninja or Makefile generators for clang-tidy support."
+        )
+    endif()
 endif()
 
 # Project options - conditional defaults based on whether this is the root project
-option(LAYA_BUILD_ALL "Build all optional components (tests, examples)" ${LAYA_IS_ROOT_PROJECT})
+option(LAYA_BUILD_ALL "Build all optional components (tests, examples)" ${PROJECT_IS_TOP_LEVEL})
 option(LAYA_BUILD_TESTS "Build laya tests" ${LAYA_BUILD_ALL})
 option(LAYA_BUILD_EXAMPLES "Build laya examples" ${LAYA_BUILD_ALL})
-option(LAYA_INSTALL "Generate install target" ${LAYA_IS_ROOT_PROJECT})
+option(LAYA_INSTALL "Generate install target" ${PROJECT_IS_TOP_LEVEL})
 
 # SDL3 consumption options
 option(LAYA_SDL_TARGETS_PROVIDED "Skip SDL setup - parent project provides SDL targets" OFF)

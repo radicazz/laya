@@ -1,8 +1,9 @@
----
 #
 # https://clang.llvm.org/docs/ClangFormatStyleOptions.html
 #
+
 ---
+
 Language: Cpp
 
 # Google it.
@@ -30,4 +31,3 @@ IndentExternBlock: Indent # Indent, NoIndent
 SortIncludes: Never # Never, CaseSensitive, CaseInsensitive
 
 AccessModifierOffset: -4 # integer
----

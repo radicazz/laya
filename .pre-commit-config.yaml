@@ -21,8 +21,11 @@ repos:
     hooks:
       - id: clang-tidy
         name: clang-tidy
-        entry: clang-tidy
+        entry: uv run --project tools clang-tidy
         language: system
         types_or: [c++, c]
         args: [--config-file=.clang-tidy]
         require_serial: true
+        # Only runs with: pre-commit run --hook-stage manual clang-tidy
+        # TODO: Figure out best way to integrate this with CI/CD
+        stages: [manual]

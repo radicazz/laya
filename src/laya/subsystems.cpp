@@ -1,41 +1,17 @@
-#include <laya/laya.hpp>
-
-#include <stdexcept>
-#include <string>  // For clang builds.
-#include <string_view>
-
+#include <laya/subsystems.hpp>
+#include <laya/errors.hpp>
 #include <SDL3/SDL.h>
-
-namespace laya::sdl {
-
-std::string_view platform_view() {
-    return SDL_GetPlatform();
-}
-
-std::string_view error_view() {
-    return SDL_GetError();
-}
-
-void error_clear() noexcept {
-    SDL_ClearError();
-}
-
-void subsystem_create(subsystem system) {
-    if (SDL_InitSubSystem(enum_underlying_type(system)) == false) {
-        throw std::runtime_error("Failed to initialize subsystem: " + std::string(sdl::error_view()));
-    }
-}
-
-void subsystem_destroy(subsystem system) noexcept {
-    SDL_QuitSubSystem(enum_underlying_type(system));
-}
-
-}  // namespace laya::sdl
 
 namespace laya {
 
-void create(subsystem system) {
-    sdl::subsystem_create(system);
+void create_subsystem(subsystem system) {
+    if (SDL_InitSubSystem(underlying_type(system)) == false) {
+        throw error::from_sdl();
+    }
+}
+
+void destroy_subsystem(subsystem system) noexcept {
+    SDL_QuitSubSystem(underlying_type(system));
 }
 
 void destroy() noexcept {
@@ -43,7 +19,7 @@ void destroy() noexcept {
 }
 
 context::context(subsystem system) {
-    create(system);
+    create_subsystem(system);
 }
 
 context::~context() noexcept {

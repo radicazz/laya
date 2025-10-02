@@ -24,23 +24,23 @@ concept bitmask_enum =
     scoped_enum<T> && std::is_same_v<std::underlying_type_t<T>, unsigned> && enable_bitmask_operators_v<T>;
 
 [[nodiscard]] constexpr auto operator|(bitmask_enum auto lhs, bitmask_enum auto rhs) noexcept -> decltype(lhs) {
-    using U = std::underlying_type_t<decltype(lhs)>;
-    return static_cast<decltype(lhs)>(static_cast<U>(lhs) | static_cast<U>(rhs));
+    using underlying = std::underlying_type_t<decltype(lhs)>;
+    return static_cast<decltype(lhs)>(static_cast<underlying>(lhs) | static_cast<underlying>(rhs));
 }
 
 [[nodiscard]] constexpr auto operator&(bitmask_enum auto lhs, bitmask_enum auto rhs) noexcept -> decltype(lhs) {
-    using U = std::underlying_type_t<decltype(lhs)>;
-    return static_cast<decltype(lhs)>(static_cast<U>(lhs) & static_cast<U>(rhs));
+    using underlying = std::underlying_type_t<decltype(lhs)>;
+    return static_cast<decltype(lhs)>(static_cast<underlying>(lhs) & static_cast<underlying>(rhs));
 }
 
 [[nodiscard]] constexpr auto operator^(bitmask_enum auto lhs, bitmask_enum auto rhs) noexcept -> decltype(lhs) {
-    using U = std::underlying_type_t<decltype(lhs)>;
-    return static_cast<decltype(lhs)>(static_cast<U>(lhs) ^ static_cast<U>(rhs));
+    using underlying = std::underlying_type_t<decltype(lhs)>;
+    return static_cast<decltype(lhs)>(static_cast<underlying>(lhs) ^ static_cast<underlying>(rhs));
 }
 
 [[nodiscard]] constexpr auto operator~(bitmask_enum auto e) noexcept -> decltype(e) {
-    using U = std::underlying_type_t<decltype(e)>;
-    return static_cast<decltype(e)>(~static_cast<U>(e));
+    using underlying = std::underlying_type_t<decltype(e)>;
+    return static_cast<decltype(e)>(~static_cast<underlying>(e));
 }
 
 constexpr auto operator|=(bitmask_enum auto& lhs, decltype(lhs) rhs) noexcept -> decltype(lhs) {
@@ -59,8 +59,8 @@ constexpr auto operator^=(bitmask_enum auto& lhs, decltype(lhs) rhs) noexcept ->
 }
 
 template <class E>
-[[nodiscard]] constexpr auto enum_underlying_type(E e) noexcept -> std::underlying_type_t<E> {
-    static_assert(std::is_enum_v<E>, "to_underlying requires an enumeration type");
+    requires std::is_enum_v<E>
+[[nodiscard]] constexpr auto underlying_type(E e) noexcept -> std::underlying_type_t<E> {
     return static_cast<std::underlying_type_t<E>>(e);
 }
 
