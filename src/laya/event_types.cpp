@@ -1,8 +1,9 @@
-#include <laya/event_types.hpp>
-#include <SDL3/SDL.h>
 #include <stdexcept>
 #include <cstring>
 #include <string>
+
+#include <laya/events/event_types.hpp>
+#include <SDL3/SDL.h>
 
 namespace laya {
 

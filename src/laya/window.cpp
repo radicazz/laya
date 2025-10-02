@@ -1,7 +1,8 @@
-#include <laya/window/window.hpp>
+#include <utility>
+
+#include <laya/windows/window.hpp>
 #include <laya/errors.hpp>
 #include <SDL3/SDL.h>
-#include <utility>
 
 namespace laya {
 

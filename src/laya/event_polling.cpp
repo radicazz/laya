@@ -1,4 +1,4 @@
-#include <laya/event_polling.hpp>
+#include <laya/events/event_polling.hpp>
 #include <SDL3/SDL.h>
 
 namespace laya {

@@ -4,10 +4,11 @@
 
 #pragma once
 
-#include "event_types.hpp"
 #include <vector>
 #include <optional>
 #include <chrono>
+
+#include "event_types.hpp"
 
 namespace laya {
 

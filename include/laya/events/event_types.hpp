@@ -6,9 +6,10 @@
 
 #pragma once
 
-#include "window/window_id.hpp"
 #include <variant>
 #include <cstdint>
+
+#include "../windows/window_id.hpp"
 
 // Forward declarations for SDL types
 struct SDL_KeyboardEvent;

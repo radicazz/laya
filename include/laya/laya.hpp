@@ -5,7 +5,7 @@
 #pragma once
 
 #include "subsystems.hpp"
-#include "window/window.hpp"
-#include "event_types.hpp"
-#include "event_polling.hpp"
+#include "windows/window.hpp"
+#include "events/event_types.hpp"
+#include "events/event_polling.hpp"
 #include "errors.hpp"
