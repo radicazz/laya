@@ -5,13 +5,24 @@
 #include <thread>
 #include <chrono>
 
+namespace {
+
+constexpr int ci_iterations = 5;  // Number of iterations in CI mode
+
+}  // anonymous namespace
+
 /// @brief Demonstrates event_view - zero-allocation lazy event polling
 /// Events are polled one at a time, no memory allocation
-void demo_event_view(laya::window& window) {
+void demo_event_view(laya::window& window, bool ci_mode) {
     std::cout << "\n=== event_view Demo (Zero-Allocation) ===" << std::endl;
-    std::cout << "Click the window or press a key (ESC to continue)..." << std::endl;
+
+    if (!ci_mode) {
+        std::cout << "Click the window or press a key (ESC to continue)..." << std::endl;
+    }
 
     bool running = true;
+    int iterations = 0;
+
     while (running) {
         // poll_events_view() returns an event_view - lazy iteration, no allocations
         for (const auto& event : laya::poll_events_view()) {
@@ -36,17 +47,31 @@ void demo_event_view(laya::window& window) {
                 event);
         }
 
+        // CI mode: exit after fixed iterations
+        if (ci_mode) {
+            ++iterations;
+            if (iterations >= ci_iterations) {
+                std::cout << "CI mode: completed " << iterations << " iterations" << std::endl;
+                running = false;
+            }
+        }
+
         std::this_thread::sleep_for(std::chrono::milliseconds(16));
     }
 }
 
 /// @brief Demonstrates event_range - events stored in vector for multi-pass iteration
 /// All events are polled into memory, can be iterated multiple times
-void demo_event_range(laya::window& window) {
+void demo_event_range(laya::window& window, bool ci_mode) {
     std::cout << "\n=== event_range Demo (Stored Events) ===" << std::endl;
-    std::cout << "Click the window or press keys (ESC to exit)..." << std::endl;
+
+    if (!ci_mode) {
+        std::cout << "Click the window or press keys (ESC to exit)..." << std::endl;
+    }
 
     bool running = true;
+    int iterations = 0;
+
     while (running) {
         // poll_events_range() returns an event_range - all events stored in vector
         auto events = laya::poll_events_range();
@@ -86,12 +111,28 @@ void demo_event_range(laya::window& window) {
             }
         }
 
+        // CI mode: exit after fixed iterations
+        if (ci_mode) {
+            ++iterations;
+            if (iterations >= ci_iterations) {
+                std::cout << "CI mode: completed " << iterations << " iterations" << std::endl;
+                running = false;
+            }
+        }
+
         std::this_thread::sleep_for(std::chrono::milliseconds(16));
     }
 }
 
-int main() {
+int main(int argc, char* argv[]) {
     try {
+        // Check for CI mode flag
+        bool ci_mode = false;
+        if (argc > 1 && std::string(argv[1]) == "--ci") {
+            ci_mode = true;
+            std::cout << "Running in CI mode (non-interactive)" << std::endl;
+        }
+
         // Initialize SDL with video subsystem (events are implied)
         laya::context ctx(laya::subsystem::video);
         laya::window window("Event Polling Demo", {800, 600}, laya::window_flags::resizable);
@@ -102,10 +143,10 @@ int main() {
         std::cout << "2. event_range - Stored events, multi-pass iteration" << std::endl;
 
         // Demo 1: event_view (zero-allocation lazy polling)
-        demo_event_view(window);
+        demo_event_view(window, ci_mode);
 
         // Demo 2: event_range (stored events for multi-pass)
-        demo_event_range(window);
+        demo_event_range(window, ci_mode);
 
         std::cout << "\nDemo completed successfully!" << std::endl;
         return 0;

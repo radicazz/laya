@@ -65,14 +65,8 @@ jobs:
     - name: Run examples
       working-directory: build
       run: |
-        # Test that examples can be executed (they should exit quickly)
-        $process = Start-Process -FilePath ".\examples\events\${{ matrix.build_type }}\laya_examples_events.exe" -PassThru -ErrorAction SilentlyContinue
-        if ($process) {
-          $process | Wait-Process -Timeout 10 -ErrorAction SilentlyContinue
-          if (!$process.HasExited) {
-            $process | Stop-Process -Force
-          }
-        }
+        # Run examples in CI mode (non-interactive, fixed iterations)
+        .\examples\events\${{ matrix.build_type }}\laya_examples_events.exe --ci
 
     - name: Run benchmarks
       if: matrix.build_type == 'Release'

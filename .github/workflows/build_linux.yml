@@ -154,8 +154,8 @@ jobs:
     - name: Run examples
       working-directory: build
       run: |
-        # Test that examples can be executed (they should exit quickly)
-        timeout 10s ./examples/events/laya_examples_events || true
+        # Run examples in CI mode (non-interactive)
+        ./examples/events/laya_examples_events --ci
 
     - name: Run benchmarks
       if: matrix.build_type == 'Release'
