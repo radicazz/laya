@@ -21,9 +21,9 @@ endif()
 
 # Test configuration
 set(LAYA_TEST_SOURCES
-    utils/test_main.cpp
-    unit/test_init.cpp
-    integration/test_sdl_integration.cpp
+    test_main.cpp
+    unit/test_subsystems.cpp
+    performance/test_subsystem_performance.cpp
 )
 
 # Create test executable
@@ -65,14 +65,13 @@ else()
 
     # Add individual test suites
     add_test(NAME laya_unit_tests COMMAND laya_tests --test-suite=unit)
-    add_test(NAME laya_integration_tests COMMAND laya_tests --test-suite=integration)
 endif()
 
 # Performance tests (separate executable for benchmarking)
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set(LAYA_BENCHMARK_SOURCES
         utils/test_main.cpp
-        performance/test_init_performance.cpp
+        performance/test_subsystem_performance.cpp
     )
 
     add_executable(laya_benchmarks ${LAYA_BENCHMARK_SOURCES})

@@ -1,17 +1,16 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest/doctest.h>
 
-// Global test configuration
-namespace {
+//
+// Currently unused, but can be helpful for global setup/teardown if needed in the future
+//
+
 struct global_test_context {
     global_test_context() {
-        // Global test setup if needed
     }
 
     ~global_test_context() {
-        // Global test cleanup if needed
     }
 };
 
 global_test_context g_test_setup;
-}  // namespace
