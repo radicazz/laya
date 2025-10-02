@@ -50,7 +50,6 @@ jobs:
           -DLAYA_BUILD_TESTS=ON `
           -DLAYA_BUILD_EXAMPLES=ON `
           -DLAYA_SDL_METHOD=submodule `
-          -DLAYA_BUILD_SHARED=ON `
           -DCMAKE_CXX_STANDARD=20 `
           -DCMAKE_CXX_STANDARD_REQUIRED=ON
 
@@ -82,11 +81,11 @@ jobs:
         # Create benchmark results directory
         New-Item -ItemType Directory -Force -Path ..\benchmark-results
 
-        # Run performance tests and capture output
+        # Run benchmark tests and capture output
         $benchmarkExe = ".\tests\${{ matrix.build_type }}\laya_benchmarks.exe"
         if (Test-Path $benchmarkExe) {
-          & $benchmarkExe --test-suite=performance --reporters=json --out=..\benchmark-results\benchmarks-msvc.json
-          & $benchmarkExe --test-suite=performance --reporters=console > ..\benchmark-results\benchmarks-msvc.txt
+          & $benchmarkExe --test-suite=benchmark --reporters=json --out=..\benchmark-results\benchmarks-msvc.json
+          & $benchmarkExe --test-suite=benchmark --reporters=console > ..\benchmark-results\benchmarks-msvc.txt
         }
 
     - name: Upload build artifacts

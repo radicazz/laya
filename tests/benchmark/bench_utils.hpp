@@ -1,5 +1,5 @@
-/// @file perf_utils.hpp
-/// @brief Performance testing utilities
+/// @file bench_utils.hpp
+/// @brief Benchmark testing utilities
 /// @date 2025-10-01
 
 #pragma once
@@ -8,7 +8,7 @@
 #include <format>
 #include <string>
 
-namespace laya_perf {
+namespace laya_bench {
 
 /// @brief Format microseconds as "0.123456s::123.456ms"
 /// @param microseconds Time in microseconds
@@ -19,4 +19,4 @@ inline std::string format_time(double microseconds) {
     return std::format("{:.6f}s::{:.3f}ms", seconds, milliseconds);
 }
 
-}  // namespace laya_perf
+}  // namespace laya_bench

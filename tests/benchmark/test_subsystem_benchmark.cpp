@@ -1,5 +1,5 @@
-/// @file test_subsystem_performance.cpp
-/// @brief Performance benchmarks comparing laya vs raw SDL3
+/// @file test_subsystem_benchmark.cpp
+/// @brief Benchmark tests comparing laya vs raw SDL3
 /// @date 2025-10-01
 
 #include <chrono>
@@ -10,9 +10,9 @@
 #include <SDL3/SDL.h>
 #include <laya/laya.hpp>
 
-#include "perf_utils.hpp"
+#include "bench_utils.hpp"
 
-TEST_SUITE("performance") {
+TEST_SUITE("benchmark") {
     TEST_CASE("laya subsystem initialization benchmark") {
         constexpr int iterations = 100;
 
@@ -29,7 +29,7 @@ TEST_SUITE("performance") {
         }
         double laya_avg = laya_total_time / iterations;
 
-        MESSAGE("laya average: ", laya_perf::format_time(laya_avg));
+        MESSAGE("laya average: ", laya_bench::format_time(laya_avg));
     }
 
     TEST_CASE("SDL3 subsystem initialization benchmark") {
@@ -49,6 +49,6 @@ TEST_SUITE("performance") {
         }
         double sdl_avg = sdl_total_time / iterations;
 
-        MESSAGE("SDL3 average: ", laya_perf::format_time(sdl_avg));
+        MESSAGE("SDL3 average: ", laya_bench::format_time(sdl_avg));
     }
-}  // TEST_SUITE("performance")
+}  // TEST_SUITE("benchmark")

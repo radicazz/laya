@@ -25,8 +25,8 @@ jobs:
             cc: gcc-11
             cxx: g++-11
           - compiler: clang
-            cc: clang-15
-            cxx: clang++-15
+            cc: clang-18
+            cxx: clang++-18
 
     steps:
     - name: Checkout code
@@ -100,10 +100,14 @@ jobs:
       run: |
         sudo apt-get install -y gcc-11 g++-11
 
-    - name: Install Ubuntu Clang 15
+    - name: Install Ubuntu Clang 18
       if: matrix.compiler == 'clang'
       run: |
-        sudo apt-get install -y clang-15 clang++-15 libc++-15-dev libc++abi-15-dev
+        # Add LLVM repository for Clang 18
+        wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+        sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-18 main"
+        sudo apt-get update
+        sudo apt-get install -y clang-18 clang++-18 libc++-18-dev libc++abi-18-dev
 
     - name: Set up environment variables
       run: |
@@ -118,7 +122,6 @@ jobs:
           -DLAYA_BUILD_TESTS=ON
           -DLAYA_BUILD_EXAMPLES=ON
           -DLAYA_SDL_METHOD=submodule
-          -DLAYA_BUILD_SHARED=ON
           -DCMAKE_CXX_STANDARD=20
           -DCMAKE_CXX_STANDARD_REQUIRED=ON
           -G "Ninja"
@@ -159,9 +162,9 @@ jobs:
         # Create benchmark results directory
         mkdir -p ../benchmark-results
 
-        # Run performance tests and capture output
-        ./tests/laya_benchmarks --test-suite=performance --reporters=json --out=../benchmark-results/benchmarks-${{ matrix.compiler }}.json || true
-        ./tests/laya_benchmarks --test-suite=performance --reporters=console > ../benchmark-results/benchmarks-${{ matrix.compiler }}.txt || true
+        # Run benchmark tests and capture output
+        ./tests/laya_benchmarks --test-suite=benchmark --reporters=json --out=../benchmark-results/benchmarks-${{ matrix.compiler }}.json || true
+        ./tests/laya_benchmarks --test-suite=benchmark --reporters=console > ../benchmark-results/benchmarks-${{ matrix.compiler }}.txt || true
 
     - name: Generate coverage report
       if: matrix.build_type == 'Debug' && matrix.compiler == 'gcc'
