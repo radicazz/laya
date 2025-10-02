@@ -56,7 +56,7 @@ event_range::event_range() {
     SDL_Event sdl_event;
     while (SDL_PollEvent(&sdl_event)) {
         try {
-            m_events.push_back(from_sdl_event(sdl_event));
+            m_events.emplace_back(from_sdl_event(sdl_event));
         } catch (const std::runtime_error&) {
             // Skip unsupported event types
             continue;

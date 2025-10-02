@@ -96,7 +96,7 @@ int main() {
         laya::context ctx(laya::subsystem::video);
         laya::window window("Event Polling Demo", {800, 600}, laya::window_flags::resizable);
 
-        std::cout << "Window created with ID: " << window.id() << std::endl;
+        std::cout << "Window created with ID: " << window.id().value() << std::endl;
         std::cout << "This demo shows two event polling approaches:" << std::endl;
         std::cout << "1. event_view - Zero allocation, lazy iteration" << std::endl;
         std::cout << "2. event_range - Stored events, multi-pass iteration" << std::endl;

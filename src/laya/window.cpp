@@ -1,20 +1,22 @@
-#include <laya/window.hpp>
+#include <laya/window/window.hpp>
 #include <laya/errors.hpp>
 #include <SDL3/SDL.h>
 #include <utility>
 
 namespace laya {
 
-window::window(const window_args& args) {
-    m_window =
-        SDL_CreateWindow(args.title.data(), args.size.width, args.size.height, static_cast<uint32_t>(args.flags));
+window::window(const window_args& args)
+    : m_window{SDL_CreateWindow(args.title.data(), args.size.width, args.size.height,
+                                static_cast<uint32_t>(args.flags))},
+      m_id{m_window ? window_id{SDL_GetWindowID(m_window)} : window_id{}} {
     if (!m_window) {
         throw error::from_sdl();
     }
 }
 
-window::window(std::string_view title, dimentions size, window_flags flags) {
-    m_window = SDL_CreateWindow(title.data(), size.width, size.height, static_cast<uint32_t>(flags));
+window::window(std::string_view title, dimentions size, window_flags flags)
+    : m_window{SDL_CreateWindow(title.data(), size.width, size.height, static_cast<uint32_t>(flags))},
+      m_id{m_window ? window_id{SDL_GetWindowID(m_window)} : window_id{}} {
     if (!m_window) {
         throw error::from_sdl();
     }
@@ -26,7 +28,8 @@ window::~window() noexcept {
     }
 }
 
-window::window(window&& other) noexcept : m_window(std::exchange(other.m_window, nullptr)) {
+window::window(window&& other) noexcept
+    : m_window{std::exchange(other.m_window, nullptr)}, m_id{std::exchange(other.m_id, window_id{})} {
 }
 
 window& window::operator=(window&& other) noexcept {
@@ -35,6 +38,7 @@ window& window::operator=(window&& other) noexcept {
             SDL_DestroyWindow(m_window);
         }
         m_window = std::exchange(other.m_window, nullptr);
+        m_id = std::exchange(other.m_id, window_id{});
     }
     return *this;
 }
@@ -85,10 +89,6 @@ void window::restore() {
 
 void window::raise() {
     SDL_RaiseWindow(m_window);
-}
-
-uint32_t window::id() const {
-    return SDL_GetWindowID(m_window);
 }
 
 }  // namespace laya

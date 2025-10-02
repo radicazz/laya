@@ -1,4 +1,4 @@
-#include <laya/events.hpp>
+#include <laya/event_types.hpp>
 #include <SDL3/SDL.h>
 #include <stdexcept>
 #include <cstring>
@@ -91,7 +91,7 @@ event from_sdl_event(const SDL_Event& sdl_ev) {
 
             window_event event;
             event.timestamp = sdl_ev.window.timestamp;
-            event.window_id = sdl_ev.window.windowID;
+            event.id = window_id{sdl_ev.window.windowID};
             event.event_type = event_type;
             event.data1 = sdl_ev.window.data1;
             event.data2 = sdl_ev.window.data2;
@@ -102,7 +102,7 @@ event from_sdl_event(const SDL_Event& sdl_ev) {
         case SDL_EVENT_KEY_UP: {
             key_event event;
             event.timestamp = sdl_ev.key.timestamp;
-            event.window_id = sdl_ev.key.windowID;
+            event.id = window_id{sdl_ev.key.windowID};
             event.key_state =
                 (sdl_ev.type == SDL_EVENT_KEY_DOWN) ? key_event::state::pressed : key_event::state::released;
             event.scancode = static_cast<std::uint32_t>(sdl_ev.key.scancode);
@@ -115,7 +115,7 @@ event from_sdl_event(const SDL_Event& sdl_ev) {
         case SDL_EVENT_TEXT_INPUT: {
             text_input_event event;
             event.timestamp = sdl_ev.text.timestamp;
-            event.window_id = sdl_ev.text.windowID;
+            event.id = window_id{sdl_ev.text.windowID};
             std::strncpy(event.text, sdl_ev.text.text, sizeof(event.text) - 1);
             event.text[sizeof(event.text) - 1] = '\0';
             return event;
@@ -124,7 +124,7 @@ event from_sdl_event(const SDL_Event& sdl_ev) {
         case SDL_EVENT_TEXT_EDITING: {
             text_editing_event event;
             event.timestamp = sdl_ev.edit.timestamp;
-            event.window_id = sdl_ev.edit.windowID;
+            event.id = window_id{sdl_ev.edit.windowID};
             event.start = sdl_ev.edit.start;
             event.length = sdl_ev.edit.length;
             std::strncpy(event.text, sdl_ev.edit.text, sizeof(event.text) - 1);
@@ -135,7 +135,7 @@ event from_sdl_event(const SDL_Event& sdl_ev) {
         case SDL_EVENT_MOUSE_MOTION: {
             mouse_motion_event event;
             event.timestamp = sdl_ev.motion.timestamp;
-            event.window_id = sdl_ev.motion.windowID;
+            event.id = window_id{sdl_ev.motion.windowID};
             event.which = sdl_ev.motion.which;
             event.state = sdl_ev.motion.state;
             event.x = sdl_ev.motion.x;
@@ -171,7 +171,7 @@ event from_sdl_event(const SDL_Event& sdl_ev) {
 
             mouse_button_event event;
             event.timestamp = sdl_ev.button.timestamp;
-            event.window_id = sdl_ev.button.windowID;
+            event.id = window_id{sdl_ev.button.windowID};
             event.which = sdl_ev.button.which;
             event.mouse_button = btn;
             event.button_state = (sdl_ev.type == SDL_EVENT_MOUSE_BUTTON_DOWN) ? mouse_button_event::state::pressed
@@ -185,7 +185,7 @@ event from_sdl_event(const SDL_Event& sdl_ev) {
         case SDL_EVENT_MOUSE_WHEEL: {
             mouse_wheel_event event;
             event.timestamp = sdl_ev.wheel.timestamp;
-            event.window_id = sdl_ev.wheel.windowID;
+            event.id = window_id{sdl_ev.wheel.windowID};
             event.which = sdl_ev.wheel.which;
             event.x = sdl_ev.wheel.x;
             event.y = sdl_ev.wheel.y;

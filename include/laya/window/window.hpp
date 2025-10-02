@@ -1,7 +1,9 @@
 #pragma once
 
-#include "window_flags.hpp"
 #include <string_view>
+
+#include "window_flags.hpp"
+#include "window_id.hpp"
 
 struct SDL_Window;
 
@@ -66,15 +68,25 @@ public:
     void raise();
 
     /// Get the window ID for event correlation
-    uint32_t id() const;
+    [[nodiscard]] window_id id() const noexcept;
 
-    SDL_Window* native_handle() const;
+    /// Get the native SDL window handle
+    [[nodiscard]] SDL_Window* native_handle() const noexcept;
 
 private:
     SDL_Window* m_window;
+    window_id m_id;  ///< Cache this because it never changes.
 };
 
-inline SDL_Window* window::native_handle() const {
+// ============================================================================
+// window inline implementations
+// ============================================================================
+
+inline window_id window::id() const noexcept {
+    return m_id;
+}
+
+inline SDL_Window* window::native_handle() const noexcept {
     return m_window;
 }
 

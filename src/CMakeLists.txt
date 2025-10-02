@@ -6,6 +6,6 @@ target_sources(
     laya/subsystems.cpp
     laya/errors.cpp
     laya/window.cpp
-    laya/events.cpp
+    laya/event_types.cpp
     laya/event_polling.cpp
 )

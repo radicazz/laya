@@ -76,7 +76,7 @@ endif()
 if(LAYA_TESTS_BENCHMARK)
     set(LAYA_BENCHMARK_SOURCES
         test_main.cpp
-        benchmark/test_subsystem_benchmark.cpp
+        benchmark/test_events_benchmark.cpp
     )
 
     add_executable(laya_benchmarks ${LAYA_BENCHMARK_SOURCES})

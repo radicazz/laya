@@ -1,9 +1,10 @@
 /// @file event_polling.hpp
 /// @date 2025-10-01
+/// @todo Look into not throwing exceptions during event polling.
 
 #pragma once
 
-#include "events.hpp"
+#include "event_types.hpp"
 #include <vector>
 #include <optional>
 #include <chrono>

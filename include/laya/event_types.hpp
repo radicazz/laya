@@ -1,11 +1,12 @@
-/// @file events.hpp
-/// @date 2025-10-01
+/// @file event_types.hpp
+/// @date 2025-10-02
 /// @todo - Remove repetition of `state` by extracting it outside and calling it 'input_state'
-///       - Add strong types for `window_id`, `timestamp` and add helper functions
+///       - Add strong types for `timestamp`
 ///       - variant for window_event::type that accounts for 'data1' and 'data2' meaning
 
 #pragma once
 
+#include "window/window_id.hpp"
 #include <variant>
 #include <cstdint>
 
@@ -51,7 +52,7 @@ struct window_event {
     };
 
     std::uint32_t timestamp;
-    std::uint32_t window_id;
+    window_id id;
     type event_type;
     std::int32_t data1;
     std::int32_t data2;
@@ -62,7 +63,7 @@ struct key_event {
     enum class state { pressed, released };
 
     std::uint32_t timestamp;
-    std::uint32_t window_id;
+    window_id id;
     state key_state;
     std::uint32_t scancode;  ///< SDL scancode
     std::uint32_t keycode;   ///< SDL keycode
@@ -73,14 +74,14 @@ struct key_event {
 /// Text input events
 struct text_input_event {
     std::uint32_t timestamp;
-    std::uint32_t window_id;
+    window_id id;
     char text[32];  ///< The input text in UTF-8 encoding
 };
 
 /// Text editing events (IME)
 struct text_editing_event {
     std::uint32_t timestamp;
-    std::uint32_t window_id;
+    window_id id;
     char text[32];        ///< The editing text in UTF-8 encoding
     std::int32_t start;   ///< The start cursor of selected editing text
     std::int32_t length;  ///< The length of selected editing text
@@ -89,7 +90,7 @@ struct text_editing_event {
 /// Mouse motion events
 struct mouse_motion_event {
     std::uint32_t timestamp;
-    std::uint32_t window_id;
+    window_id id;
     std::uint32_t which;  ///< The mouse instance id
     std::uint32_t state;  ///< The current button state
     std::int32_t x;       ///< X coordinate, relative to window
@@ -104,7 +105,7 @@ struct mouse_button_event {
     enum class button : std::uint8_t { left = 1, middle = 2, right = 3, x1 = 4, x2 = 5 };
 
     std::uint32_t timestamp;
-    std::uint32_t window_id;
+    window_id id;
     std::uint32_t which;  ///< The mouse instance id
     button mouse_button;  ///< The mouse button index
     state button_state;   ///< Pressed or released
@@ -116,7 +117,7 @@ struct mouse_button_event {
 /// Mouse wheel events
 struct mouse_wheel_event {
     std::uint32_t timestamp;
-    std::uint32_t window_id;
+    window_id id;
     std::uint32_t which;  ///< The mouse instance id
     std::int32_t x;       ///< The amount scrolled horizontally, positive to the right and negative to the left
     std::int32_t y;       ///< The amount scrolled vertically, positive away from the user and negative toward the user

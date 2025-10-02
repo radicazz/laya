@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "bitmask.hpp"
+#include "../bitmask.hpp"
 
 namespace laya {
 
