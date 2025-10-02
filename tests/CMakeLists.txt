@@ -28,6 +28,8 @@ if(LAYA_TESTS_UNIT)
     set(LAYA_UNIT_TEST_SOURCES
         test_main.cpp
         unit/test_subsystems.cpp
+        unit/test_event_view.cpp
+        unit/test_event_range.cpp
     )
 
     # Create unit test executable

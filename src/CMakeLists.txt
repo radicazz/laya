@@ -7,5 +7,5 @@ target_sources(
     laya/errors.cpp
     laya/window.cpp
     laya/events.cpp
-    laya/event_queue.cpp
+    laya/event_polling.cpp
 )

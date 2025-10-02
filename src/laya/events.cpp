@@ -105,8 +105,8 @@ event from_sdl_event(const SDL_Event& sdl_ev) {
             event.window_id = sdl_ev.key.windowID;
             event.key_state =
                 (sdl_ev.type == SDL_EVENT_KEY_DOWN) ? key_event::state::pressed : key_event::state::released;
-            event.scancode = static_cast<uint32_t>(sdl_ev.key.scancode);
-            event.keycode = static_cast<uint32_t>(sdl_ev.key.key);
+            event.scancode = static_cast<std::uint32_t>(sdl_ev.key.scancode);
+            event.keycode = static_cast<std::uint32_t>(sdl_ev.key.key);
             event.mod = sdl_ev.key.mod;
             event.repeat = sdl_ev.key.repeat != 0;
             return event;

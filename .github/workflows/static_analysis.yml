@@ -69,10 +69,10 @@ jobs:
           -DCMAKE_CXX_STANDARD_REQUIRED=ON
 
         # Run clang-tidy on headers in include/ and source files in src/
-        find include -name "*.hpp" -o -name "*.h" | \
+        find include -type f -name "*.hpp" | \
         xargs clang-tidy-18 -p build --config-file=.clang-tidy > clang-tidy-report.txt 2>&1 || true
 
-        find src -name "*.cpp" | \
+        find src -type f -name "*.cpp" | \
         xargs clang-tidy-18 -p build --config-file=.clang-tidy >> clang-tidy-report.txt 2>&1 || true
 
     - name: Run cppcheck
