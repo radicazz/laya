@@ -1,43 +1,58 @@
-<#
+<#!
 .SYNOPSIS
-    Run pre-commit hooks locally, optionally creating a disposable test commit.
+    Runs pre-commit hooks using the repository's uv-managed tools environment.
 
 .DESCRIPTION
-    Uses the tools project's pre-commit installation to execute hooks locally.
-    By default it runs `uv run --project tools pre-commit run` which will run hooks
-    against staged files. Use `-All` to run against all files. Use `-TestCommit` to
-    create an empty temporary commit to exercise commit-msg or commit-time hooks,
-    then clean it up.
+    Executes pre-commit against staged files by default. Supports running against all
+    files or within a disposable test commit to trigger commit-time hooks.
 
 .PARAMETER All
-    When specified, runs hooks across all files (equivalent to `pre-commit run --all-files`).
+    Runs hooks across all files (pre-commit run --all-files).
 
 .PARAMETER TestCommit
-    When specified, creates an empty test commit (no changes) to trigger commit-time hooks
-    that only run during commit, then resets the repository state.
+    Creates an empty throwaway commit to exercise commit-time hooks, then resets the repo.
+
+.PARAMETER Help
+    Displays usage details.
 
 .EXAMPLE
-    .\Run-Pre-Commit.ps1 -All
+    .\Run-PreCommit.ps1
 
 .EXAMPLE
-    .\Run-Pre-Commit.ps1 -TestCommit
+    .\Run-PreCommit.ps1 -All
 #>
 
 [CmdletBinding()]
 param(
     [switch]$All,
-    [switch]$TestCommit
+    [switch]$TestCommit,
+    [switch]$Help
 )
+
+if ($Help) {
+    Get-Help -Detailed $MyInvocation.MyCommand.Path
+    return
+}
 
 Set-StrictMode -Version Latest
 
-## Resolve repository root and dot-source print helpers
 $repoRoot = (Resolve-Path (Join-Path -Path $PSScriptRoot -ChildPath '..\..')).Path
-$colorsPath = Join-Path -Path $repoRoot -ChildPath "scripts\PrintColor.ps1"
+$colorsPath = Join-Path -Path $repoRoot -ChildPath 'scripts\utils\Print-Color.ps1'
 if (Test-Path $colorsPath) { . $colorsPath }
+if (-not (Get-Command -Name Write-Info -ErrorAction SilentlyContinue)) {
+    function Write-Info { param([string]$Message) Write-Host "[INFO] $Message" }
+}
+if (-not (Get-Command -Name Write-Success -ErrorAction SilentlyContinue)) {
+    function Write-Success { param([string]$Message) Write-Host "[SUCCESS] $Message" }
+}
+if (-not (Get-Command -Name Write-Warn -ErrorAction SilentlyContinue)) {
+    function Write-Warn { param([string]$Message) Write-Warning $Message }
+}
+if (-not (Get-Command -Name Write-ErrorMsg -ErrorAction SilentlyContinue)) {
+    function Write-ErrorMsg { param([string]$Message) Write-Error $Message }
+}
 
 $toolsDir = Join-Path -Path $repoRoot -ChildPath 'tools'
-
 if (-not (Test-Path $toolsDir)) {
     Write-ErrorMsg "tools directory not found: $toolsDir"
     exit 1
@@ -50,7 +65,6 @@ try {
     }
     elseif ($TestCommit) {
         Write-Info "Creating disposable test commit to trigger commit-time hooks..."
-        # Create an empty commit (no-verify is intentionally NOT used)
         git commit --allow-empty -m "[test] pre-commit hook run" 2>$null
         $commitExit = $LASTEXITCODE
         if ($commitExit -ne 0) {
@@ -74,6 +88,12 @@ try {
         Write-Info "Running pre-commit for staged files..."
         & uv run --project $toolsDir pre-commit run
     }
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-ErrorMsg "pre-commit run failed with exit code $LASTEXITCODE"
+        exit $LASTEXITCODE
+    }
+
     Write-Success "pre-commit run completed successfully."
 }
 catch {
