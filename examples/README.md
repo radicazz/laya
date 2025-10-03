@@ -1,148 +1,147 @@
-# laya Examples
+# Laya Examples
 
-This directory contains example applications demonstrating various features of the laya library.
+This directory contains example programs demonstrating various features of the laya library.
 
 ## Running Examples
 
 ### Interactive Mode (Default)
 
-Run examples normally for interactive demonstrations:
+By default, examples run in interactive mode where they wait for user input:
 
 ```bash
-# Build examples
-cmake --build build --target laya_examples_events
+# Linux/macOS
+./examples/events/laya_examples_events
 
-# Run interactively
-./build/examples/events/laya_examples_events
+# Windows
+.\examples\events\Release\laya_examples_events.exe
 ```
-
-Examples will wait for user input (keyboard, mouse, window events) and can be closed by:
-
-- Pressing **ESC**
-- Clicking the window close button
-- Sending a quit signal
 
 ### CI Mode (Non-Interactive)
 
-For automated testing in CI/CD environments where no user interaction is possible, use the `--ci` flag:
+For automated testing and CI environments, use the `--ci` flag to run a fixed number of iterations and exit automatically:
 
 ```bash
-./build/examples/events/laya_examples_events --ci
+# Linux/macOS
+./examples/events/laya_examples_events --ci
+
+# Windows
+.\examples\events\Release\laya_examples_events.exe --ci
 ```
 
-**CI Mode Behavior:**
+CI mode:
 
-- Runs for a fixed number of iterations (typically 5)
-- Automatically exits without waiting for input
-- Prints completion status
-- Suitable for automated testing pipelines
+- Runs a predetermined number of iterations (typically 5)
+- Exits automatically without waiting for user input
+- Prints "Running in CI mode (non-interactive)" at startup
+- Reports iteration count on completion
 
 ## Available Examples
 
-### `events/`
+### events/
 
-Demonstrates event polling mechanisms:
+Demonstrates event polling mechanisms and type-safe event handling.
 
-- **event_view**: Zero-allocation lazy event polling
-- **event_range**: Stored events with multi-pass iteration
+**Features shown:**
 
-**Features demonstrated:**
+- `event_view` - Zero-allocation lazy event polling
+- `event_range` - Multi-pass event iteration with stored events
+- Type-safe window events with `std::variant`
+- Helper functions for accessing window event data (`get_position`, `get_size`, `get_display`)
+- Pattern matching with `std::visit`
 
-- Type-safe event handling with `std::visit`
-- Window creation and management
-- Keyboard and mouse event processing
-- Two different event polling strategies
+**Window Event Types:**
 
-**Interactive controls:**
+- Position events (`moved`) - Access with `get_position(event)`
+- Size events (`resized`, `size_changed`) - Access with `get_size(event)`
+- Display events (`display_changed`) - Access with `get_display(event)`
+- State events (`shown`, `hidden`, `minimized`, `maximized`, etc.) - No additional data
 
-- ESC: Exit demo
-- Mouse clicks: Logged to console
-- Key presses: Logged to console
+**Type-Safe Event Data:**
+
+The window event system uses `std::variant` to provide compile-time type safety:
+
+```cpp
+// Old (unsafe):
+if (win_event->event_type == window_event::type::resized) {
+    int width = win_event->data1;   // Magic field
+    int height = win_event->data2;  // What do these mean?
+}
+
+// New (type-safe):
+if (auto size = laya::get_size(*win_event)) {
+    std::cout << "Resized to " << size->width << "x" << size->height;
+}
+
+// Or with std::visit for pattern matching:
+std::visit([](const auto& data) {
+    using T = std::decay_t<decltype(data)>;
+    if constexpr (std::is_same_v<T, laya::window_event_data_size>) {
+        std::cout << "Size: " << data.width << "x" << data.height;
+    }
+}, win_event->data);
+```
 
 ## Adding New Examples
 
-When creating new examples that use event loops or wait for user input:
+When creating a new example:
 
-1. **Accept command-line arguments:**
+1. **Accept command-line arguments**: Examples should support `--ci` flag
+2. **Implement CI mode**: Run fixed iterations and exit automatically
+3. **Document the example**: Add to this README with feature descriptions
+4. **Update workflows**: Ensure CI workflows run the example with `--ci`
 
-   ```cpp
-   int main(int argc, char* argv[]) {
-       bool ci_mode = (argc > 1 && std::string(argv[1]) == "--ci");
-       // ...
-   }
-   ```
+Example template:
 
-2. **Implement timeout/iteration limit for CI mode:**
+```cpp
+int main(int argc, char* argv[]) {
+    bool ci_mode = false;
+    if (argc > 1 && std::string(argv[1]) == "--ci") {
+        ci_mode = true;
+        std::cout << "Running in CI mode (non-interactive)" << std::endl;
+    }
 
-   ```cpp
-   int iterations = 0;
-   constexpr int ci_max_iterations = 5;
+    // ... setup code ...
 
-   while (running) {
-       // Normal event loop logic
+    constexpr int ci_iterations = 5;
+    int iterations = 0;
+    bool running = true;
 
-       if (ci_mode) {
-           if (++iterations >= ci_max_iterations) {
-               std::cout << "CI mode: completed" << std::endl;
-               break;
-           }
-       }
-   }
-   ```
+    while (running) {
+        // ... main loop ...
 
-3. **Update CI workflows** in `.github/workflows/` to run with `--ci` flag:
+        if (ci_mode) {
+            ++iterations;
+            if (iterations >= ci_iterations) {
+                std::cout << "CI mode: completed " << iterations << " iterations" << std::endl;
+                running = false;
+            }
+        }
+    }
 
-   ```yaml
-   - name: Run examples
-     run: |
-       ./build/examples/your_example/your_example --ci
-   ```
+    return 0;
+}
+```
 
 ## Philosophy
 
-Examples should:
+Examples demonstrate idiomatic usage of laya features:
 
-- ✅ Be **self-contained** and easy to understand
-- ✅ Demonstrate **one concept** clearly
-- ✅ Include **comments** explaining key concepts
-- ✅ Work in **both interactive and CI modes**
-- ✅ Follow the project's **coding standards**
-- ✅ Be **minimal** - show the feature, not everything
-
-## Building
-
-Examples are built as part of the normal build process:
-
-```bash
-mkdir build && cd build
-cmake ..
-cmake --build . --config Release
-```
-
-Individual example targets:
-
-- `laya_examples_events` - Event polling demonstration
+- Modern C++20 patterns
+- Zero-cost abstractions
+- Type safety with strong types
+- STL-like conventions
+- Clear separation of concerns
 
 ## Troubleshooting
 
 **Example hangs in CI:**
 
-- Ensure you're running with `--ci` flag
-- Check that the example implements CI mode properly
-- Verify SDL can initialize in headless mode
+- Ensure you're passing the `--ci` flag
+- Verify the example properly checks `ci_mode` in its main loop
+- Check that iteration counter increments correctly
 
 **Window doesn't appear:**
 
-- Check that SDL3 video subsystem initialized correctly
-- On Linux, ensure X11 or Wayland is available
-- In CI, window won't be visible (this is expected)
-
-**Events not working:**
-
-- Interactive mode: Ensure window has focus
-- CI mode: Examples generate synthetic events or run for fixed iterations
-- Check SDL initialization succeeded
-
-## License
-
-All examples are provided under the same license as the laya library. See [LICENSE.txt](../LICENSE.txt) for details.
+- Some CI environments are headless and don't support window creation
+- Use `Xvfb` or similar virtual display for headless Linux
+- Examples should still function and exit cleanly even without a visible window

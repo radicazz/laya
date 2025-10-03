@@ -1,20 +1,14 @@
 # Tools
 
-Various tools to help with development, formatting, testing and more within the project.
+Various tools to help with development, code formatting, testing and much more within the *laya* project. All of these tools are optional but highly recommended to ensure a smooth development experience.
 
-## Features
-
-- Code formatting helpers for C++ (Python, CMake, YAML, Markdown, etc. to come)
-- Code linting helpers for C++ (Python, CMake, YAML, Markdown, etc. to come)
-- Pre-commit hooks to enforce code quality and consistency using `pre-commit`
-- Easy setup and management of the tools environment using `uv` package manager
-
-## Requirments
-
-- Python 3.12 or higher
-- [uv](https://uv.readthedocs.io/en/latest/) (Python package manager)
+> [!IMPORTANT]
+> The contents of this folder are not meant to be executed directly. Rather visit [`scripts/`](../scripts/) to learn about the various helper scripts that will call these tools correctly.
 
 ## Setup
+
+- These tools require Python 3.12 or newer.
+- The [uv](https://uv.readthedocs.io/en/latest/) tool is used for dependency management.
 
 The following scripts will install and configure the necessary tools for your environment. Call them from the project root directory.
 

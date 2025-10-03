@@ -1,8 +1,7 @@
 /// @file event_types.hpp
 /// @date 2025-10-02
 /// @todo - Remove repetition of `state` by extracting it outside and calling it 'input_state'
-///       - Add strong types for `timestamp`
-///       - variant for window_event::type that accounts for 'data1' and 'data2' meaning
+///       - Add strong types for `timestamp` with healpers and API (might as well add all timing features)
 
 #pragma once
 
@@ -10,6 +9,7 @@
 #include <cstdint>
 
 #include "../windows/window_id.hpp"
+#include "event_window.hpp"
 
 // Forward declarations for SDL types
 struct SDL_KeyboardEvent;
@@ -27,37 +27,7 @@ struct quit_event {
     std::uint32_t timestamp;
 };
 
-/// Window events (resize, move, close, etc.)
-struct window_event {
-    enum class type {
-        shown,         ///< Window has been shown
-        hidden,        ///< Window has been hidden
-        exposed,       ///< Window has been exposed and should be redrawn
-        moved,         ///< Window has been moved to data1, data2
-        resized,       ///< Window has been resized to data1 x data2
-        size_changed,  ///< The window size has changed, either as a result of an API call or through the system or user
-                       ///< changing the window size
-        minimized,     ///< Window has been minimized
-        maximized,     ///< Window has been maximized
-        restored,      ///< Window has been restored to normal size and position
-        enter,         ///< Window has gained mouse focus
-        leave,         ///< Window has lost mouse focus
-        focus_gained,  ///< Window has gained keyboard focus
-        focus_lost,    ///< Window has lost keyboard focus
-        close,         ///< The window manager requests that the window be closed
-        take_focus,    ///< Window is being offered a focus (should SetWindowInputFocus() on itself or a subwindow, or
-                       ///< ignore)
-        hit_test,      ///< Window had a hit test that wasn't SDL_HITTEST_NORMAL
-        icc_profile_changed,  ///< The ICC profile of the window's display has changed
-        display_changed       ///< Window has been moved to display data1
-    };
-
-    std::uint32_t timestamp;
-    window_id id;
-    type event_type;
-    std::int32_t data1;
-    std::int32_t data2;
-};
+// window_event is now defined in event_window.hpp
 
 /// Keyboard events
 struct key_event {

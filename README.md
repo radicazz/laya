@@ -67,11 +67,11 @@
 
 > Pronounced *"lay-uh"*
 
-The primary goal is providing an elegant, type-safe and intuitive interface for cross-platform, immediate-mode, desktop app development. It must feel natural and expressive for any developer, while always leveraging the full hardware-accelerated power and flexibility of the underlying SDL library.
+A modern library targetting C++20 and SDL3 for cross-platform, immediate-mode, desktop application development. With *laya*, you can create windows, handle input events, render 2D graphics and manage resources in a type-safe and efficient manner while leveraging the full power of the underlying SDL library.
 
 ## Example
 
-With *laya*, making a cross-platform window application with a 2D renderer is as simple as:
+Creating a window and handling events with *laya* is simple and intuitive:
 
 ```cpp
 #include <laya/laya.hpp>
@@ -99,7 +99,7 @@ int main() {
 
 ## Installation
 
-The easiest way to include *laya* in your project is as a git submodule. From your project root, run:
+Including *laya* in your project is meant to be easy.
 
 ```bash
 cd your_project_root

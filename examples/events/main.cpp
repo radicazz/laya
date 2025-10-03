@@ -9,6 +9,74 @@ namespace {
 
 constexpr int ci_iterations = 5;  // Number of iterations in CI mode
 
+/// Helper to format window event data for display
+std::string format_window_event_data(const laya::window_event& event) {
+    std::string result;
+
+    // Use std::visit for type-safe pattern matching
+    std::visit(
+        [&](const auto& data) {
+            using T = std::decay_t<decltype(data)>;
+
+            if constexpr (std::is_same_v<T, laya::window_event_data_position>) {
+                result = " (position: " + std::to_string(data.x) + ", " + std::to_string(data.y) + ")";
+            } else if constexpr (std::is_same_v<T, laya::window_event_data_size>) {
+                result = " (size: " + std::to_string(data.width) + "x" + std::to_string(data.height) + ")";
+            } else if constexpr (std::is_same_v<T, laya::window_event_data_display>) {
+                result = " (display: " + std::to_string(data.display_index) + ")";
+            } else if constexpr (std::is_same_v<T, laya::window_event_data_none>) {
+                result = "";
+            }
+        },
+        event.data);
+
+    return result;
+}
+
+/// Helper to get window event type name
+const char* get_event_type_name(laya::window_event_type type) {
+    switch (type) {
+        case laya::window_event_type::shown:
+            return "shown";
+        case laya::window_event_type::hidden:
+            return "hidden";
+        case laya::window_event_type::exposed:
+            return "exposed";
+        case laya::window_event_type::moved:
+            return "moved";
+        case laya::window_event_type::resized:
+            return "resized";
+        case laya::window_event_type::size_changed:
+            return "size_changed";
+        case laya::window_event_type::minimized:
+            return "minimized";
+        case laya::window_event_type::maximized:
+            return "maximized";
+        case laya::window_event_type::restored:
+            return "restored";
+        case laya::window_event_type::enter:
+            return "mouse_enter";
+        case laya::window_event_type::leave:
+            return "mouse_leave";
+        case laya::window_event_type::focus_gained:
+            return "focus_gained";
+        case laya::window_event_type::focus_lost:
+            return "focus_lost";
+        case laya::window_event_type::close:
+            return "close";
+        case laya::window_event_type::take_focus:
+            return "take_focus";
+        case laya::window_event_type::hit_test:
+            return "hit_test";
+        case laya::window_event_type::icc_profile_changed:
+            return "icc_profile_changed";
+        case laya::window_event_type::display_changed:
+            return "display_changed";
+        default:
+            return "unknown";
+    }
+}
+
 }  // anonymous namespace
 
 /// @brief Demonstrates event_view - zero-allocation lazy event polling
@@ -104,7 +172,17 @@ void demo_event_range(laya::window& window, bool ci_mode) {
                         } else if constexpr (std::is_same_v<T, laya::mouse_motion_event>) {
                             std::cout << "  - Mouse motion: (" << e.x << ", " << e.y << ")" << std::endl;
                         } else if constexpr (std::is_same_v<T, laya::window_event>) {
-                            std::cout << "  - Window event: type=" << static_cast<int>(e.event_type) << std::endl;
+                            std::cout << "  - Window event: " << get_event_type_name(e.event_type)
+                                      << format_window_event_data(e) << std::endl;
+
+                            // Alternative: demonstrate helper functions
+                            if (auto pos = laya::get_position(e)) {
+                                std::cout << "    [Helper] Position: (" << pos->x << ", " << pos->y << ")" << std::endl;
+                            } else if (auto size = laya::get_size(e)) {
+                                std::cout << "    [Helper] Size: " << size->width << "x" << size->height << std::endl;
+                            } else if (auto display = laya::get_display(e)) {
+                                std::cout << "    [Helper] Display: " << display->display_index << std::endl;
+                            }
                         }
                     },
                     event);

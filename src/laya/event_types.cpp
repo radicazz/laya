@@ -7,6 +7,74 @@
 
 namespace laya {
 
+namespace {
+
+/// Convert SDL window event type and data to laya types
+/// @param sdl_type The SDL event type
+/// @param data1 First data field from SDL
+/// @param data2 Second data field from SDL
+/// @return Pair of window_event_type and window_event_data
+std::pair<window_event_type, window_event_data> convert_window_event_data(std::uint32_t sdl_type, std::int32_t data1,
+                                                                          std::int32_t data2) {
+    switch (sdl_type) {
+        case SDL_EVENT_WINDOW_SHOWN:
+            return {window_event_type::shown, window_event_data_none{}};
+
+        case SDL_EVENT_WINDOW_HIDDEN:
+            return {window_event_type::hidden, window_event_data_none{}};
+
+        case SDL_EVENT_WINDOW_EXPOSED:
+            return {window_event_type::exposed, window_event_data_none{}};
+
+        case SDL_EVENT_WINDOW_MOVED:
+            return {window_event_type::moved, window_event_data_position{data1, data2}};
+
+        case SDL_EVENT_WINDOW_RESIZED:
+            return {window_event_type::resized, window_event_data_size{data1, data2}};
+
+        case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+            return {window_event_type::size_changed, window_event_data_size{data1, data2}};
+
+        case SDL_EVENT_WINDOW_MINIMIZED:
+            return {window_event_type::minimized, window_event_data_none{}};
+
+        case SDL_EVENT_WINDOW_MAXIMIZED:
+            return {window_event_type::maximized, window_event_data_none{}};
+
+        case SDL_EVENT_WINDOW_RESTORED:
+            return {window_event_type::restored, window_event_data_none{}};
+
+        case SDL_EVENT_WINDOW_MOUSE_ENTER:
+            return {window_event_type::enter, window_event_data_none{}};
+
+        case SDL_EVENT_WINDOW_MOUSE_LEAVE:
+            return {window_event_type::leave, window_event_data_none{}};
+
+        case SDL_EVENT_WINDOW_FOCUS_GAINED:
+            return {window_event_type::focus_gained, window_event_data_none{}};
+
+        case SDL_EVENT_WINDOW_FOCUS_LOST:
+            return {window_event_type::focus_lost, window_event_data_none{}};
+
+        case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+            return {window_event_type::close, window_event_data_none{}};
+
+        case SDL_EVENT_WINDOW_HIT_TEST:
+            return {window_event_type::hit_test, window_event_data_none{}};
+
+        case SDL_EVENT_WINDOW_ICCPROF_CHANGED:
+            return {window_event_type::icc_profile_changed, window_event_data_none{}};
+
+        case SDL_EVENT_WINDOW_DISPLAY_CHANGED:
+            return {window_event_type::display_changed, window_event_data_display{data1}};
+
+        default:
+            throw std::runtime_error("Unknown SDL window event type: " + std::to_string(sdl_type));
+    }
+}
+
+}  // anonymous namespace
+
 event from_sdl_event(const SDL_Event& sdl_ev) {
     switch (sdl_ev.type) {
         case SDL_EVENT_QUIT: {
@@ -32,70 +100,14 @@ event from_sdl_event(const SDL_Event& sdl_ev) {
         case SDL_EVENT_WINDOW_HIT_TEST:
         case SDL_EVENT_WINDOW_ICCPROF_CHANGED:
         case SDL_EVENT_WINDOW_DISPLAY_CHANGED: {
-            window_event::type event_type;
-            switch (sdl_ev.type) {
-                case SDL_EVENT_WINDOW_SHOWN:
-                    event_type = window_event::type::shown;
-                    break;
-                case SDL_EVENT_WINDOW_HIDDEN:
-                    event_type = window_event::type::hidden;
-                    break;
-                case SDL_EVENT_WINDOW_EXPOSED:
-                    event_type = window_event::type::exposed;
-                    break;
-                case SDL_EVENT_WINDOW_MOVED:
-                    event_type = window_event::type::moved;
-                    break;
-                case SDL_EVENT_WINDOW_RESIZED:
-                    event_type = window_event::type::resized;
-                    break;
-                case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
-                    event_type = window_event::type::size_changed;
-                    break;
-                case SDL_EVENT_WINDOW_MINIMIZED:
-                    event_type = window_event::type::minimized;
-                    break;
-                case SDL_EVENT_WINDOW_MAXIMIZED:
-                    event_type = window_event::type::maximized;
-                    break;
-                case SDL_EVENT_WINDOW_RESTORED:
-                    event_type = window_event::type::restored;
-                    break;
-                case SDL_EVENT_WINDOW_MOUSE_ENTER:
-                    event_type = window_event::type::enter;
-                    break;
-                case SDL_EVENT_WINDOW_MOUSE_LEAVE:
-                    event_type = window_event::type::leave;
-                    break;
-                case SDL_EVENT_WINDOW_FOCUS_GAINED:
-                    event_type = window_event::type::focus_gained;
-                    break;
-                case SDL_EVENT_WINDOW_FOCUS_LOST:
-                    event_type = window_event::type::focus_lost;
-                    break;
-                case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
-                    event_type = window_event::type::close;
-                    break;
-                case SDL_EVENT_WINDOW_HIT_TEST:
-                    event_type = window_event::type::hit_test;
-                    break;
-                case SDL_EVENT_WINDOW_ICCPROF_CHANGED:
-                    event_type = window_event::type::icc_profile_changed;
-                    break;
-                case SDL_EVENT_WINDOW_DISPLAY_CHANGED:
-                    event_type = window_event::type::display_changed;
-                    break;
-                default:
-                    event_type = window_event::type::exposed;
-                    break;
-            }
-
             window_event event;
             event.timestamp = sdl_ev.window.timestamp;
             event.id = window_id{sdl_ev.window.windowID};
-            event.event_type = event_type;
-            event.data1 = sdl_ev.window.data1;
-            event.data2 = sdl_ev.window.data2;
+
+            auto [type, data] = convert_window_event_data(sdl_ev.type, sdl_ev.window.data1, sdl_ev.window.data2);
+
+            event.event_type = type;
+            event.data = data;
             return event;
         }
 
