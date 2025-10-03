@@ -137,7 +137,8 @@ jobs:
         # Use libc++ for Clang to avoid libstdc++ C++20 chrono issues
         if [[ "${{ matrix.compiler }}" == "clang" ]]; then
           cmake_args+=(-DCMAKE_CXX_FLAGS="-stdlib=libc++")
-          cmake_args+=(-DCMAKE_EXE_LINKER_FLAGS="-stdlib=libc++ -lc++abi")
+          cmake_args+=(-DCMAKE_EXE_LINKER_FLAGS="-stdlib=libc++ -lc++ -lc++abi")
+          cmake_args+=(-DCMAKE_SHARED_LINKER_FLAGS="-stdlib=libc++ -lc++ -lc++abi")
         fi
 
         cmake "${cmake_args[@]}"
