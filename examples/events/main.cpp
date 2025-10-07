@@ -1,9 +1,10 @@
-#include <laya/laya.hpp>
 #include <iostream>
 #include <variant>
 #include <string>
 #include <thread>
 #include <chrono>
+
+#include <laya/laya.hpp>
 
 namespace {
 

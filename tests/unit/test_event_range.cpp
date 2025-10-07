@@ -1,8 +1,8 @@
 /// @file test_event_range.cpp
 /// @brief Unit tests for event_range implementation
 
-#include <laya/laya.hpp>
 #include <doctest/doctest.h>
+#include <laya/laya.hpp>
 
 TEST_CASE("event_range basic functionality") {
     laya::context ctx(laya::subsystem::video);

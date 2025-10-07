@@ -8,4 +8,5 @@ target_sources(
     laya/window.cpp
     laya/event_types.cpp
     laya/event_polling.cpp
+    laya/renderer.cpp
 )

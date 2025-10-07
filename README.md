@@ -65,13 +65,11 @@
 
 # Overview
 
-> Pronounced *"lay-uh"*
-
 A modern library targetting C++20 and SDL3 for cross-platform, immediate-mode, desktop application development. With *laya*, you can create windows, handle input events, render 2D graphics and manage resources in a type-safe and efficient manner while leveraging the full power of the underlying SDL library.
 
 ## Example
 
-Creating a window and handling events with *laya* is simple and intuitive:
+Creating a window, handling events and rendering looks like this:
 
 ```cpp
 #include <laya/laya.hpp>
@@ -79,23 +77,34 @@ Creating a window and handling events with *laya* is simple and intuitive:
 int main() {
     // Initialize SDL and free when out of scope
     laya::context ctx(laya::subsystem::video);
+
     laya::window window("Hello, Laya!", {800, 600});
+    laya::renderer renderer(window);
 
     bool running = true;
 
     while (running) {
         for (const auto& event : laya::poll_events_view()) {
             // Destroy the window when requested
-            if (auto* quit = std::get_if<laya::quit_event>(&event)) {
+            if (std::holds_alternative<laya::quit_event>(event)) {
                 running = false;
                 break;
             }
         }
 
-        // Render here
+        renderer.set_draw_color(laya::colors::black);
+        renderer.clear();
+
+        // Draw a rectangle
+        renderer.set_draw_color(laya::colors::white);
+        renderer.fill_rect({100, 100, 200, 150});
+
+        renderer.present();
     }
 }
 ```
+
+The above example uses modern C++ features such as RAII, `std::variant` and range-based for loops to provide a clean and safe interface for SDL - no raw pointers or manual memory management required.
 
 ## Installation
 

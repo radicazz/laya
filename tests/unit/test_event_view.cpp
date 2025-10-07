@@ -1,8 +1,8 @@
 /// @file test_event_view.cpp
 /// @brief Unit tests for event_view implementation
 
-#include <laya/laya.hpp>
 #include <doctest/doctest.h>
+#include <laya/laya.hpp>
 
 TEST_CASE("event_view basic functionality") {
     laya::context ctx(laya::subsystem::video);

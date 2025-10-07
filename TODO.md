@@ -4,12 +4,13 @@ Just a list of things to do all over the project.
 
 ## Features
 
-- Add basic 2D rendering API (shapes, textures, text) to complete `v0.1.0`
 - SDL logger wrapping with format support.
 
 ## Maintenance
 
 - Add tests for `bitmask_enum` generic class.
+- Update `create_release.yml` workflow to publish package correctly.
+- Make test naming consistent in cmake files.
 
 ## Extras
 

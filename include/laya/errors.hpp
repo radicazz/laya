@@ -1,5 +1,6 @@
 /// @file errors.hpp
 /// @date 2025-10-01
+/// @todo - Add `sdl_error` sub-class instead of static method?
 
 #pragma once
 
@@ -20,18 +21,18 @@ public:
 
     /// Construct error with formatted message
     template <typename... Args>
-    explicit error(std::format_string<Args...> fmt, Args&&... args)
+    error(std::format_string<Args...> fmt, Args&&... args)
         : std::runtime_error(std::format(fmt, std::forward<Args>(args)...)) {
     }
 
     /// Construct error with message and source location
-    explicit error(std::string_view message, const std::source_location& location = std::source_location::current())
+    error(std::string_view message, const std::source_location& location = std::source_location::current())
         : std::runtime_error(format_with_location(message, location)) {
     }
 
     /// Construct error with formatted message and source location
     template <typename... Args>
-    explicit error(const std::source_location& location, std::format_string<Args...> fmt, Args&&... args)
+    error(const std::source_location& location, std::format_string<Args...> fmt, Args&&... args)
         : std::runtime_error(format_with_location(std::format(fmt, std::forward<Args>(args)...), location)) {
     }
 
