@@ -106,6 +106,9 @@ jobs:
         VERSION_NO_V=$(echo "${{ needs.create-release.outputs.version }}" | sed 's/^v//')
         ARCHIVE_NAME="laya-${VERSION_NO_V}-source"
 
+        # Create temporary directory for archive output
+        mkdir -p /tmp/release-artifacts
+
         # Create clean source archive excluding unnecessary files
         tar --exclude='.git' \
             --exclude='.github' \
@@ -120,11 +123,12 @@ jobs:
             --exclude='*.swp' \
             --exclude='*.swo' \
             --exclude='*~' \
-            --exclude='*.tar.gz' \
-            --exclude='*.sha256' \
-            -czf "${ARCHIVE_NAME}.tar.gz" \
+            -czf "/tmp/release-artifacts/${ARCHIVE_NAME}.tar.gz" \
             --transform "s,^,${ARCHIVE_NAME}/," \
             .
+
+        # Move archive to current directory
+        mv "/tmp/release-artifacts/${ARCHIVE_NAME}.tar.gz" .
 
     - name: Create checksums
       run: |
