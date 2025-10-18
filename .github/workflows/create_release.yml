@@ -11,6 +11,9 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: write
+
 env:
   ACT: 'false'
 
@@ -32,10 +35,21 @@ jobs:
       id: get_version
       run: |
         if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-          echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          VERSION="${{ github.event.inputs.version }}"
+          # Ensure version starts with 'v'
+          if [[ ! "$VERSION" =~ ^v ]]; then
+            VERSION="v${VERSION}"
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
         else
           echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
         fi
+
+    - name: Verify permissions
+      run: |
+        echo "Creating release ${{ steps.get_version.outputs.VERSION }}"
+        echo "Repository: ${{ github.repository }}"
+        echo "Event: ${{ github.event_name }}"
 
     - name: Generate changelog
       run: |
@@ -58,6 +72,13 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
+        # Check if release already exists
+        if gh release view "${{ steps.get_version.outputs.VERSION }}" &>/dev/null; then
+          echo "Release ${{ steps.get_version.outputs.VERSION }} already exists. Skipping creation."
+          echo "You can delete it first with: gh release delete ${{ steps.get_version.outputs.VERSION }}"
+          exit 1
+        fi
+
         PRERELEASE_FLAG=""
         if [[ "${{ steps.get_version.outputs.VERSION }}" == *"alpha"* ]] || [[ "${{ steps.get_version.outputs.VERSION }}" == *"beta"* ]] || [[ "${{ steps.get_version.outputs.VERSION }}" == *"rc"* ]]; then
           PRERELEASE_FLAG="--prerelease"
@@ -99,6 +120,8 @@ jobs:
             --exclude='*.swp' \
             --exclude='*.swo' \
             --exclude='*~' \
+            --exclude='*.tar.gz' \
+            --exclude='*.sha256' \
             -czf "${ARCHIVE_NAME}.tar.gz" \
             --transform "s,^,${ARCHIVE_NAME}/," \
             .
