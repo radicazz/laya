@@ -1,14 +1,16 @@
+#
+# https://clang.llvm.org/extra/clang-tidy/
+#
+
 ---
-
-# clang-tidy configuration for laya
-
-# Modern C++20 SDL3 wrapper
 
 Checks: >
   -*,
   bugprone-*,
   -bugprone-easily-swappable-parameters,
   -bugprone-exception-escape,
+  -bugprone-empty-catch,                      # Allow empty catch blocks for intentional error suppression
+  -bugprone-infinite-loop,                    # False positives when loop variables modified in nested scopes (e.g., std::visit)
   cert-*,
   -cert-dcl21-cpp,
   -cert-dcl58-cpp,
@@ -16,6 +18,7 @@ Checks: >
   clang-analyzer-*,
   concurrency-*,
   cppcoreguidelines-*,
+  -cppcoreguidelines-avoid-c-arrays,          # Allow C-style arrays for SDL compatibility and fixed-size buffers
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-macro-usage,
   -cppcoreguidelines-non-private-member-variables-in-classes,
@@ -23,6 +26,7 @@ Checks: >
   -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
   -cppcoreguidelines-pro-bounds-constant-array-index,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-pro-type-member-init,    # Allow aggregate initialization without explicit member init
   -cppcoreguidelines-pro-type-reinterpret-cast,
   -cppcoreguidelines-pro-type-union-access,
   -cppcoreguidelines-special-member-functions,
@@ -31,73 +35,90 @@ Checks: >
   -google-readability-namespace-comments,
   -google-runtime-references,
   hicpp-*,
+  -hicpp-avoid-c-arrays,                      # Allow C-style arrays (same as cppcoreguidelines)
   -hicpp-braces-around-statements,
+  -hicpp-member-init,                         # Allow aggregate initialization (same as cppcoreguidelines)
   -hicpp-named-parameter,
   -hicpp-no-array-decay,
   -hicpp-special-member-functions,
   -hicpp-uppercase-literal-suffix,
   misc-*,
+  -misc-const-correctness,                    # Too noisy, suggests const for variables that may change
+  -misc-include-cleaner,                      # Overly strict about transitive includes, requires all headers
   -misc-non-private-member-variables-in-classes,
   -misc-no-recursion,
+  -misc-use-internal-linkage,                 # Namespace-scoped functions are intentionally public API
   modernize-*,
+  -modernize-avoid-c-arrays,                  # Allow C-style arrays (same as cppcoreguidelines)
   -modernize-use-trailing-return-type,
+  -modernize-use-using,                       # Allow typedef for SDL forward declarations
   performance-*,
   portability-*,
+  -portability-avoid-pragma-once,             # pragma once is widely supported and preferred
   readability-*,
   -readability-braces-around-statements,
   -readability-function-cognitive-complexity,
   -readability-identifier-length,
   -readability-magic-numbers,
   -readability-named-parameter,
+  -readability-simplify-boolean-expr,         # Allow explicit boolean comparisons for clarity
   -readability-uppercase-literal-suffix
 
 CheckOptions:
-
-- key: readability-identifier-naming.NamespaceCase
+  - key: readability-identifier-naming.NamespaceCase
     value: lower_case
-- key: readability-identifier-naming.ClassCase
+  - key: readability-identifier-naming.ClassCase
     value: lower_case
-- key: readability-identifier-naming.StructCase
+  - key: readability-identifier-naming.StructCase
     value: lower_case
-- key: readability-identifier-naming.TemplateParameterCase
+  - key: readability-identifier-naming.TemplateParameterCase
     value: CamelCase
-- key: readability-identifier-naming.FunctionCase
+  - key: readability-identifier-naming.FunctionCase
     value: lower_case
-- key: readability-identifier-naming.VariableCase
+  - key: readability-identifier-naming.VariableCase
     value: lower_case
-- key: readability-identifier-naming.ClassMemberCase
+  - key: readability-identifier-naming.ClassMemberCase
     value: lower_case
-- key: readability-identifier-naming.ClassMemberPrefix
+
+  - key: readability-identifier-naming.ClassMemberPrefix
     value: m_
-- key: readability-identifier-naming.PrivateMemberPrefix
+  - key: readability-identifier-naming.PrivateMemberPrefix
     value: m_
-- key: readability-identifier-naming.ProtectedMemberPrefix
+  - key: readability-identifier-naming.ProtectedMemberPrefix
     value: m_
-- key: readability-identifier-naming.EnumConstantCase
+
+  - key: readability-identifier-naming.EnumConstantCase
     value: lower_case
-- key: readability-identifier-naming.ConstexprVariableCase
+  - key: readability-identifier-naming.ConstexprVariableCase
     value: lower_case
-- key: readability-identifier-naming.GlobalConstantCase
+  - key: readability-identifier-naming.GlobalConstantCase
     value: lower_case
-- key: readability-identifier-naming.MemberConstantCase
+  - key: readability-identifier-naming.MemberConstantCase
     value: lower_case
-- key: readability-identifier-naming.StaticConstantCase
+  - key: readability-identifier-naming.StaticConstantCase
     value: lower_case
-- key: cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
+
+  - key: cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
     value: true
-- key: modernize-loop-convert.MaxCopySize
+
+  - key: modernize-loop-convert.MaxCopySize
     value: 16
-- key: modernize-loop-convert.MinConfidence
+  - key: modernize-loop-convert.MinConfidence
     value: reasonable
-- key: modernize-loop-convert.NamingStyle
+  - key: modernize-loop-convert.NamingStyle
     value: lower_case
-- key: modernize-pass-by-value.IncludeStyle
+  - key: modernize-pass-by-value.IncludeStyle
     value: llvm
-- key: modernize-replace-auto-ptr.IncludeStyle
+  - key: modernize-replace-auto-ptr.IncludeStyle
     value: llvm
-- key: modernize-use-nullptr.NullMacros
+  - key: modernize-use-nullptr.NullMacros
     value: 'NULL'
 
 WarningsAsErrors: ''
 HeaderFilterRegex: '(src|include)/.*\.(h|hpp)$'
 FormatStyle: file
+
+# Used if no `compile_commands.json` is found.
+User: '
+  -std=c++20
+'

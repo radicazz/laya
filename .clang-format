@@ -1,8 +1,9 @@
----
 #
 # https://clang.llvm.org/docs/ClangFormatStyleOptions.html
 #
+
 ---
+
 Language: Cpp
 
 # Google it.
@@ -17,17 +18,16 @@ PointerAlignment: Left
 ColumnLimit: 120
 
 # Stop condensing short things to a single line.
-AllowShortIfStatementsOnASingleLine: Never 
+AllowShortIfStatementsOnASingleLine: Never
 AllowShortFunctionsOnASingleLine: None
 AllowShortLoopsOnASingleLine: false
 
 # Add the comments after each namespace.
 FixNamespaceComments: true
 
-NamespaceIndentation: All # None, Inner or All
+NamespaceIndentation: None # None, Inner or All
 IndentExternBlock: Indent # Indent, NoIndent
 
 SortIncludes: Never # Never, CaseSensitive, CaseInsensitive
 
 AccessModifierOffset: -4 # integer
----

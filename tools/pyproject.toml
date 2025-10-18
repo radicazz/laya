@@ -1,0 +1,22 @@
+#
+# Python environment requirements for the laya project.
+# The "uv" package manager is recommended to manage dependencies.
+#
+
+[project]
+name = "laya-pytools"
+version = "0.1.0"
+description = "Development tools for the laya project"
+requires-python = ">=3.12"
+
+# Group dependencies for uv package manager.
+# Use 'uv sync --group <group>' to install specific groups
+# Use 'uv sync --all-groups' to install all groups.
+[dependency-groups]
+dev = ["pre-commit>=3.5.0"]
+
+# https://pypi.org/project/clang-format/
+format = ["clang-format>=18"]
+
+# https://pypi.org/project/clang-tidy/
+lint = ["clang-tidy>=18"]

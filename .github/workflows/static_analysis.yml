@@ -24,8 +24,16 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
+        # Add repositories for newer compilers
+        wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+        sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-18 main"
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+        sudo apt-get update
         sudo apt-get install -y \
-          clang-tidy-14 \
+          clang-tidy-18 \
+          clang-18 \
+          gcc-13 \
+          g++-13 \
           cppcheck \
           build-essential \
           cmake \
@@ -49,17 +57,23 @@ jobs:
 
     - name: Run clang-tidy
       run: |
+        # Set up environment to use GCC 13
+        export CC=gcc-13
+        export CXX=g++-13
+
         # Create compile_commands.json
         cmake -B build \
           -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
           -DLAYA_SDL_METHOD=submodule \
-          -DLAYA_BUILD_SHARED=ON \
           -DCMAKE_CXX_STANDARD=20 \
           -DCMAKE_CXX_STANDARD_REQUIRED=ON
 
-        # Run clang-tidy on source files
-        find src include -name "*.cpp" -o -name "*.hpp" | \
-        xargs clang-tidy-14 -p build --config-file=.clang-tidy > clang-tidy-report.txt 2>&1 || true
+        # Run clang-tidy on headers in include/ and source files in src/
+        find include -type f -name "*.hpp" | \
+        xargs clang-tidy-18 -p build --config-file=.clang-tidy > clang-tidy-report.txt 2>&1 || true
+
+        find src -type f -name "*.cpp" | \
+        xargs clang-tidy-18 -p build --config-file=.clang-tidy >> clang-tidy-report.txt 2>&1 || true
 
     - name: Run cppcheck
       run: |

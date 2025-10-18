@@ -22,11 +22,11 @@ jobs:
         build_type: [Debug, Release]
         include:
           - compiler: gcc
-            cc: gcc-11
-            cxx: g++-11
+            cc: gcc-13
+            cxx: g++-13
           - compiler: clang
-            cc: clang-15
-            cxx: clang++-15
+            cc: clang-18
+            cxx: clang++-18
 
     steps:
     - name: Checkout code
@@ -85,25 +85,40 @@ jobs:
           libjpeg-dev \
           libtiff-dev \
           zlib1g-dev \
-          xvfb
+          xvfb \
+          x11-utils
 
     - name: Setup headless display
       run: |
-        # Start virtual display for headless testing
-        export DISPLAY=:99
-        Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+        # Start virtual framebuffer for headless video testing
+        # This allows SDL to create windows and render without a physical display
+        sudo Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX +render -noreset > /dev/null 2>&1 &
+        echo "XVFB_PID=$!" >> $GITHUB_ENV
         sleep 3
         echo "DISPLAY=:99" >> $GITHUB_ENV
 
-    - name: Install Ubuntu GCC 11
+        # Verify display is available
+        if ! xdpyinfo -display :99 >/dev/null 2>&1; then
+          echo "ERROR: Xvfb failed to start"
+          exit 1
+        fi
+        echo "✓ Virtual display :99 ready (1920x1080x24)"
+
+    - name: Install Ubuntu GCC 13
       if: matrix.compiler == 'gcc'
       run: |
-        sudo apt-get install -y gcc-11 g++-11
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+        sudo apt-get update
+        sudo apt-get install -y gcc-13 g++-13
 
-    - name: Install Ubuntu Clang 15
+    - name: Install Ubuntu Clang 18
       if: matrix.compiler == 'clang'
       run: |
-        sudo apt-get install -y clang-15 clang++-15 libc++-15-dev libc++abi-15-dev
+        # Add LLVM repository for Clang 18
+        wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+        sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-18 main"
+        sudo apt-get update
+        sudo apt-get install -y clang-18 clang++-18 libc++-18-dev libc++abi-18-dev
 
     - name: Set up environment variables
       run: |
@@ -118,7 +133,6 @@ jobs:
           -DLAYA_BUILD_TESTS=ON
           -DLAYA_BUILD_EXAMPLES=ON
           -DLAYA_SDL_METHOD=submodule
-          -DLAYA_BUILD_SHARED=ON
           -DCMAKE_CXX_STANDARD=20
           -DCMAKE_CXX_STANDARD_REQUIRED=ON
           -G "Ninja"
@@ -132,7 +146,8 @@ jobs:
         # Use libc++ for Clang to avoid libstdc++ C++20 chrono issues
         if [[ "${{ matrix.compiler }}" == "clang" ]]; then
           cmake_args+=(-DCMAKE_CXX_FLAGS="-stdlib=libc++")
-          cmake_args+=(-DCMAKE_EXE_LINKER_FLAGS="-stdlib=libc++ -lc++abi")
+          cmake_args+=(-DCMAKE_EXE_LINKER_FLAGS="-stdlib=libc++ -lc++ -lc++abi")
+          cmake_args+=(-DCMAKE_SHARED_LINKER_FLAGS="-stdlib=libc++ -lc++ -lc++abi")
         fi
 
         cmake "${cmake_args[@]}"
@@ -149,8 +164,8 @@ jobs:
     - name: Run examples
       working-directory: build
       run: |
-        # Test that examples can be executed (they should exit quickly)
-        timeout 10s ./examples/hello_laya || true
+        # Run examples in CI mode (non-interactive)
+        ./examples/events/laya_examples_events --ci
 
     - name: Run benchmarks
       if: matrix.build_type == 'Release'
@@ -159,17 +174,17 @@ jobs:
         # Create benchmark results directory
         mkdir -p ../benchmark-results
 
-        # Run performance tests and capture output
-        ./tests/laya_benchmarks --test-suite=performance --reporters=json --out=../benchmark-results/benchmarks-${{ matrix.compiler }}.json || true
-        ./tests/laya_benchmarks --test-suite=performance --reporters=console > ../benchmark-results/benchmarks-${{ matrix.compiler }}.txt || true
+        # Run benchmark tests and capture output
+        ./tests/laya_tests_benchmark --test-suite=benchmark --reporters=json --out=../benchmark-results/benchmarks-${{ matrix.compiler }}.json || true
+        ./tests/laya_tests_benchmark --test-suite=benchmark --reporters=console > ../benchmark-results/benchmarks-${{ matrix.compiler }}.txt || true
 
     - name: Generate coverage report
       if: matrix.build_type == 'Debug' && matrix.compiler == 'gcc'
       run: |
         sudo apt-get install -y lcov
         # Use the same GCC version for gcov as used for building
-        lcov --gcov-tool gcov-11 --capture --directory build --output-file coverage.info
-        lcov --gcov-tool gcov-11 --remove coverage.info '/usr/*' '*/external/*' '*/tests/*' --output-file coverage.info
+        lcov --gcov-tool gcov-13 --capture --directory build --output-file coverage.info
+        lcov --gcov-tool gcov-13 --remove coverage.info '/usr/*' '*/external/*' '*/tests/*' --output-file coverage.info
         lcov --list coverage.info
 
     - name: Upload coverage to Codecov
@@ -200,3 +215,12 @@ jobs:
         path: |
           benchmark-results/
         retention-days: 30
+
+    - name: Cleanup headless display
+      if: always()
+      run: |
+        # Stop Xvfb gracefully
+        if [ -n "$XVFB_PID" ]; then
+          sudo kill $XVFB_PID || true
+          echo "✓ Xvfb stopped"
+        fi

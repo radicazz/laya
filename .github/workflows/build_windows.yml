@@ -50,7 +50,6 @@ jobs:
           -DLAYA_BUILD_TESTS=ON `
           -DLAYA_BUILD_EXAMPLES=ON `
           -DLAYA_SDL_METHOD=submodule `
-          -DLAYA_BUILD_SHARED=ON `
           -DCMAKE_CXX_STANDARD=20 `
           -DCMAKE_CXX_STANDARD_REQUIRED=ON
 
@@ -66,14 +65,8 @@ jobs:
     - name: Run examples
       working-directory: build
       run: |
-        # Test that examples can be executed (they should exit quickly)
-        $process = Start-Process -FilePath ".\examples\${{ matrix.build_type }}\hello_laya.exe" -PassThru -ErrorAction SilentlyContinue
-        if ($process) {
-          $process | Wait-Process -Timeout 10 -ErrorAction SilentlyContinue
-          if (!$process.HasExited) {
-            $process | Stop-Process -Force
-          }
-        }
+        # Run examples in CI mode (non-interactive, fixed iterations)
+        .\examples\events\${{ matrix.build_type }}\laya_examples_events.exe --ci
 
     - name: Run benchmarks
       if: matrix.build_type == 'Release'
@@ -82,11 +75,11 @@ jobs:
         # Create benchmark results directory
         New-Item -ItemType Directory -Force -Path ..\benchmark-results
 
-        # Run performance tests and capture output
-        $benchmarkExe = ".\tests\${{ matrix.build_type }}\laya_benchmarks.exe"
+        # Run benchmark tests and capture output
+        $benchmarkExe = ".\tests\${{ matrix.build_type }}\laya_tests_benchmark.exe"
         if (Test-Path $benchmarkExe) {
-          & $benchmarkExe --test-suite=performance --reporters=json --out=..\benchmark-results\benchmarks-msvc.json
-          & $benchmarkExe --test-suite=performance --reporters=console > ..\benchmark-results\benchmarks-msvc.txt
+          & $benchmarkExe --test-suite=benchmark --reporters=json --out=..\benchmark-results\benchmarks-msvc.json
+          & $benchmarkExe --test-suite=benchmark --reporters=console > ..\benchmark-results\benchmarks-msvc.txt
         }
 
     - name: Upload build artifacts
