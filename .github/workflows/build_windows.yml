@@ -76,7 +76,7 @@ jobs:
         New-Item -ItemType Directory -Force -Path ..\benchmark-results
 
         # Run benchmark tests and capture output
-        $benchmarkExe = ".\tests\${{ matrix.build_type }}\laya_benchmarks.exe"
+        $benchmarkExe = ".\tests\${{ matrix.build_type }}\laya_tests_benchmark.exe"
         if (Test-Path $benchmarkExe) {
           & $benchmarkExe --test-suite=benchmark --reporters=json --out=..\benchmark-results\benchmarks-msvc.json
           & $benchmarkExe --test-suite=benchmark --reporters=console > ..\benchmark-results\benchmarks-msvc.txt

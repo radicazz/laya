@@ -34,18 +34,18 @@ if(LAYA_TESTS_UNIT)
     )
 
     # Create unit test executable
-    add_executable(laya_unit_tests ${LAYA_UNIT_TEST_SOURCES})
+    add_executable(laya_tests_unit ${LAYA_UNIT_TEST_SOURCES})
 
-    target_link_libraries(laya_unit_tests
+    target_link_libraries(laya_tests_unit
         PRIVATE
         laya::laya
         doctest::doctest
     )
 
-    target_compile_features(laya_unit_tests PRIVATE cxx_std_20)
+    target_compile_features(laya_tests_unit PRIVATE cxx_std_20)
 
     # Configure test properties
-    set_target_properties(laya_unit_tests PROPERTIES
+    set_target_properties(laya_tests_unit PROPERTIES
         CXX_STANDARD 20
         CXX_STANDARD_REQUIRED ON
         CXX_EXTENSIONS OFF
@@ -53,23 +53,23 @@ if(LAYA_TESTS_UNIT)
 
     # Enable compiler warnings for tests
     if(MSVC)
-        target_compile_options(laya_unit_tests PRIVATE /W4)
+        target_compile_options(laya_tests_unit PRIVATE /W4)
     else()
-        target_compile_options(laya_unit_tests PRIVATE -Wall -Wextra -Wpedantic)
+        target_compile_options(laya_tests_unit PRIVATE -Wall -Wextra -Wpedantic)
     endif()
 
     # Copy SDL shared libraries to test executable directory for runtime
-    laya_copy_sdl_shared_libs(laya_unit_tests)
+    laya_copy_sdl_shared_libs(laya_tests_unit)
 
     # Register tests with CTest
     # Try to use doctest's CMake integration if available
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../external/doctest/scripts/cmake/doctest.cmake")
         include("${CMAKE_CURRENT_SOURCE_DIR}/../external/doctest/scripts/cmake/doctest.cmake")
-        doctest_discover_tests(laya_unit_tests)
+        doctest_discover_tests(laya_tests_unit)
     else()
         # Manual test registration
-        add_test(NAME laya_all_unit_tests COMMAND laya_unit_tests)
-        add_test(NAME laya_unit_tests COMMAND laya_unit_tests --test-suite=unit)
+        add_test(NAME laya_all_unit_tests COMMAND laya_tests_unit)
+        add_test(NAME laya_unit_tests COMMAND laya_tests_unit --test-suite=unit)
     endif()
 endif()
 
@@ -80,18 +80,18 @@ if(LAYA_TESTS_BENCHMARK)
         benchmark/test_events_benchmark.cpp
     )
 
-    add_executable(laya_benchmarks ${LAYA_BENCHMARK_SOURCES})
+    add_executable(laya_tests_benchmark ${LAYA_BENCHMARK_SOURCES})
 
-    target_link_libraries(laya_benchmarks
+    target_link_libraries(laya_tests_benchmark
         PRIVATE
         laya::laya
         doctest::doctest
     )
 
-    target_compile_features(laya_benchmarks PRIVATE cxx_std_20)
+    target_compile_features(laya_tests_benchmark PRIVATE cxx_std_20)
 
     # Configure benchmark properties
-    set_target_properties(laya_benchmarks PROPERTIES
+    set_target_properties(laya_tests_benchmark PROPERTIES
         CXX_STANDARD 20
         CXX_STANDARD_REQUIRED ON
         CXX_EXTENSIONS OFF
@@ -99,7 +99,7 @@ if(LAYA_TESTS_BENCHMARK)
 
     # Optimize benchmarks in Release mode
     if(CMAKE_BUILD_TYPE STREQUAL "Release")
-        target_compile_options(laya_benchmarks PRIVATE
+        target_compile_options(laya_tests_benchmark PRIVATE
             $<$<CXX_COMPILER_ID:GNU,Clang>:-O3 -DNDEBUG>
             $<$<CXX_COMPILER_ID:MSVC>:/O2 /DNDEBUG>
         )
@@ -109,13 +109,13 @@ if(LAYA_TESTS_BENCHMARK)
 
     # Enable compiler warnings for benchmarks
     if(MSVC)
-        target_compile_options(laya_benchmarks PRIVATE /W4)
+        target_compile_options(laya_tests_benchmark PRIVATE /W4)
     else()
-        target_compile_options(laya_benchmarks PRIVATE -Wall -Wextra -Wpedantic)
+        target_compile_options(laya_tests_benchmark PRIVATE -Wall -Wextra -Wpedantic)
     endif()
 
     # Copy SDL shared libraries to benchmark executable directory for runtime
-    laya_copy_sdl_shared_libs(laya_benchmarks)
+    laya_copy_sdl_shared_libs(laya_tests_benchmark)
 
-    add_test(NAME laya_benchmarks COMMAND laya_benchmarks --test-suite=benchmark)
+    add_test(NAME laya_benchmarks COMMAND laya_tests_benchmark --test-suite=benchmark)
 endif()

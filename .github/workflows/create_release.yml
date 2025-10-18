@@ -26,6 +26,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
+        # Don't fetch submodules - users should manage SDL3 themselves
 
     - name: Get version
       id: get_version
@@ -67,30 +68,6 @@ jobs:
           --notes-file changelog.md \
           $PRERELEASE_FLAG
 
-  trigger-builds:
-    name: Trigger Release Builds
-    needs: create-release
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Trigger Linux builds
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        gh workflow run build_linux.yml --ref ${{ github.ref }}
-
-    - name: Trigger Windows builds
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        gh workflow run build_windows.yml --ref ${{ github.ref }}
-
-    - name: Wait for builds to complete
-      run: |
-        echo "Builds triggered. Release artifacts will be available from the build workflows."
-        echo "Linux artifacts: laya-linux-gcc-Release, laya-linux-clang-Release"
-        echo "Windows artifacts: laya-windows-msvc-Release"
-
   create-source-package:
     name: Create Source Package
     needs: create-release
@@ -100,27 +77,43 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        submodules: recursive
+        fetch-depth: 0
+        # Don't fetch submodules - users should manage SDL3 themselves
 
     - name: Create source archive
       run: |
         VERSION_NO_V=$(echo "${{ needs.create-release.outputs.version }}" | sed 's/^v//')
         ARCHIVE_NAME="laya-${VERSION_NO_V}-source"
 
-        # Create source archive excluding build artifacts
+        # Create clean source archive excluding unnecessary files
         tar --exclude='.git' \
+            --exclude='.github' \
             --exclude='build' \
             --exclude='*.user' \
             --exclude='.vs' \
             --exclude='.vscode' \
+            --exclude='external/SDL' \
+            --exclude='external/SDL_image' \
+            --exclude='external/SDL_ttf' \
+            --exclude='compile_commands.json' \
+            --exclude='*.swp' \
+            --exclude='*.swo' \
+            --exclude='*~' \
             -czf "${ARCHIVE_NAME}.tar.gz" \
             --transform "s,^,${ARCHIVE_NAME}/," \
             .
 
-    - name: Upload source archive
+    - name: Create checksums
+      run: |
+        VERSION_NO_V=$(echo "${{ needs.create-release.outputs.version }}" | sed 's/^v//')
+        sha256sum "laya-${VERSION_NO_V}-source.tar.gz" > "laya-${VERSION_NO_V}-source.tar.gz.sha256"
+
+    - name: Upload release artifacts
       if: ${{ env.ACT != 'true' }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         VERSION_NO_V=$(echo "${{ needs.create-release.outputs.version }}" | sed 's/^v//')
-        gh release upload "${{ needs.create-release.outputs.version }}" "laya-${VERSION_NO_V}-source.tar.gz"
+        gh release upload "${{ needs.create-release.outputs.version }}" \
+          "laya-${VERSION_NO_V}-source.tar.gz" \
+          "laya-${VERSION_NO_V}-source.tar.gz.sha256"

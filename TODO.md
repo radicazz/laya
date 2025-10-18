@@ -2,6 +2,10 @@
 
 Just a list of things to do all over the project.
 
+## Fixes
+
+Nothing yet.
+
 ## Features
 
 - SDL logger wrapping with format support.
@@ -9,8 +13,6 @@ Just a list of things to do all over the project.
 ## Maintenance
 
 - Add tests for `bitmask_enum` generic class.
-- Update `create_release.yml` workflow to publish package correctly.
-- Make test naming consistent in cmake files.
 
 ## Extras
 

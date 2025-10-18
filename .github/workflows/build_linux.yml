@@ -85,15 +85,24 @@ jobs:
           libjpeg-dev \
           libtiff-dev \
           zlib1g-dev \
-          xvfb
+          xvfb \
+          x11-utils
 
     - name: Setup headless display
       run: |
-        # Start virtual display for headless testing
-        export DISPLAY=:99
-        Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+        # Start virtual framebuffer for headless video testing
+        # This allows SDL to create windows and render without a physical display
+        sudo Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX +render -noreset > /dev/null 2>&1 &
+        echo "XVFB_PID=$!" >> $GITHUB_ENV
         sleep 3
         echo "DISPLAY=:99" >> $GITHUB_ENV
+
+        # Verify display is available
+        if ! xdpyinfo -display :99 >/dev/null 2>&1; then
+          echo "ERROR: Xvfb failed to start"
+          exit 1
+        fi
+        echo "✓ Virtual display :99 ready (1920x1080x24)"
 
     - name: Install Ubuntu GCC 13
       if: matrix.compiler == 'gcc'
@@ -166,8 +175,8 @@ jobs:
         mkdir -p ../benchmark-results
 
         # Run benchmark tests and capture output
-        ./tests/laya_benchmarks --test-suite=benchmark --reporters=json --out=../benchmark-results/benchmarks-${{ matrix.compiler }}.json || true
-        ./tests/laya_benchmarks --test-suite=benchmark --reporters=console > ../benchmark-results/benchmarks-${{ matrix.compiler }}.txt || true
+        ./tests/laya_tests_benchmark --test-suite=benchmark --reporters=json --out=../benchmark-results/benchmarks-${{ matrix.compiler }}.json || true
+        ./tests/laya_tests_benchmark --test-suite=benchmark --reporters=console > ../benchmark-results/benchmarks-${{ matrix.compiler }}.txt || true
 
     - name: Generate coverage report
       if: matrix.build_type == 'Debug' && matrix.compiler == 'gcc'
@@ -206,3 +215,12 @@ jobs:
         path: |
           benchmark-results/
         retention-days: 30
+
+    - name: Cleanup headless display
+      if: always()
+      run: |
+        # Stop Xvfb gracefully
+        if [ -n "$XVFB_PID" ]; then
+          sudo kill $XVFB_PID || true
+          echo "✓ Xvfb stopped"
+        fi
