@@ -1,23 +1,43 @@
-name: Linux (GCC/Clang)
+name: Build
 
 on:
   push:
-    branches: [ master, develop ]
+    branches: [master, develop]
   pull_request:
-    branches: [ master, develop ]
+    branches: [master, develop]
   workflow_dispatch:
+  workflow_run:
+    workflows: ["Static Analysis"]
+    types:
+      - completed
 
 env:
   ACT: 'false'
 
 jobs:
-  build-linux:
-    name: ${{ matrix.compiler }}-${{ matrix.build_type }}
+  # Only run builds if static analysis passed (on workflow_run) or on manual/push/PR
+  check-static-analysis:
+    name: Check Prerequisites
     runs-on: ubuntu-latest
+    if: |
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'success'
+    outputs:
+      should_run: ${{ steps.check.outputs.result }}
+    steps:
+      - id: check
+        run: echo "result=true" >> $GITHUB_OUTPUT
 
+  build-linux:
+    name: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.build_type }}
+    runs-on: ${{ matrix.os }}
+    needs: check-static-analysis
+    if: needs.check-static-analysis.outputs.should_run == 'true'
+    
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest]
         compiler: [gcc, clang]
         build_type: [Debug, Release]
         include:
@@ -37,8 +57,7 @@ jobs:
     - name: Cache FetchContent downloads
       uses: actions/cache@v4
       with:
-        path: |
-          build/_deps
+        path: build/_deps
         key: ${{ runner.os }}-${{ matrix.compiler }}-fetchcontent-${{ hashFiles('cmake/SetupSDL3.cmake') }}
         restore-keys: |
           ${{ runner.os }}-${{ matrix.compiler }}-fetchcontent-
@@ -67,7 +86,6 @@ jobs:
           libwayland-dev \
           libxkbcommon-dev \
           libdrm-dev \
-          libxkbcommon-dev \
           libgl1-mesa-dev \
           libgles2-mesa-dev \
           libegl1-mesa-dev \
@@ -86,31 +104,27 @@ jobs:
 
     - name: Setup headless display
       run: |
-        # Start virtual framebuffer for headless video testing
-        # This allows SDL to create windows and render without a physical display
         sudo Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX +render -noreset > /dev/null 2>&1 &
         echo "XVFB_PID=$!" >> $GITHUB_ENV
         sleep 3
         echo "DISPLAY=:99" >> $GITHUB_ENV
-
-        # Verify display is available
+        
         if ! xdpyinfo -display :99 >/dev/null 2>&1; then
           echo "ERROR: Xvfb failed to start"
           exit 1
         fi
         echo "✓ Virtual display :99 ready (1920x1080x24)"
 
-    - name: Install Ubuntu GCC 13
+    - name: Install GCC 13
       if: matrix.compiler == 'gcc'
       run: |
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test
         sudo apt-get update
         sudo apt-get install -y gcc-13 g++-13
 
-    - name: Install Ubuntu Clang 18
+    - name: Install Clang 18
       if: matrix.compiler == 'clang'
       run: |
-        # Add LLVM repository for Clang 18
         wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
         sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-18 main"
         sudo apt-get update
@@ -133,63 +147,27 @@ jobs:
           -G "Ninja"
         )
 
-        # Add coverage for Debug builds with GCC
-        if [[ "${{ matrix.build_type }}" == "Debug" && "${{ matrix.compiler }}" == "gcc" ]]; then
-          cmake_args+=(-DCMAKE_CXX_FLAGS="--coverage -g -O0")
+        # Add AddressSanitizer for Debug builds
+        if [[ "${{ matrix.build_type }}" == "Debug" ]]; then
+          cmake_args+=(-DCMAKE_CXX_FLAGS="-fsanitize=address -fno-omit-frame-pointer -g")
+          cmake_args+=(-DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address")
         fi
 
-        # Use libc++ for Clang to avoid libstdc++ C++20 chrono issues
+        # Use libc++ for Clang
         if [[ "${{ matrix.compiler }}" == "clang" ]]; then
-          cmake_args+=(-DCMAKE_CXX_FLAGS="-stdlib=libc++")
-          cmake_args+=(-DCMAKE_EXE_LINKER_FLAGS="-stdlib=libc++ -lc++ -lc++abi")
+          if [[ "${{ matrix.build_type }}" == "Debug" ]]; then
+            cmake_args+=(-DCMAKE_CXX_FLAGS="-stdlib=libc++ -fsanitize=address -fno-omit-frame-pointer -g")
+          else
+            cmake_args+=(-DCMAKE_CXX_FLAGS="-stdlib=libc++")
+          fi
+          cmake_args+=(-DCMAKE_EXE_LINKER_FLAGS="-stdlib=libc++ -lc++ -lc++abi -fsanitize=address")
           cmake_args+=(-DCMAKE_SHARED_LINKER_FLAGS="-stdlib=libc++ -lc++ -lc++abi")
         fi
 
         cmake "${cmake_args[@]}"
 
     - name: Build
-      run: |
-        cmake --build build --parallel
-
-    - name: Test
-      working-directory: build
-      run: |
-        ctest --output-on-failure --parallel
-
-    - name: Run examples
-      working-directory: build
-      run: |
-        # Run examples in CI mode (non-interactive)
-        ./examples/events/laya_examples_events --ci
-
-    - name: Run benchmarks
-      if: matrix.build_type == 'Release'
-      working-directory: build
-      run: |
-        # Create benchmark results directory
-        mkdir -p ../benchmark-results
-
-        # Run benchmark tests and capture output
-        ./tests/laya_tests_benchmark --test-suite=benchmark --reporters=json --out=../benchmark-results/benchmarks-${{ matrix.compiler }}.json || true
-        ./tests/laya_tests_benchmark --test-suite=benchmark --reporters=console > ../benchmark-results/benchmarks-${{ matrix.compiler }}.txt || true
-
-    - name: Generate coverage report
-      if: matrix.build_type == 'Debug' && matrix.compiler == 'gcc'
-      run: |
-        sudo apt-get install -y lcov
-        # Use the same GCC version for gcov as used for building
-        lcov --gcov-tool gcov-13 --capture --directory build --output-file coverage.info
-        lcov --gcov-tool gcov-13 --remove coverage.info '/usr/*' '*/external/*' '*/tests/*' --output-file coverage.info
-        lcov --list coverage.info
-
-    - name: Upload coverage to Codecov
-      if: ${{ matrix.build_type == 'Debug' && matrix.compiler == 'gcc' && env.ACT != 'true' }}
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.info
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
+      run: cmake --build build --parallel
 
     - name: Upload build artifacts
       if: ${{ env.ACT != 'true' }}
@@ -197,25 +175,75 @@ jobs:
       with:
         name: laya-linux-${{ matrix.compiler }}-${{ matrix.build_type }}
         path: |
-          build/src/
-          build/examples/
+          build/src/liblaya.a
+          build/tests/laya_tests_unit
+          build/tests/laya_tests_benchmark
+          build/examples/**/laya_examples_*
           !build/**/*.o
-        retention-days: 30
-
-    - name: Upload benchmark results
-      if: ${{ matrix.build_type == 'Release' && env.ACT != 'true' }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: benchmark-results-linux-${{ matrix.compiler }}
-        path: |
-          benchmark-results/
-        retention-days: 30
+        retention-days: 90
 
     - name: Cleanup headless display
       if: always()
       run: |
-        # Stop Xvfb gracefully
         if [ -n "$XVFB_PID" ]; then
           sudo kill $XVFB_PID || true
           echo "✓ Xvfb stopped"
         fi
+
+  build-windows:
+    name: ${{ matrix.os }}-msvc-${{ matrix.build_type }}
+    runs-on: ${{ matrix.os }}
+    needs: check-static-analysis
+    if: needs.check-static-analysis.outputs.should_run == 'true'
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+        build_type: [Debug, Release]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Cache FetchContent downloads
+      uses: actions/cache@v4
+      with:
+        path: build/_deps
+        key: ${{ runner.os }}-msvc-fetchcontent-${{ hashFiles('cmake/SetupSDL3.cmake') }}
+        restore-keys: |
+          ${{ runner.os }}-msvc-fetchcontent-
+
+    - name: Setup MSVC
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+
+    - name: Configure CMake
+      run: |
+        cmake -B build `
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
+          -DLAYA_BUILD_TESTS=ON `
+          -DLAYA_BUILD_EXAMPLES=ON `
+          -DCMAKE_CXX_STANDARD=20 `
+          -DCMAKE_CXX_STANDARD_REQUIRED=ON `
+          -G "Visual Studio 17 2022" `
+          -A x64
+
+    - name: Build
+      run: cmake --build build --config ${{ matrix.build_type }} --parallel
+
+    - name: Upload build artifacts
+      if: ${{ env.ACT != 'true' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: laya-windows-msvc-${{ matrix.build_type }}
+        path: |
+          build/src/${{ matrix.build_type }}/laya.lib
+          build/tests/${{ matrix.build_type }}/laya_tests_unit.exe
+          build/tests/${{ matrix.build_type }}/laya_tests_benchmark.exe
+          build/examples/**/${{ matrix.build_type }}/laya_examples_*.exe
+          build/_deps/sdl3-build/${{ matrix.build_type }}/SDL3.dll
+        retention-days: 90

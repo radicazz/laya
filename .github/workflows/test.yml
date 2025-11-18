@@ -1,0 +1,204 @@
+name: Test
+
+on:
+  workflow_run:
+    workflows: ["Build"]
+    types:
+      - completed
+  workflow_dispatch:
+
+env:
+  ACT: 'false'
+
+jobs:
+  # Only run if build workflow succeeded
+  check-build:
+    name: Check Build Status
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'success'
+    outputs:
+      should_run: ${{ steps.check.outputs.result }}
+    steps:
+      - id: check
+        run: echo "result=true" >> $GITHUB_OUTPUT
+
+  test-linux:
+    name: Test-${{ matrix.compiler }}-Debug
+    runs-on: ubuntu-latest
+    needs: check-build
+    if: needs.check-build.outputs.should_run == 'true'
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download build artifacts
+      if: ${{ env.ACT != 'true' }}
+      uses: actions/download-artifact@v4
+      with:
+        name: laya-linux-${{ matrix.compiler }}-Debug
+        path: build/
+
+    - name: Install Ubuntu dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          xvfb \
+          x11-utils \
+          libx11-6 \
+          libxext6 \
+          libxrandr2 \
+          libxcursor1 \
+          libxfixes3 \
+          libxi6 \
+          libwayland-client0 \
+          libxkbcommon0 \
+          libgl1 \
+          libgles2 \
+          libegl1 \
+          libdbus-1-3
+
+    - name: Setup headless display
+      run: |
+        sudo Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX +render -noreset > /dev/null 2>&1 &
+        echo "XVFB_PID=$!" >> $GITHUB_ENV
+        sleep 3
+        echo "DISPLAY=:99" >> $GITHUB_ENV
+        
+        if ! xdpyinfo -display :99 >/dev/null 2>&1; then
+          echo "ERROR: Xvfb failed to start"
+          exit 1
+        fi
+        echo "✓ Virtual display :99 ready"
+
+    - name: Install GCC 13
+      if: matrix.compiler == 'gcc'
+      run: |
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+        sudo apt-get update
+        sudo apt-get install -y gcc-13 g++-13 lcov
+
+    - name: Install Clang 18
+      if: matrix.compiler == 'clang'
+      run: |
+        wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+        sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-18 main"
+        sudo apt-get update
+        sudo apt-get install -y clang-18 libc++-18-dev libc++abi-18-dev
+
+    - name: Make executables runnable
+      run: |
+        chmod +x build/tests/laya_tests_unit
+        chmod +x build/examples/*/laya_examples_* || true
+
+    - name: Run unit tests
+      run: |
+        mkdir -p test-results
+        
+        # Run with JUnit XML output
+        ./build/tests/laya_tests_unit --reporters=junit --out=test-results/junit-${{ matrix.compiler }}-debug.xml
+        
+        # Also run with console output for logs
+        ./build/tests/laya_tests_unit --reporters=console | tee test-results/console-${{ matrix.compiler }}-debug.txt
+
+    - name: Generate coverage report (GCC only)
+      if: matrix.compiler == 'gcc'
+      run: |
+        # Re-run tests to generate coverage data
+        ./build/tests/laya_tests_unit
+        
+        # Generate coverage with lcov
+        lcov --gcov-tool gcov-13 --capture --directory . --output-file coverage.info || true
+        lcov --gcov-tool gcov-13 --remove coverage.info \
+          '/usr/*' \
+          '*/build/_deps/*' \
+          '*/tests/*' \
+          --output-file coverage.info || true
+        
+        # Generate HTML report
+        mkdir -p coverage-html
+        genhtml coverage.info --output-directory coverage-html || true
+        
+        # Display summary
+        lcov --list coverage.info || true
+
+    - name: Upload coverage to Codecov
+      if: ${{ matrix.compiler == 'gcc' && env.ACT != 'true' }}
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.info
+        flags: unittests
+        name: codecov-${{ matrix.compiler }}-debug
+        fail_ci_if_error: false
+
+    - name: Upload test results
+      if: ${{ env.ACT != 'true' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results-linux-${{ matrix.compiler }}-debug
+        path: test-results/
+        retention-days: 90
+
+    - name: Upload coverage report
+      if: ${{ matrix.compiler == 'gcc' && env.ACT != 'true' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report-gcc-debug
+        path: |
+          coverage.info
+          coverage-html/
+        retention-days: 90
+
+    - name: Cleanup headless display
+      if: always()
+      run: |
+        if [ -n "$XVFB_PID" ]; then
+          sudo kill $XVFB_PID || true
+          echo "✓ Xvfb stopped"
+        fi
+
+  test-windows:
+    name: Test-msvc-Debug
+    runs-on: windows-latest
+    needs: check-build
+    if: needs.check-build.outputs.should_run == 'true'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download build artifacts
+      if: ${{ env.ACT != 'true' }}
+      uses: actions/download-artifact@v4
+      with:
+        name: laya-windows-msvc-Debug
+        path: build/
+
+    - name: Run unit tests
+      shell: pwsh
+      run: |
+        New-Item -ItemType Directory -Force -Path test-results
+        
+        # Set PATH to find SDL3.dll
+        $env:PATH = "$PWD\build\_deps\sdl3-build\Debug;$env:PATH"
+        
+        # Run with JUnit XML output
+        & .\build\tests\Debug\laya_tests_unit.exe --reporters=junit --out=test-results/junit-msvc-debug.xml
+        
+        # Also run with console output for logs
+        & .\build\tests\Debug\laya_tests_unit.exe --reporters=console | Tee-Object -FilePath test-results/console-msvc-debug.txt
+
+    - name: Upload test results
+      if: ${{ env.ACT != 'true' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results-windows-msvc-debug
+        path: test-results/
+        retention-days: 90

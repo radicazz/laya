@@ -1,0 +1,236 @@
+name: Benchmark
+
+on:
+  workflow_run:
+    workflows: ["Build"]
+    types:
+      - completed
+  workflow_dispatch:
+
+env:
+  ACT: 'false'
+
+jobs:
+  # Only run if build workflow succeeded
+  check-build:
+    name: Check Build Status
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'success'
+    outputs:
+      should_run: ${{ steps.check.outputs.result }}
+    steps:
+      - id: check
+        run: echo "result=true" >> $GITHUB_OUTPUT
+
+  benchmark-linux:
+    name: Benchmark-${{ matrix.compiler }}-Release
+    runs-on: ubuntu-latest
+    needs: check-build
+    if: needs.check-build.outputs.should_run == 'true'
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download build artifacts
+      if: ${{ env.ACT != 'true' }}
+      uses: actions/download-artifact@v4
+      with:
+        name: laya-linux-${{ matrix.compiler }}-Release
+        path: build/
+
+    - name: Install Ubuntu dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          xvfb \
+          x11-utils \
+          libx11-6 \
+          libxext6 \
+          libxrandr2 \
+          libxcursor1 \
+          libxfixes3 \
+          libxi6 \
+          libwayland-client0 \
+          libxkbcommon0 \
+          libgl1 \
+          libgles2 \
+          libegl1 \
+          libdbus-1-3
+
+    - name: Setup headless display
+      run: |
+        sudo Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX +render -noreset > /dev/null 2>&1 &
+        echo "XVFB_PID=$!" >> $GITHUB_ENV
+        sleep 3
+        echo "DISPLAY=:99" >> $GITHUB_ENV
+        
+        if ! xdpyinfo -display :99 >/dev/null 2>&1; then
+          echo "ERROR: Xvfb failed to start"
+          exit 1
+        fi
+        echo "✓ Virtual display :99 ready"
+
+    - name: Make executables runnable
+      run: |
+        chmod +x build/tests/laya_tests_benchmark
+
+    - name: Run benchmarks
+      run: |
+        mkdir -p benchmark-results
+        
+        # Run with JSON output for later processing
+        ./build/tests/laya_tests_benchmark \
+          --test-suite=benchmark \
+          --reporters=json \
+          --out=benchmark-results/benchmarks-${{ matrix.compiler }}-release.json || true
+        
+        # Run with console output for human readability
+        ./build/tests/laya_tests_benchmark \
+          --test-suite=benchmark \
+          --reporters=console | tee benchmark-results/benchmarks-${{ matrix.compiler }}-release.txt || true
+        
+        # Add metadata
+        echo "Compiler: ${{ matrix.compiler }}" > benchmark-results/metadata-${{ matrix.compiler }}.txt
+        echo "Build Type: Release" >> benchmark-results/metadata-${{ matrix.compiler }}.txt
+        echo "Platform: Linux (ubuntu-latest)" >> benchmark-results/metadata-${{ matrix.compiler }}.txt
+        echo "Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> benchmark-results/metadata-${{ matrix.compiler }}.txt
+        echo "Commit: ${{ github.sha }}" >> benchmark-results/metadata-${{ matrix.compiler }}.txt
+        echo "Branch: ${{ github.ref_name }}" >> benchmark-results/metadata-${{ matrix.compiler }}.txt
+
+    - name: Upload benchmark results
+      if: ${{ env.ACT != 'true' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: benchmark-results-linux-${{ matrix.compiler }}-release
+        path: benchmark-results/
+        retention-days: 365  # Extended retention for historical comparison
+
+    - name: Cleanup headless display
+      if: always()
+      run: |
+        if [ -n "$XVFB_PID" ]; then
+          sudo kill $XVFB_PID || true
+          echo "✓ Xvfb stopped"
+        fi
+
+  benchmark-windows:
+    name: Benchmark-msvc-Release
+    runs-on: windows-latest
+    needs: check-build
+    if: needs.check-build.outputs.should_run == 'true'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download build artifacts
+      if: ${{ env.ACT != 'true' }}
+      uses: actions/download-artifact@v4
+      with:
+        name: laya-windows-msvc-Release
+        path: build/
+
+    - name: Run benchmarks
+      shell: pwsh
+      run: |
+        New-Item -ItemType Directory -Force -Path benchmark-results
+        
+        # Set PATH to find SDL3.dll
+        $env:PATH = "$PWD\build\_deps\sdl3-build\Release;$env:PATH"
+        
+        # Run with JSON output
+        & .\build\tests\Release\laya_tests_benchmark.exe `
+          --test-suite=benchmark `
+          --reporters=json `
+          --out=benchmark-results/benchmarks-msvc-release.json
+        
+        # Run with console output
+        & .\build\tests\Release\laya_tests_benchmark.exe `
+          --test-suite=benchmark `
+          --reporters=console | Tee-Object -FilePath benchmark-results/benchmarks-msvc-release.txt
+        
+        # Add metadata
+        @"
+Compiler: MSVC
+Build Type: Release
+Platform: Windows (windows-latest)
+Timestamp: $(Get-Date -Format "yyyy-MM-ddTHH:mm:ssZ" -AsUTC)
+Commit: ${{ github.sha }}
+Branch: ${{ github.ref_name }}
+"@ | Out-File -FilePath benchmark-results/metadata-msvc.txt
+
+    - name: Upload benchmark results
+      if: ${{ env.ACT != 'true' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: benchmark-results-windows-msvc-release
+        path: benchmark-results/
+        retention-days: 365  # Extended retention for historical comparison
+
+  # Aggregate all benchmark results into a single artifact
+  aggregate-results:
+    name: Aggregate Benchmark Results
+    runs-on: ubuntu-latest
+    needs: [benchmark-linux, benchmark-windows]
+    if: needs.check-build.outputs.should_run == 'true'
+
+    steps:
+    - name: Download all benchmark results
+      if: ${{ env.ACT != 'true' }}
+      uses: actions/download-artifact@v4
+      with:
+        pattern: benchmark-results-*
+        path: all-benchmarks/
+
+    - name: Create summary
+      run: |
+        mkdir -p aggregated-benchmarks
+        
+        # Move all results into aggregated folder
+        find all-benchmarks -type f -exec cp {} aggregated-benchmarks/ ';'
+        
+        # Create summary README
+        cat > aggregated-benchmarks/README.md << EOF
+        # Benchmark Results
+        
+        **Commit**: ${{ github.sha }}
+        **Branch**: ${{ github.ref_name }}
+        **Timestamp**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+        **Workflow Run**: ${{ github.run_number }}
+        
+        ## Available Results
+        
+        - Linux GCC Release: \`benchmarks-gcc-release.json\`, \`benchmarks-gcc-release.txt\`
+        - Linux Clang Release: \`benchmarks-clang-release.json\`, \`benchmarks-clang-release.txt\`
+        - Windows MSVC Release: \`benchmarks-msvc-release.json\`, \`benchmarks-msvc-release.txt\`
+        
+        ## Metadata Files
+        
+        - \`metadata-gcc.txt\`
+        - \`metadata-clang.txt\`
+        - \`metadata-msvc.txt\`
+        
+        ## Usage
+        
+        JSON files can be parsed programmatically for historical comparison and visualization.
+        Text files provide human-readable output for quick review.
+        EOF
+        
+        # List all files
+        ls -lah aggregated-benchmarks/
+
+    - name: Upload aggregated results
+      if: ${{ env.ACT != 'true' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: benchmark-results-all-compilers
+        path: aggregated-benchmarks/
+        retention-days: 365  # Extended retention for historical comparison

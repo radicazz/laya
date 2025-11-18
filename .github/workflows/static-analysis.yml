@@ -1,0 +1,189 @@
+name: Static Analysis
+
+on:
+  push:
+    branches: [master, develop]
+  pull_request:
+    branches: [master, develop]
+  workflow_dispatch:
+
+env:
+  ACT: 'false'
+
+jobs:
+  format-check:
+    name: Format Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+        
+    - name: Install Python formatting tools
+      run: |
+        pip install black isort
+        
+    - name: Install clang-format
+      run: |
+        wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+        sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-18 main"
+        sudo apt-get update
+        sudo apt-get install -y clang-format-18
+        
+    - name: Check C++ formatting
+      run: |
+        find include src tests examples -type f \( -name "*.hpp" -o -name "*.cpp" \) \
+          -exec clang-format-18 --style=file --dry-run --Werror {} +
+        
+    - name: Check Python formatting (black)
+      run: |
+        # Check if there are any Python files, if so format them
+        if find . -name "*.py" -not -path "./build/*" -not -path "./.venv/*" | grep -q .; then
+          black --check --diff .
+        else
+          echo "No Python files found to check"
+        fi
+        
+    - name: Check Python imports (isort)
+      run: |
+        # Check if there are any Python files, if so check imports
+        if find . -name "*.py" -not -path "./build/*" -not -path "./.venv/*" | grep -q .; then
+          isort --check-only --diff .
+        else
+          echo "No Python files found to check"
+        fi
+        
+    - name: Check file endings
+      uses: pre-commit/action@v3.0.1
+      with:
+        extra_args: --hook-stage manual end-of-file-fixer trailing-whitespace mixed-line-ending
+        
+    - name: Validate YAML/JSON
+      uses: pre-commit/action@v3.0.1
+      with:
+        extra_args: --hook-stage manual check-yaml check-json
+
+  lint-cpp:
+    name: C++ Linting
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install dependencies
+      run: |
+        # Add repositories for newer compilers
+        wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+        sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-18 main"
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+        sudo apt-get update
+        sudo apt-get install -y \
+          clang-tidy-18 \
+          clang-18 \
+          gcc-13 \
+          g++-13 \
+          build-essential \
+          cmake \
+          ninja-build \
+          pkg-config \
+          libx11-dev \
+          libxext-dev \
+          libxrandr-dev \
+          libxcursor-dev \
+          libxfixes-dev \
+          libxi-dev \
+          libxss-dev \
+          libwayland-dev \
+          libxkbcommon-dev \
+          libdrm-dev \
+          libgl1-mesa-dev \
+          libgles2-mesa-dev \
+          libegl1-mesa-dev \
+          libdbus-1-dev \
+          libudev-dev
+          
+    - name: Generate compile_commands.json
+      run: |
+        export CC=gcc-13
+        export CXX=g++-13
+        cmake -B build \
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+          -DCMAKE_CXX_STANDARD=20 \
+          -DCMAKE_CXX_STANDARD_REQUIRED=ON \
+          -DLAYA_BUILD_TESTS=ON \
+          -DLAYA_BUILD_EXAMPLES=ON
+          
+    - name: Run clang-tidy
+      run: |
+        mkdir -p reports
+        
+        # Run on headers
+        find include -type f -name "*.hpp" | \
+          xargs clang-tidy-18 -p build --config-file=.clang-tidy \
+          > reports/clang-tidy-headers.txt 2>&1 || true
+          
+        # Run on source files
+        find src -type f -name "*.cpp" | \
+          xargs clang-tidy-18 -p build --config-file=.clang-tidy \
+          > reports/clang-tidy-sources.txt 2>&1 || true
+          
+        # Combine reports
+        cat reports/clang-tidy-*.txt > reports/clang-tidy-full-report.txt
+        
+    - name: Upload clang-tidy reports
+      if: ${{ env.ACT != 'true' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: clang-tidy-reports
+        path: reports/clang-tidy-*.txt
+        retention-days: 30
+
+  static-analyzers:
+    name: Static Analyzers
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install cppcheck
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cppcheck
+        
+    - name: Run cppcheck
+      run: |
+        mkdir -p reports
+        cppcheck --enable=all \
+          --inconclusive \
+          --xml \
+          --xml-version=2 \
+          --suppress=missingIncludeSystem \
+          --suppress=unmatchedSuppression \
+          --suppress=unusedFunction \
+          src/ include/ \
+          2> reports/cppcheck-report.xml || true
+          
+        # Also generate text report for readability
+        cppcheck --enable=all \
+          --inconclusive \
+          --suppress=missingIncludeSystem \
+          --suppress=unmatchedSuppression \
+          --suppress=unusedFunction \
+          src/ include/ \
+          2> reports/cppcheck-report.txt || true
+          
+    - name: Upload cppcheck reports
+      if: ${{ env.ACT != 'true' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: cppcheck-reports
+        path: reports/cppcheck-*.xml
+        retention-days: 30
