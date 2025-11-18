@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 
 project(laya
-    VERSION 0.1.0
+    VERSION 0.1.1
     DESCRIPTION "Modern C++20 wrapper for SDL3"
     LANGUAGES CXX
 )
@@ -43,12 +43,6 @@ option(LAYA_INSTALL "Generate install target" ${PROJECT_IS_TOP_LEVEL})
 
 # SDL3 consumption options
 option(LAYA_SDL_TARGETS_PROVIDED "Skip SDL setup - parent project provides SDL targets" OFF)
-set(LAYA_SDL_METHOD "submodule" CACHE STRING "Method to consume SDL3")
-set_property(CACHE LAYA_SDL_METHOD PROPERTY STRINGS "submodule" "system")
-
-# SDL3 extension options
-option(LAYA_USE_SDL_IMAGE "Enable SDL3_image support" ON)
-option(LAYA_USE_SDL_TTF "Enable SDL3_ttf support" ON)
 
 # C++20 requirement
 set(CMAKE_CXX_STANDARD 20)
@@ -76,8 +70,6 @@ target_include_directories(laya
 target_link_libraries(laya
     PUBLIC
     SDL3::SDL3
-    $<$<BOOL:${LAYA_USE_SDL_IMAGE}>:SDL3::SDL3_image>
-    $<$<BOOL:${LAYA_USE_SDL_TTF}>:SDL3::SDL3_ttf>
 )
 
 target_compile_features(laya PUBLIC cxx_std_20)
@@ -94,30 +86,28 @@ if(LAYA_BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
-# Installation - only when explicitly requested and not using submodules
+# Installation - when explicitly requested
 # When consumed as a dependency, installation is typically handled by the parent project
-if(LAYA_INSTALL AND NOT LAYA_SDL_METHOD STREQUAL "submodule")
+if(LAYA_INSTALL)
     include(cmake/LayaInstall.cmake)
 endif()
 
 # Always export targets for use in build tree (allows parent projects to use find_package in build tree)
-if(NOT LAYA_SDL_METHOD STREQUAL "submodule")
-    export(TARGETS laya
-        NAMESPACE laya::
-        FILE "${CMAKE_CURRENT_BINARY_DIR}/LayaTargets.cmake"
-    )
+export(TARGETS laya
+    NAMESPACE laya::
+    FILE "${CMAKE_CURRENT_BINARY_DIR}/LayaTargets.cmake"
+)
 
-    # Generate a basic config file for build tree usage
-    include(CMakePackageConfigHelpers)
-    configure_package_config_file(
-        cmake/LayaConfig.cmake.in
-        ${CMAKE_CURRENT_BINARY_DIR}/LayaConfig.cmake
-        INSTALL_DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-    )
+# Generate a basic config file for build tree usage
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+    cmake/LayaConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/LayaConfig.cmake
+    INSTALL_DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+)
 
-    write_basic_package_version_file(
-        ${CMAKE_CURRENT_BINARY_DIR}/LayaConfigVersion.cmake
-        VERSION ${PROJECT_VERSION}
-        COMPATIBILITY SameMajorVersion
-    )
-endif()
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/LayaConfigVersion.cmake
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)

@@ -19,7 +19,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        submodules: recursive
+        submodules: true  # Only doctest submodule
 
     - name: Install dependencies
       run: |
@@ -64,7 +64,6 @@ jobs:
         # Create compile_commands.json
         cmake -B build \
           -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-          -DLAYA_SDL_METHOD=submodule \
           -DCMAKE_CXX_STANDARD=20 \
           -DCMAKE_CXX_STANDARD_REQUIRED=ON
 

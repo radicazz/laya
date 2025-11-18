@@ -24,20 +24,17 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        submodules: recursive
+        submodules: true  # Only doctest submodule
         fetch-depth: 0
 
-    - name: Cache SDL3 build
+    - name: Cache FetchContent downloads
       uses: actions/cache@v4
       with:
         path: |
-          build/external
-          external/SDL/build
-          external/SDL_image/build
-          external/SDL_ttf/build
-        key: windows-msvc-sdl3-${{ hashFiles('external/SDL/**', 'external/SDL_image/**', 'external/SDL_ttf/**') }}
+          build/_deps
+        key: windows-msvc-fetchcontent-${{ hashFiles('cmake/SetupSDL3.cmake') }}
         restore-keys: |
-          windows-msvc-sdl3-
+          windows-msvc-fetchcontent-
 
     - name: Setup MSVC
       uses: microsoft/setup-msbuild@v1.3
@@ -49,7 +46,6 @@ jobs:
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
           -DLAYA_BUILD_TESTS=ON `
           -DLAYA_BUILD_EXAMPLES=ON `
-          -DLAYA_SDL_METHOD=submodule `
           -DCMAKE_CXX_STANDARD=20 `
           -DCMAKE_CXX_STANDARD_REQUIRED=ON
 

@@ -108,19 +108,19 @@ The above example uses modern C++ features such as RAII, `std::variant` and rang
 
 ## Installation
 
-Including *laya* in your project is meant to be easy.
+Including *laya* in your project is easy. Laya automatically manages SDL3 dependencies using CMake FetchContent - no manual setup required!
+
+### Option 1: Git Submodule
 
 ```bash
 cd your_project_root
 
-# Assuming your project uses `external/` for dependencies
+# Add laya as a submodule
 git submodule add https://github.com/radicazz/laya.git external/laya
-
-# Initialize and update the submodule
-git submodule update --init --recursive
+git submodule update --init
 ```
 
-Then, update your `CMakeLists.txt` to include, build and link against Laya:
+Then, update your `CMakeLists.txt`:
 
 ```cmake
 # CMakeLists.txt
@@ -128,7 +128,27 @@ add_subdirectory(external/laya)
 target_link_libraries(your_app PRIVATE laya::laya)
 ```
 
-Alternatively, you can use `FetchContent` or `CPM.cmake` to include *laya* as a dependency. See [Quick Start](docs/quick_start.md) for more details.
+### Option 2: FetchContent (Recommended)
+
+```cmake
+include(FetchContent)
+
+FetchContent_Declare(
+    laya
+    GIT_REPOSITORY https://github.com/radicazz/laya.git
+    GIT_TAG main  # or specify a release tag
+)
+FetchContent_MakeAvailable(laya)
+
+target_link_libraries(your_app PRIVATE laya::laya)
+```
+
+### Advanced Configuration
+
+- If you already have SDL3 in your project, laya will use it automatically
+- Use system-installed SDL3: It will be detected automatically via `find_package`
+
+See [Quick Start](docs/quick_start.md) for more details.
 
 # Contributing
 
