@@ -29,6 +29,7 @@ if(LAYA_TESTS_UNIT)
         unit/test_event_view.cpp
         unit/test_event_range.cpp
         unit/test_window_event.cpp
+        unit/test_logging.cpp
     )
 
     # Create unit test executable

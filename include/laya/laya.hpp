@@ -10,3 +10,4 @@
 #include "windows/window.hpp"
 #include "subsystems.hpp"
 #include "errors.hpp"
+#include "logging/log.hpp"

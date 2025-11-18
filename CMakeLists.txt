@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 
 project(laya
-    VERSION 0.1.1
+    VERSION 0.1.2
     DESCRIPTION "Modern C++20 wrapper for SDL3"
     LANGUAGES CXX
 )
