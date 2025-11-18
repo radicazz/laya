@@ -69,8 +69,7 @@ jobs:
     
     - name: Build documentation
       run: |
-        cd tools
-        uv run mkdocs build --clean --strict
+        uv run --directory tools mkdocs build --clean --strict
     
     - name: Upload artifact for GitHub Pages
       if: ${{ env.ACT != 'true' }}
@@ -107,8 +106,7 @@ jobs:
     
     - name: Build documentation
       run: |
-        cd tools
-        uv run mkdocs build --clean --strict
+        uv run --directory tools mkdocs build --clean --strict
     
     - name: Upload preview artifact
       uses: actions/upload-artifact@v4
