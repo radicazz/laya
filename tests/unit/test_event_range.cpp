@@ -14,8 +14,8 @@ TEST_CASE("event_range basic functionality") {
         CHECK(range.size() == 0);
     }
 
-    SUBCASE("poll_events_range returns event_range") {
-        auto range = laya::poll_events_range();
+    SUBCASE("events_range returns event_range") {
+        auto range = laya::events_range();
         // Should compile and be iterable
         size_t count = 0;
         for ([[maybe_unused]] const auto& event : range) {
@@ -27,7 +27,7 @@ TEST_CASE("event_range basic functionality") {
     }
 
     SUBCASE("event_range supports multi-pass iteration") {
-        auto range = laya::poll_events_range();
+        auto range = laya::events_range();
 
         // First pass
         size_t first_count = 0;
@@ -56,12 +56,12 @@ TEST_CASE("event_range iterator operations") {
     laya::context ctx(laya::subsystem::video);
 
     SUBCASE("begin equals end when empty") {
-        auto range = laya::poll_events_range();
+        auto range = laya::events_range();
         CHECK(range.begin() == range.end());
     }
 
     SUBCASE("iterator is copy constructible") {
-        auto range = laya::poll_events_range();
+        auto range = laya::events_range();
         auto it1 = range.begin();
         auto it2 = it1;  // Copy construction
         CHECK(it1 == it2);

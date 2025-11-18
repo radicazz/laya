@@ -80,7 +80,7 @@ int main() {
     bool running = true;
 
     while (running) {
-        for (const auto& event : laya::poll_events_view()) {
+        for (const auto& event : laya::events_view()) {
             // Destroy the window when requested
             if (std::holds_alternative<laya::quit_event>(event)) {
                 running = false;

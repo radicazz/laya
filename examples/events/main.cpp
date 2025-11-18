@@ -93,8 +93,8 @@ void demo_event_view(laya::window& window, bool ci_mode) {
     int iterations = 0;
 
     while (running) {
-        // poll_events_view() returns an event_view - lazy iteration, no allocations
-        for (const auto& event : laya::poll_events_view()) {
+        // events_view() returns an event_view - lazy iteration, no allocations
+        for (const auto& event : laya::events_view()) {
             std::visit(
                 [&](const auto& e) {
                     using T = std::decay_t<decltype(e)>;
@@ -142,8 +142,8 @@ void demo_event_range(laya::window& window, bool ci_mode) {
     int iterations = 0;
 
     while (running) {
-        // poll_events_range() returns an event_range - all events stored in vector
-        auto events = laya::poll_events_range();
+        // events_range() returns an event_range - all events stored in vector
+        auto events = laya::events_range();
 
         if (!events.empty()) {
             std::cout << "\nProcessed " << events.size() << " event(s):" << std::endl;

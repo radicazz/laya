@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
         int iterations = 0;
         while (running) {
             // Handle events
-            for (const auto& event : laya::poll_events_range()) {
+            for (const auto& event : laya::events_range()) {
                 if (std::holds_alternative<laya::quit_event>(event)) {
                     running = false;
                 }

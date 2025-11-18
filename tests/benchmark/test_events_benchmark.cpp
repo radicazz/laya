@@ -104,7 +104,7 @@ TEST_SUITE("benchmark") {
                 auto start = std::chrono::high_resolution_clock::now();
 
                 // Poll events using event_range
-                auto events = laya::poll_events_range();
+                auto events = laya::events_range();
 
                 // Process events (simulate real work)
                 std::size_t count = 0;
@@ -149,7 +149,7 @@ TEST_SUITE("benchmark") {
 
                 // Poll events using event_view (lazy, zero-allocation)
                 std::size_t count = 0;
-                for (const auto& event : laya::poll_events_view()) {
+                for (const auto& event : laya::events_view()) {
                     ++count;
                     // Touch the event data to prevent optimization
                     std::visit([](const auto&) {}, event);

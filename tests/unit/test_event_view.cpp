@@ -13,8 +13,8 @@ TEST_CASE("event_view basic functionality") {
         CHECK(view.begin() == view.end());
     }
 
-    SUBCASE("poll_events_view returns event_view") {
-        auto view = laya::poll_events_view();
+    SUBCASE("events_view returns event_view") {
+        auto view = laya::events_view();
         // Should compile and be iterable
         size_t count = 0;
         for ([[maybe_unused]] const auto& event : view) {
@@ -37,14 +37,14 @@ TEST_CASE("event_view iterator operations") {
     laya::context ctx(laya::subsystem::video);
 
     SUBCASE("end iterator equals end iterator") {
-        auto view = laya::poll_events_view();
+        auto view = laya::events_view();
         auto end1 = view.end();
         auto end2 = view.end();
         CHECK(end1 == end2);
     }
 
     SUBCASE("iterator is copy constructible") {
-        auto view = laya::poll_events_view();
+        auto view = laya::events_view();
         auto it1 = view.begin();
         auto it2 = it1;  // Copy construction
         CHECK(it1 == it2);
@@ -52,8 +52,8 @@ TEST_CASE("event_view iterator operations") {
 }
 
 TEST_CASE("event_view noexcept specifications") {
-    SUBCASE("poll_events_view is noexcept") {
-        CHECK(noexcept(laya::poll_events_view()));
+    SUBCASE("events_view is noexcept") {
+        CHECK(noexcept(laya::events_view()));
     }
 
     SUBCASE("end() is noexcept") {

@@ -59,7 +59,7 @@ private:
 
 /// Poll all available events
 /// @return Range containing all polled events (owns events, supports multi-pass iteration)
-[[nodiscard]] event_range poll_events_range();
+[[nodiscard]] event_range events_range();
 
 /// Non-owning view for lazy event polling
 /// @note Zero-allocation, single-pass iteration - suitable for performance-critical code
@@ -122,7 +122,7 @@ public:
 /// Poll events lazily without allocating storage
 /// @return View for zero-allocation, single-pass event iteration
 /// @note Prefer this for performance-critical code when events are processed once
-[[nodiscard]] event_view poll_events_view() noexcept;
+[[nodiscard]] event_view events_view() noexcept;
 
 // ============================================================================
 // event_range inline implementations
@@ -194,7 +194,7 @@ inline event_view::iterator event_view::end() const noexcept {
     return iterator{};
 }
 
-inline event_view poll_events_view() noexcept {
+inline event_view events_view() noexcept {
     return event_view{};
 }
 

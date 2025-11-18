@@ -64,7 +64,7 @@ event_range::event_range() {
     }
 }
 
-event_range poll_events_range() {
+event_range events_range() {
     return event_range{};
 }
 
