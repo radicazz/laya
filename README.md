@@ -71,17 +71,17 @@ A modern library targetting C++20 and SDL3 for cross-platform, immediate-mode, d
 #include <laya/laya.hpp>
 
 int main() {
-    // Initialize SDL and free when out of scope
-    laya::context ctx(laya::subsystem::video);
-
+    // RAII wrappers for memory safety
+    laya::context context(laya::subsystem::video);
     laya::window window("Hello, Laya!", {800, 600});
     laya::renderer renderer(window);
 
-    bool running = true;
+    laya::log_info("laya initialized successfully")
 
+    bool running = true;
     while (running) {
         for (const auto& event : laya::events_view()) {
-            // Destroy the window when requested
+            // Type-safe event handling
             if (std::holds_alternative<laya::quit_event>(event)) {
                 running = false;
                 break;
@@ -136,17 +136,12 @@ add_subdirectory(external/laya)
 target_link_libraries(your_app PRIVATE laya::laya)
 ```
 
-### Advanced Configuration
-
-- If you already have SDL3 in your project, laya will use it automatically
-- Use system-installed SDL3: It will be detected automatically via `find_package`
-
 See [Quick Start](docs/quick_start.md) for more details.
 
-# Contributing
+## Contributing
 
 If you are interested in contributing, please see [CONTRIBUTING.md](CONTRIBUTING.md) for some guidelines and best practices.
 
-# License
+## License
 
 This project falls under the MIT License. See [LICENSE.txt](LICENSE.txt) for details.
