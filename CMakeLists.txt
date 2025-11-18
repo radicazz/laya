@@ -68,8 +68,8 @@ target_include_directories(laya
 )
 
 target_link_libraries(laya
-    PRIVATE
-    SDL3::SDL3
+    PUBLIC
+    $<BUILD_INTERFACE:SDL3::SDL3>
 )
 
 target_compile_features(laya PUBLIC cxx_std_20)

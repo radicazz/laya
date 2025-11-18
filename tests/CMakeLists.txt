@@ -5,8 +5,17 @@ include(FetchContent)
 FetchContent_Declare(
     doctest
     URL https://github.com/doctest/doctest/archive/refs/tags/v2.4.11.tar.gz
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 
+# Set policy to allow FetchContent_Populate for header-only libraries
+# This is the recommended approach for header-only libraries where we don't want
+# to process their CMakeLists.txt
+if(POLICY CMP0169)
+    cmake_policy(SET CMP0169 OLD)
+endif()
+
+# Fetch doctest without adding its CMakeLists.txt (header-only mode)
 FetchContent_GetProperties(doctest)
 if(NOT doctest_POPULATED)
     FetchContent_Populate(doctest)
