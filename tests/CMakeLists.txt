@@ -1,27 +1,25 @@
 # doctest testing framework integration
+# Use header-only approach to avoid CMake version issues
+include(FetchContent)
 
-# Option to use system doctest or bundled version
-option(LAYA_USE_SYSTEM_DOCTEST "Use system-installed doctest" OFF)
+FetchContent_Declare(
+    doctest
+    URL https://github.com/doctest/doctest/archive/refs/tags/v2.4.11.tar.gz
+)
+
+FetchContent_GetProperties(doctest)
+if(NOT doctest_POPULATED)
+    FetchContent_Populate(doctest)
+    
+    # Create interface library for doctest header (header-only, skip CMakeLists.txt)
+    add_library(doctest INTERFACE)
+    target_include_directories(doctest INTERFACE ${doctest_SOURCE_DIR})
+    add_library(doctest::doctest ALIAS doctest)
+endif()
 
 # Test build options
 option(LAYA_TESTS_UNIT "Build unit tests" ON)
 option(LAYA_TESTS_BENCHMARK "Build benchmark tests" ON)
-
-if(LAYA_USE_SYSTEM_DOCTEST)
-    find_package(doctest REQUIRED)
-else()
-    # Use bundled doctest submodule
-    if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../external/doctest/doctest/doctest.h")
-        message(FATAL_ERROR "doctest submodule not found. Run: git submodule update --init --recursive")
-    endif()
-
-    # Create interface library for doctest
-    add_library(doctest INTERFACE)
-    target_include_directories(doctest INTERFACE
-        "${CMAKE_CURRENT_SOURCE_DIR}/../external/doctest"
-    )
-    add_library(doctest::doctest ALIAS doctest)
-endif()
 
 # Unit tests
 if(LAYA_TESTS_UNIT)
@@ -62,15 +60,8 @@ if(LAYA_TESTS_UNIT)
     laya_copy_sdl_shared_libs(laya_tests_unit)
 
     # Register tests with CTest
-    # Try to use doctest's CMake integration if available
-    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../external/doctest/scripts/cmake/doctest.cmake")
-        include("${CMAKE_CURRENT_SOURCE_DIR}/../external/doctest/scripts/cmake/doctest.cmake")
-        doctest_discover_tests(laya_tests_unit)
-    else()
-        # Manual test registration
-        add_test(NAME laya_all_unit_tests COMMAND laya_tests_unit)
-        add_test(NAME laya_unit_tests COMMAND laya_tests_unit --test-suite=unit)
-    endif()
+    add_test(NAME laya_all_unit_tests COMMAND laya_tests_unit)
+    add_test(NAME laya_unit_tests COMMAND laya_tests_unit --test-suite=unit)
 endif()
 
 # Benchmark tests

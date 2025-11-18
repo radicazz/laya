@@ -1,4 +1,0 @@
-[submodule "external/doctest"]
-	path = external/doctest
-	url = https://github.com/doctest/doctest.git
-	branch = v2.4.12

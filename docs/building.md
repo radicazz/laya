@@ -7,7 +7,7 @@ The following document provides detailed instructions on building the Laya libra
 - CMake 3.21 or later
 - C++20 compatible compiler (MSVC 2022, GCC 11+, Clang 15+)
 - Git
-- Internet connection (first build only - for downloading SDL3 via FetchContent)
+- Internet connection (first build only - for downloading dependencies via FetchContent)
 
 ## Building with Examples
 
@@ -15,9 +15,6 @@ The following document provides detailed instructions on building the Laya libra
 # Clone the repository
 git clone https://github.com/radicazz/laya.git
 cd laya
-
-# Initialize doctest submodule (only needed for tests)
-git submodule update --init
 
 # Configure and build
 cmake -B build
@@ -63,7 +60,7 @@ This means:
 
 ## Testing
 
-laya uses [doctest](https://github.com/doctest/doctest) as its testing framework, integrated as a git submodule for easy setup.
+laya uses [doctest](https://github.com/doctest/doctest) as its testing framework, automatically downloaded via CMake FetchContent.
 
 ### Running Tests
 

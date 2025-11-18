@@ -67,10 +67,6 @@
 
 A modern library targetting C++20 and SDL3 for cross-platform, immediate-mode, desktop application development. With *laya*, you can create windows, handle input events, render 2D graphics and manage resources in a type-safe and efficient manner while leveraging the full power of the underlying SDL library.
 
-## Example
-
-Creating a window, handling events and rendering looks like this:
-
 ```cpp
 #include <laya/laya.hpp>
 
@@ -104,31 +100,11 @@ int main() {
 }
 ```
 
-The above example uses modern C++ features such as RAII, `std::variant` and range-based for loops to provide a clean and safe interface for SDL - no raw pointers or manual memory management required.
-
 ## Installation
 
 Including *laya* in your project is easy. Laya automatically manages SDL3 dependencies using CMake FetchContent - no manual setup required!
 
-### Option 1: Git Submodule
-
-```bash
-cd your_project_root
-
-# Add laya as a submodule
-git submodule add https://github.com/radicazz/laya.git external/laya
-git submodule update --init
-```
-
-Then, update your `CMakeLists.txt`:
-
-```cmake
-# CMakeLists.txt
-add_subdirectory(external/laya)
-target_link_libraries(your_app PRIVATE laya::laya)
-```
-
-### Option 2: FetchContent (Recommended)
+### Option 1: FetchContent (Recommended)
 
 ```cmake
 include(FetchContent)
@@ -140,6 +116,23 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(laya)
 
+target_link_libraries(your_app PRIVATE laya::laya)
+```
+
+### Option 2: Git Submodule
+
+```bash
+cd your_project_root
+
+# Add laya as a submodule
+git submodule add https://github.com/radicazz/laya.git external/laya
+```
+
+Then, update your `CMakeLists.txt`:
+
+```cmake
+# CMakeLists.txt
+add_subdirectory(external/laya)
 target_link_libraries(your_app PRIVATE laya::laya)
 ```
 
