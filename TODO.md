@@ -8,7 +8,7 @@ Nothing yet.
 
 ## Features
 
-- SDL logger wrapping with format support.
+Nothing yet.
 
 ## Maintenance
 

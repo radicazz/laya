@@ -1,8 +1,16 @@
-# Quick Start
+# Getting Started
 
-Welcome to the quick start guide for integrating the Laya library into your C++ project. This will cover the basics of adding Laya as a dependency, configuring it, and using it in your application.
+Welcome to the getting started guide for integrating Laya into your C++ project. This guide covers installation, configuration, and your first Laya application.
 
-## Option 1: FetchContent (Recommended)
+## Prerequisites
+
+- **C++20 compatible compiler** (GCC 11+, Clang 14+, MSVC 2022+)
+- **CMake 3.21 or higher**
+- **SDL3** (automatically handled by Laya)
+
+## Installation
+
+### Option 1: FetchContent (Recommended)
 
 The easiest way to add Laya to your project. SDL3 dependencies are managed automatically!
 
@@ -19,7 +27,7 @@ target_link_libraries(your_app PRIVATE laya::laya)
 
 **Note:** No manual dependency setup required! Laya will automatically download and configure SDL3 on first build.
 
-## Option 2: Git Submodule
+### Option 2: Git Submodule
 
 Add the repository as a git submodule:
 
@@ -39,7 +47,7 @@ add_subdirectory(external/laya)
 target_link_libraries(your_app PRIVATE laya::laya)
 ```
 
-## Option 3: CPM (CMake Package Manager)
+### Option 3: CPM (CMake Package Manager)
 
 ```cmake
 include(cmake/CPM.cmake)
@@ -62,47 +70,6 @@ target_link_libraries(your_app PRIVATE laya::laya)
 | Option | Default | Description |
 |--------|---------|-------------|
 | `LAYA_SDL_TARGETS_PROVIDED` | OFF | Skip SDL setup (parent provides SDL3) |
-
-## Usage Examples
-
-### Minimal Integration
-
-```cmake
-# Just add Laya, no configuration needed
-add_subdirectory(external/laya)
-target_link_libraries(my_game PRIVATE laya::laya)
-```
-
-### Custom Configuration
-
-```cmake
-# Use parent's SDL3 instead of auto-download
-find_package(SDL3 REQUIRED)
-set(LAYA_SDL_TARGETS_PROVIDED ON)
-add_subdirectory(external/laya)
-target_link_libraries(my_game PRIVATE laya::laya)
-```
-
-### When You Already Have SDL
-
-```cmake
-# Your project already provides SDL targets
-find_package(SDL3 REQUIRED)
-# ... other SDL setup ...
-
-# Tell Laya to use your targets
-set(LAYA_SDL_TARGETS_PROVIDED ON)
-add_subdirectory(external/laya)
-target_link_libraries(my_game PRIVATE laya::laya)
-```
-
-### Enabling Development Tools
-
-```cmake
-# Only enable when developing/debugging Laya itself
-set(LAYA_BUILD_ALL ON)  # Enables tests and examples
-add_subdirectory(external/laya)
-```
 
 ## SDL Dependency Handling
 
@@ -149,6 +116,120 @@ find_package(SDL3 REQUIRED)  # or FetchContent, etc.
 # Tell Laya to use your targets
 set(LAYA_SDL_TARGETS_PROVIDED ON)
 add_subdirectory(external/laya)
+```
+
+## Your First Laya Application
+
+### Minimal Example
+
+Create a simple window application:
+
+```cpp
+// main.cpp
+#include <laya/laya.hpp>
+
+int main() {
+    // Initialize SDL subsystems
+    laya::context ctx{laya::subsystem::video};
+    
+    // Create a window
+    laya::window win{"My First Window", {800, 600}};
+    
+    // Keep window open until user closes it
+    bool running = true;
+    while (running) {
+        for (const auto& event : laya::poll_events()) {
+            if (std::holds_alternative<laya::quit_event>(event)) {
+                running = false;
+            }
+        }
+    }
+    
+    return 0;
+}
+```
+
+### CMake Configuration
+
+```cmake
+# CMakeLists.txt
+cmake_minimum_required(VERSION 3.21)
+project(my_app)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Add Laya
+add_subdirectory(external/laya)
+
+# Create executable
+add_executable(my_app main.cpp)
+target_link_libraries(my_app PRIVATE laya::laya)
+```
+
+### Build and Run
+
+```bash
+# Configure
+cmake -B build -S .
+
+# Build
+cmake --build build
+
+# Run
+./build/my_app
+```
+
+## Complete Example with Rendering
+
+```cpp
+#include <laya/laya.hpp>
+
+int main() {
+    try {
+        // Initialize video subsystem
+        laya::context ctx{laya::subsystem::video};
+        laya::log_info("Laya initialized successfully");
+        
+        // Create window
+        laya::window win{"Laya Example", {800, 600}, 
+                         laya::window_flags::resizable};
+        laya::log_info("Window created");
+        
+        // Create renderer
+        laya::renderer renderer{win};
+        laya::log_info("Renderer created");
+        
+        // Main loop
+        bool running = true;
+        while (running) {
+            // Handle events
+            for (const auto& event : laya::poll_events()) {
+                if (std::holds_alternative<laya::quit_event>(event)) {
+                    running = false;
+                }
+            }
+            
+            // Clear screen with blue color
+            renderer.clear(laya::color{100, 149, 237});
+            
+            // Draw a red rectangle
+            renderer.set_draw_color(laya::color{255, 0, 0});
+            renderer.fill_rect({100, 100, 200, 150});
+            
+            // Present to screen
+            renderer.present();
+        }
+        
+        laya::log_info("Application exiting");
+        
+    } catch (const laya::error& e) {
+        laya::log_critical("Fatal error: {}", e.what());
+        return 1;
+    }
+    
+    return 0;
+}
 ```
 
 ## Best Practices
@@ -210,30 +291,52 @@ If you need to build without internet:
 1. Build once with internet (populates CMake's FetchContent cache)
 2. OR install SDL3 system-wide, which will be detected automatically
 
-## Minimal Example
+## Platform-Specific Notes
 
-```cpp
-// main.cpp
-#include <laya/laya.hpp>
+### Linux
 
-int main() {
-    laya::init();
-    // Your game code here
-    laya::quit();
-    return 0;
-}
+```bash
+# Install build dependencies
+sudo apt install build-essential cmake git
+
+# Optional: Install SDL3 system-wide
+sudo apt install libsdl3-dev
 ```
 
-```cmake
-# CMakeLists.txt
-cmake_minimum_required(VERSION 3.21)
-project(my_game)
+### macOS
 
-set(CMAKE_CXX_STANDARD 20)
+```bash
+# Install via Homebrew
+brew install cmake
 
-add_subdirectory(external/laya)
-add_executable(my_game main.cpp)
-target_link_libraries(my_game PRIVATE laya::laya)
+# Optional: Install SDL3 system-wide
+brew install sdl3
 ```
 
-This setup provides a static Laya library with all SDL dependencies handled automatically.
+### Windows
+
+Use Visual Studio 2022 or later with CMake support, or install CMake separately.
+
+PowerShell:
+```powershell
+# Configure with Visual Studio generator
+cmake -B build -G "Visual Studio 17 2022" -A x64
+
+# Build
+cmake --build build --config Release
+```
+
+## Next Steps
+
+- **[Goals](goals.md)** - Understand Laya's design philosophy
+- **[Architecture](architecture.md)** - Learn about Laya's design patterns
+- **[Features](features/logging.md)** - Explore specific features like logging, events, and rendering
+- **[Examples](../examples/)** - See complete example applications
+
+## Getting Help
+
+- **Issues**: [GitHub Issues](https://github.com/radicazz/laya/issues)
+- **Documentation**: This documentation
+- **Examples**: Check the `examples/` directory in the repository
+
+Happy coding with Laya!

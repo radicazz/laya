@@ -1,6 +1,6 @@
 # Goals
 
-This document outlines the core goals, motivations, and vision for the laya C++20 SDL3 wrapper library.
+This document outlines the core goals, motivations, and vision for the Laya C++20 SDL3 wrapper library.
 
 ---
 
@@ -12,7 +12,7 @@ Provide a modern C++ interface to SDL3 that compiles down to the same assembly a
 
 ### 2. **Complete SDL3 Coverage**
 
-Wrap 100% of SDL3's public API in a type-safe, idiomatic C++ interface. No SDL3 functionality should be inaccessible through laya, ensuring users never need to drop down to raw SDL3 calls.
+Wrap 100% of SDL3's public API in a type-safe, idiomatic C++ interface. No SDL3 functionality should be inaccessible through Laya, ensuring users never need to drop down to raw SDL3 calls.
 
 ### 3. **Memory Safety**
 
@@ -74,7 +74,7 @@ Provide identical behavior across all platforms that support C++20 and SDL3, abs
 - **Modern Idioms**: No RAII, ranges, or other C++ conveniences
 - **Compile-Time Checks**: Many errors only caught at runtime
 
-### How laya Solves These Problems
+### How Laya Solves These Problems
 
 ```cpp
 // SDL3 - Error-prone, verbose
@@ -91,7 +91,7 @@ if (!renderer) {
 }
 // ... more manual cleanup needed
 
-// laya - Safe, concise, automatic cleanup
+// Laya - Safe, concise, automatic cleanup
 auto window = laya::window("Title", {800, 600}, laya::window_flags::resizable);
 auto renderer = laya::renderer(window);
 // RAII handles all cleanup automatically
@@ -123,7 +123,7 @@ auto renderer = laya::renderer(window);
 
 ## Non-Goals
 
-### What laya Will NOT Do
+### What Laya Will NOT Do
 
 #### 1. **Game Engine Features**
 
@@ -154,7 +154,7 @@ auto renderer = laya::renderer(window);
 
 ### Rationale for Non-Goals
 
-These features belong in higher-level libraries built on top of laya. Keeping laya focused on SDL3 wrapping ensures:
+These features belong in higher-level libraries built on top of Laya. Keeping Laya focused on SDL3 wrapping ensures:
 
 - Clear project scope and maintainable codebase
 - Faster development and testing cycles
@@ -214,6 +214,30 @@ Make resource costs and ownership clear in the API design.
 
 ---
 
+## Comparison with Alternatives
+
+### Why Not Use Raw SDL3?
+
+Raw SDL3 is powerful but requires careful manual resource management and lacks modern C++ safety features.
+
+### Why Not Use Other C++ Wrappers?
+
+Most existing SDL wrappers:
+- Don't support SDL3 yet
+- Add runtime overhead
+- Don't leverage modern C++20 features
+- Have incomplete API coverage
+
+### Laya's Unique Value
+
+- **Modern**: Built for C++20 from the ground up
+- **Complete**: 100% SDL3 API coverage goal
+- **Safe**: Comprehensive compile-time and runtime safety
+- **Zero-Cost**: True zero-overhead abstraction
+- **Maintained**: Active development following SDL3 evolution
+
+---
+
 ## Conclusion
 
-laya aims to be the definitive C++ interface to SDL3, providing safety and ergonomics without sacrificing the performance and flexibility that makes SDL3 great. By staying focused on this core mission, laya can deliver maximum value to the C++ multimedia development community.
+Laya aims to be the definitive C++ interface to SDL3, providing safety and ergonomics without sacrificing the performance and flexibility that makes SDL3 great. By staying focused on this core mission, Laya can deliver maximum value to the C++ multimedia development community.
