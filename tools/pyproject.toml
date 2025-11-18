@@ -26,3 +26,12 @@ format = [
 
 # https://pypi.org/project/clang-tidy/
 lint = ["clang-tidy>=18"]
+
+# https://pypi.org/project/mkdocs/
+# https://pypi.org/project/mkdocs-material/
+docs = [
+    "mkdocs>=1.6.0",
+    "mkdocs-material>=9.5.0",
+    "pymdown-extensions>=10.11.0",
+    "mkdocs-minify-plugin>=0.8.0"
+]

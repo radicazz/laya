@@ -1,0 +1,112 @@
+/* Custom styling for Laya documentation - Purple theme enhancement */
+
+:root {
+  /* Purple color palette */
+  --md-primary-fg-color: #673ab7;
+  --md-primary-fg-color--light: #9575cd;
+  --md-primary-fg-color--dark: #512da8;
+  --md-accent-fg-color: #ba68c8;
+  --md-accent-fg-color--transparent: rgba(186, 104, 200, 0.1);
+}
+
+/* Dark mode overrides */
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #9575cd;
+  --md-primary-fg-color--light: #b39ddb;
+  --md-primary-fg-color--dark: #7e57c2;
+  --md-accent-fg-color: #ce93d8;
+  --md-default-bg-color: #0f0f1a;
+  --md-default-fg-color--light: #b8b8c8;
+  --md-code-bg-color: #1a1a2e;
+}
+
+/* Code block styling with purple accents */
+.highlight .hll {
+  background-color: rgba(156, 39, 176, 0.15);
+}
+
+/* Links with purple */
+.md-typeset a {
+  color: var(--md-accent-fg-color);
+}
+
+.md-typeset a:hover {
+  color: var(--md-primary-fg-color--light);
+}
+
+/* Admonitions with purple tint */
+.md-typeset .admonition.note {
+  border-left-color: var(--md-primary-fg-color);
+}
+
+/* Search highlighting */
+.md-search-result__article--document {
+  border-left: 0.2rem solid var(--md-accent-fg-color);
+}
+
+/* Navigation active items */
+.md-nav__link--active {
+  color: var(--md-accent-fg-color);
+}
+
+/* Header gradient effect */
+.md-header {
+  background: linear-gradient(135deg, #512da8 0%, #673ab7 50%, #7e57c2 100%);
+}
+
+/* Code copy button styling */
+.md-clipboard {
+  color: var(--md-accent-fg-color);
+}
+
+.md-clipboard:hover {
+  color: var(--md-primary-fg-color--light);
+}
+
+/* Scrollbar styling for webkit browsers */
+::-webkit-scrollbar {
+  width: 0.5rem;
+  height: 0.5rem;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--md-primary-fg-color);
+  border-radius: 0.25rem;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--md-accent-fg-color);
+}
+
+/* Footer styling */
+.md-footer {
+  background: linear-gradient(135deg, #512da8 0%, #673ab7 100%);
+}
+
+/* Inline code with purple tint */
+.md-typeset code {
+  background-color: var(--md-code-bg-color);
+  border: 0.05rem solid rgba(156, 39, 176, 0.2);
+}
+
+/* Table of contents active link */
+.md-nav__link--active,
+.md-nav__link--active:hover {
+  color: var(--md-accent-fg-color);
+  font-weight: 500;
+}
+
+/* Button styling */
+.md-typeset .md-button {
+  border: 0.1rem solid var(--md-primary-fg-color);
+}
+
+.md-typeset .md-button--primary {
+  background-color: var(--md-primary-fg-color);
+  border-color: var(--md-primary-fg-color);
+}
+
+.md-typeset .md-button--primary:hover {
+  background-color: var(--md-primary-fg-color--light);
+  border-color: var(--md-primary-fg-color--light);
+}

@@ -20,8 +20,9 @@
 
 <div align="center">
     <image alt="GitHub Last Commit" src="https://img.shields.io/github/last-commit/radicazz/laya?logo=github&logoColor=white"/>
-    <image alt="Windows Build Status" src="https://github.com/radicazz/laya/actions/workflows/build_windows.yml/badge.svg?branch="/>
-    <image alt="Linux Build Status" src="https://github.com/radicazz/laya/actions/workflows/build_linux.yml/badge.svg?branch="/>
+    <image alt="Build Status" src="https://github.com/radicazz/laya/actions/workflows/build.yml/badge.svg"/>
+    <image alt="Tests Status" src="https://github.com/radicazz/laya/actions/workflows/test.yml/badge.svg"/>
+    <image alt="Static Analysis" src="https://github.com/radicazz/laya/actions/workflows/static.yml/badge.svg"/>
 </div>
 
 <div align="center">
@@ -63,7 +64,7 @@
 
 <!-- markdownlint-enable MD033 MD041 -->
 
-# Overview
+# About
 
 A modern library targetting C++20 and SDL3 for cross-platform, immediate-mode, desktop application development. With *laya*, you can create windows, handle input events, render 2D graphics and manage resources in a type-safe and efficient manner while leveraging the full power of the underlying SDL library.
 
