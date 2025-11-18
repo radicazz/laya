@@ -68,7 +68,7 @@ target_include_directories(laya
 )
 
 target_link_libraries(laya
-    PUBLIC
+    PRIVATE
     SDL3::SDL3
 )
 
