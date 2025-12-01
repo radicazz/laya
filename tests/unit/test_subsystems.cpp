@@ -28,14 +28,12 @@ TEST_SUITE("unit") {
 
     TEST_CASE("sequential context creation and destruction") {
         // Test that multiple sequential initializations work correctly
-        CHECK_NOTHROW({
-            {
-                laya::context ctx1(laya::subsystem::video);
-    }
+        {
+            laya::context ctx1(laya::subsystem::video);
+        }
 
-    {
-        laya::context ctx2(laya::subsystem::video);
+        {
+            laya::context ctx2(laya::subsystem::video);
+        }
     }
-});
-}
 }  // TEST_SUITE("unit")

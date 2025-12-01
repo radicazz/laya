@@ -144,14 +144,12 @@ jobs:
           --reporters=console | Tee-Object -FilePath benchmark-results/benchmarks-msvc-release.txt
         
         # Add metadata
-        @"
-Compiler: MSVC
-Build Type: Release
-Platform: Windows (windows-latest)
-Timestamp: $(Get-Date -Format "yyyy-MM-ddTHH:mm:ssZ" -AsUTC)
-Commit: ${{ github.sha }}
-Branch: ${{ github.ref_name }}
-"@ | Out-File -FilePath benchmark-results/metadata-msvc.txt
+        "Compiler: MSVC" | Out-File -FilePath benchmark-results/metadata-msvc.txt
+        "Build Type: Release" | Out-File -FilePath benchmark-results/metadata-msvc.txt -Append
+        "Platform: Windows (windows-latest)" | Out-File -FilePath benchmark-results/metadata-msvc.txt -Append
+        "Timestamp: $(Get-Date -Format 'yyyy-MM-ddTHH:mm:ssZ' -AsUTC)" | Out-File -FilePath benchmark-results/metadata-msvc.txt -Append
+        "Commit: ${{ github.sha }}" | Out-File -FilePath benchmark-results/metadata-msvc.txt -Append
+        "Branch: ${{ github.ref_name }}" | Out-File -FilePath benchmark-results/metadata-msvc.txt -Append
 
     - name: Upload benchmark results
       if: ${{ env.ACT != 'true' }}
@@ -181,7 +179,7 @@ Branch: ${{ github.ref_name }}
         mkdir -p aggregated-benchmarks
         
         # Move all results into aggregated folder
-        find all-benchmarks -type f -exec cp {} aggregated-benchmarks/ \;
+        find all-benchmarks -type f -exec cp {} aggregated-benchmarks/ ';'
         
         # Create summary README
         cat > aggregated-benchmarks/README.md << EOF
