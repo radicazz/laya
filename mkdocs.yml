@@ -12,7 +12,7 @@ copyright: Copyright &copy; 2025 cazz
 theme:
   name: material
   language: en
-  
+
   # Dark theme with purple accents
   palette:
     # Dark mode (default)
@@ -23,7 +23,7 @@ theme:
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
-    
+
     # Light mode option
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -32,15 +32,15 @@ theme:
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
-  
+
   font:
     text: Roboto
     code: Roboto Mono
-  
+
   icon:
     repo: fontawesome/brands/github
     logo: material/language-cpp
-  
+
   features:
     - navigation.instant        # Instant loading
     - navigation.tracking       # URL updates on scroll
@@ -85,7 +85,7 @@ markdown_extensions:
   - toc:
       permalink: true
       toc_depth: 3
-  
+
   # Python Markdown Extensions
   - pymdownx.arithmatex:
       generic: true
@@ -137,8 +137,8 @@ extra:
     - icon: fontawesome/brands/github
       link: https://github.com/radicazz/laya
       name: Laya on GitHub
-  
+
   generator: false  # Remove "Made with Material for MkDocs"
-  
+
   version:
     provider: mike

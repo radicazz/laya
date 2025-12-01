@@ -25,10 +25,10 @@ The rendering system provides:
 
 int main() {
     laya::context ctx{laya::subsystem::video};
-    
+
     laya::window win{"Rendering Example", {800, 600}};
     laya::renderer renderer{win};
-    
+
     // Renderer is automatically destroyed when going out of scope
     return 0;
 }
@@ -47,14 +47,14 @@ while (running) {
             running = false;
         }
     }
-    
+
     // Clear with black
     ren.clear(laya::color::black());
-    
+
     // Draw red rectangle
     ren.set_draw_color(laya::color::red());
     ren.fill_rect({100, 100, 200, 150});
-    
+
     // Present to screen
     ren.present();
 }
@@ -205,11 +205,11 @@ laya::renderer create_renderer(laya::window& win) {
 int main() {
     laya::context ctx{laya::subsystem::video};
     laya::window win{"Test", {800, 600}};
-    
+
     laya::renderer ren1{win};
     laya::renderer ren2 = std::move(ren1);  // Transfer ownership
     // ren1 is now invalid, ren2 owns the renderer
-    
+
     return 0;
 }
 ```
@@ -240,10 +240,10 @@ SDL_Renderer* native = ren.native_handle();
 int main() {
     try {
         laya::context ctx{laya::subsystem::video};
-        
+
         laya::window win{"Graphics Demo", {800, 600}};
         laya::renderer ren{win};
-        
+
         bool running = true;
         while (running) {
             // Handle events
@@ -252,29 +252,29 @@ int main() {
                     running = false;
                 }
             }
-            
+
             // Clear with dark blue
             ren.clear(laya::color{25, 25, 112});
-            
+
             // Draw some rectangles
             ren.set_draw_color(laya::color::red());
             ren.fill_rect({50, 50, 100, 100});
-            
+
             ren.set_draw_color(laya::color::green());
             ren.fill_rect({200, 50, 100, 100});
-            
+
             ren.set_draw_color(laya::color::blue());
             ren.fill_rect({350, 50, 100, 100});
-            
+
             // Present to screen
             ren.present();
         }
-        
+
     } catch (const laya::error& e) {
         laya::log_critical("Error: {}", e.what());
         return 1;
     }
-    
+
     return 0;
 }
 ```
@@ -289,33 +289,33 @@ int main() {
     laya::context ctx{laya::subsystem::video};
     laya::window win{"Animation", {800, 600}};
     laya::renderer ren{win};
-    
+
     bool running = true;
     float time = 0.0f;
-    
+
     while (running) {
         for (const auto& event : laya::poll_events()) {
             if (std::holds_alternative<laya::quit_event>(event)) {
                 running = false;
             }
         }
-        
+
         // Clear screen
         ren.clear(laya::color::black());
-        
+
         // Animated rectangle
         float x = 400.0f + std::sin(time) * 200.0f;
         float y = 300.0f + std::cos(time) * 200.0f;
-        
+
         ren.set_draw_color(laya::color::red());
         ren.fill_rect({x - 25.0f, y - 25.0f, 50.0f, 50.0f});
-        
+
         // Present
         ren.present();
-        
+
         time += 0.016f;  // ~60 FPS
     }
-    
+
     return 0;
 }
 ```

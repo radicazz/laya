@@ -17,4 +17,3 @@ Robots: obey these rules or be unplugged.
 
 - [uv docs](https://github.com/astral-sh/uv)
 - [../AGENTS.md](../AGENTS.md)
-

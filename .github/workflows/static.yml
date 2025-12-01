@@ -32,16 +32,9 @@ jobs:
         event_name="${GITHUB_EVENT_NAME}"
         base_sha=""
         if [[ "${event_name}" == "push" ]]; then
-          base_sha=$(python -c "import json, os
-            with open(os.environ['GITHUB_EVENT_PATH'], 'r', encoding='utf-8') as fh:
-                data = json.load(fh)
-            print(data.get('before', ''))")
+          base_sha=$(python -c "import json, os; with open(os.environ['GITHUB_EVENT_PATH'], 'r', encoding='utf-8') as fh: data = json.load(fh); print(data.get('before', ''))")
         elif [[ "${event_name}" == "pull_request" ]]; then
-          base_sha=$(python -c "import json, os
-            with open(os.environ['GITHUB_EVENT_PATH'], 'r', encoding='utf-8') as fh:
-                data = json.load(fh)
-            base = data.get('pull_request', {}).get('base', {})
-            print(base.get('sha', ''))")
+          base_sha=$(python -c "import json, os; with open(os.environ['GITHUB_EVENT_PATH'], 'r', encoding='utf-8') as fh: data = json.load(fh); base = data.get('pull_request', {}).get('base', {}); print(base.get('sha', ''))")
         fi
 
         if [[ -n "${base_sha}" ]]; then
@@ -78,21 +71,21 @@ jobs:
   format-check:
     name: Format Check
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.12'
         cache: 'pip'
-        
+
     - name: Install Python formatting tools
       run: |
         pip install black isort
-        
+
     - name: Check Python formatting (black)
       run: |
         # Check if there are any Python files, if so format them
@@ -101,7 +94,7 @@ jobs:
         else
           echo "No Python files found to check"
         fi
-        
+
     - name: Check Python imports (isort)
       run: |
         # Check if there are any Python files, if so check imports
@@ -110,27 +103,27 @@ jobs:
         else
           echo "No Python files found to check"
         fi
-        
+
     - name: Check file endings (end-of-file-fixer)
       uses: pre-commit/action@v3.0.1
       with:
         extra_args: --hook-stage manual end-of-file-fixer
-        
+
     - name: Check trailing whitespace
       uses: pre-commit/action@v3.0.1
       with:
         extra_args: --hook-stage manual trailing-whitespace
-        
+
     - name: Check mixed line endings
       uses: pre-commit/action@v3.0.1
       with:
         extra_args: --hook-stage manual mixed-line-ending
-        
+
     - name: Validate YAML
       uses: pre-commit/action@v3.0.1
       with:
         extra_args: --hook-stage manual check-yaml
-        
+
     - name: Validate JSON
       uses: pre-commit/action@v3.0.1
       with:
@@ -139,11 +132,11 @@ jobs:
   lint-cpp:
     name: C++ Linting
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Install dependencies
       run: |
         # Add repositories for newer compilers
@@ -175,7 +168,7 @@ jobs:
           libegl1-mesa-dev \
           libdbus-1-dev \
           libudev-dev
-          
+
     - name: Generate compile_commands.json
       run: |
         export CC=gcc-13
@@ -186,24 +179,24 @@ jobs:
           -DCMAKE_CXX_STANDARD_REQUIRED=ON \
           -DLAYA_BUILD_TESTS=ON \
           -DLAYA_BUILD_EXAMPLES=ON
-          
+
     - name: Run clang-tidy
       run: |
         mkdir -p reports
-        
+
         # Run on headers
         find include -type f -name "*.hpp" | \
           xargs clang-tidy-18 -p build --config-file=.clang-tidy \
           > reports/clang-tidy-headers.txt 2>&1 || true
-          
+
         # Run on source files
         find src -type f -name "*.cpp" | \
           xargs clang-tidy-18 -p build --config-file=.clang-tidy \
           > reports/clang-tidy-sources.txt 2>&1 || true
-          
+
         # Combine reports
         cat reports/clang-tidy-*.txt > reports/clang-tidy-full-report.txt
-        
+
     - name: Upload clang-tidy reports
       if: ${{ env.ACT != 'true' }}
       uses: actions/upload-artifact@v4
@@ -215,16 +208,16 @@ jobs:
   static-analyzers:
     name: Static Analyzers
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Install cppcheck
       run: |
         sudo apt-get update
         sudo apt-get install -y cppcheck
-        
+
     - name: Run cppcheck
       run: |
         mkdir -p reports
@@ -237,7 +230,7 @@ jobs:
           --suppress=unusedFunction \
           src/ include/ \
           2> reports/cppcheck-report.xml || true
-          
+
         # Also generate text report for readability
         cppcheck --enable=all \
           --inconclusive \
@@ -246,7 +239,7 @@ jobs:
           --suppress=unusedFunction \
           src/ include/ \
           2> reports/cppcheck-report.txt || true
-          
+
     - name: Upload cppcheck reports
       if: ${{ env.ACT != 'true' }}
       uses: actions/upload-artifact@v4

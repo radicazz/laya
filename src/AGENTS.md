@@ -17,4 +17,3 @@ Robots: obey these rules or be unplugged.
 
 - [../AGENTS.md](../AGENTS.md)
 - [../CONTRIBUTING.md](../CONTRIBUTING.md)
-

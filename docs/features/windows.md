@@ -25,17 +25,17 @@ The window system provides:
 
 int main() {
     laya::context ctx{laya::subsystem::video};
-    
+
     // Simple window
     laya::window win{"My Window", {800, 600}};
-    
+
     // Window with flags
     laya::window win2{
-        "Resizable Window", 
-        {1024, 768}, 
+        "Resizable Window",
+        {1024, 768},
         laya::window_flags::resizable
     };
-    
+
     // Window is automatically destroyed when going out of scope
     return 0;
 }
@@ -81,7 +81,7 @@ enum class window_flags : uint32_t {
 Use bitwise OR to combine flags:
 
 ```cpp
-auto flags = laya::window_flags::resizable | 
+auto flags = laya::window_flags::resizable |
              laya::window_flags::borderless;
 
 laya::window win{"Combined Flags", {800, 600}, flags};
@@ -169,13 +169,13 @@ laya::window create_window() {
 
 int main() {
     laya::context ctx{laya::subsystem::video};
-    
+
     laya::window win1{"First", {800, 600}};
     laya::window win2 = std::move(win1);  // Transfer ownership
     // win1 is now invalid, win2 owns the window
-    
+
     laya::window win3 = create_window();  // Move from returned value
-    
+
     return 0;
 }
 ```
@@ -222,13 +222,13 @@ SDL_Window* native = win.native_handle();
 int main() {
     try {
         laya::context ctx{laya::subsystem::video};
-        
+
         laya::window win{
-            "My Application", 
-            {800, 600}, 
+            "My Application",
+            {800, 600},
             laya::window_flags::resizable
         };
-        
+
         bool running = true;
         while (running) {
             for (const auto& event : laya::poll_events()) {
@@ -237,12 +237,12 @@ int main() {
                 }
             }
         }
-        
+
     } catch (const laya::error& e) {
         laya::log_critical("Error: {}", e.what());
         return 1;
     }
-    
+
     return 0;
 }
 ```
@@ -251,8 +251,8 @@ int main() {
 
 ```cpp
 laya::window win{
-    "Fullscreen Game", 
-    {1920, 1080}, 
+    "Fullscreen Game",
+    {1920, 1080},
     laya::window_flags::fullscreen
 };
 ```
@@ -261,8 +261,8 @@ laya::window win{
 
 ```cpp
 laya::window win{
-    "Borderless", 
-    {800, 600}, 
+    "Borderless",
+    {800, 600},
     laya::window_flags::borderless | laya::window_flags::resizable
 };
 ```

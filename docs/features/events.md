@@ -25,7 +25,7 @@ The event system provides:
 int main() {
     laya::context ctx{laya::subsystem::video};
     laya::window win{"Events", {800, 600}};
-    
+
     bool running = true;
     while (running) {
         for (const auto& event : laya::poll_events()) {
@@ -34,7 +34,7 @@ int main() {
             }
         }
     }
-    
+
     return 0;
 }
 ```
@@ -126,7 +126,7 @@ Pattern matching with visitors:
 for (const auto& event : laya::poll_events()) {
     std::visit([&](const auto& ev) {
         using T = std::decay_t<decltype(ev)>;
-        
+
         if constexpr (std::is_same_v<T, laya::quit_event>) {
             running = false;
         }
@@ -166,7 +166,7 @@ int main() {
     laya::context ctx{laya::subsystem::video};
     laya::window win{"Event Demo", {800, 600}};
     laya::renderer ren{win};
-    
+
     bool running = true;
     while (running) {
         // Process all pending events
@@ -175,12 +175,12 @@ int main() {
                 running = false;
             }
         }
-        
+
         // Render
         ren.clear(laya::color::black());
         ren.present();
     }
-    
+
     return 0;
 }
 ```
@@ -191,7 +191,7 @@ int main() {
 for (const auto& event : laya::poll_events()) {
     std::visit([](const auto& ev) {
         using T = std::decay_t<decltype(ev)>;
-        
+
         if constexpr (std::is_same_v<T, laya::quit_event>) {
             laya::log_info("Quit event");
         }
@@ -221,7 +221,7 @@ for (const auto& event : laya::poll_events()) {
     }
 }
 
-laya::log_info("Quit events: {}, Window events: {}", 
+laya::log_info("Quit events: {}, Window events: {}",
                quit_count, window_count);
 ```
 
@@ -255,15 +255,15 @@ public:
         laya::log_info("Quit event");
         should_quit = true;
     }
-    
+
     void operator()(const laya::window_event& ev) {
         laya::log_info("Window event");
     }
-    
+
     void operator()(const auto& ev) {
         // Handle all other events
     }
-    
+
     bool should_quit = false;
 };
 

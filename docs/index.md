@@ -18,10 +18,10 @@ Laya wraps SDL3's C API in idiomatic C++20, offering:
 
 int main() {
     laya::context ctx{laya::subsystem::video};
-    
+
     laya::window win{"My Game", {800, 600}, laya::window_flags::resizable};
     laya::renderer renderer{win};
-    
+
     bool running = true;
     while (running) {
         for (const auto& event : laya::poll_events()) {
@@ -29,12 +29,12 @@ int main() {
                 running = false;
             }
         }
-        
+
         renderer.clear(laya::color::black());
         // Drawing code here
         renderer.present();
     }
-    
+
     return 0;
 }
 ```

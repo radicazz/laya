@@ -19,7 +19,7 @@ endif()
 FetchContent_GetProperties(doctest)
 if(NOT doctest_POPULATED)
     FetchContent_Populate(doctest)
-    
+
     # Create interface library for doctest header (header-only, skip CMakeLists.txt)
     add_library(doctest INTERFACE)
     target_include_directories(doctest INTERFACE ${doctest_SOURCE_DIR})

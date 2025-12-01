@@ -15,7 +15,7 @@ jobs:
     name: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.build_type }}
     runs-on: ${{ matrix.os }}
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
-    
+
     strategy:
       fail-fast: false
       matrix:
@@ -90,7 +90,7 @@ jobs:
         echo "XVFB_PID=$!" >> $GITHUB_ENV
         sleep 3
         echo "DISPLAY=:99" >> $GITHUB_ENV
-        
+
         if ! xdpyinfo -display :99 >/dev/null 2>&1; then
           echo "ERROR: Xvfb failed to start"
           exit 1
@@ -208,7 +208,7 @@ jobs:
     name: ${{ matrix.os }}-msvc-${{ matrix.build_type }}
     runs-on: ${{ matrix.os }}
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
-    
+
     strategy:
       fail-fast: false
       matrix:

@@ -14,7 +14,7 @@ jobs:
     name: Test-${{ matrix.compiler }}-Debug
     runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'success'
-    
+
     strategy:
       fail-fast: false
       matrix:
@@ -57,7 +57,7 @@ jobs:
         echo "XVFB_PID=$!" >> $GITHUB_ENV
         sleep 3
         echo "DISPLAY=:99" >> $GITHUB_ENV
-        
+
         if ! xdpyinfo -display :99 >/dev/null 2>&1; then
           echo "ERROR: Xvfb failed to start"
           exit 1
@@ -87,10 +87,10 @@ jobs:
     - name: Run unit tests
       run: |
         mkdir -p test-results
-        
+
         # Run with JUnit XML output
         ./build/tests/laya_tests_unit --reporters=junit --out=test-results/junit-${{ matrix.compiler }}-debug.xml
-        
+
         # Also run with console output for logs
         ./build/tests/laya_tests_unit --reporters=console | tee test-results/console-${{ matrix.compiler }}-debug.txt
 
@@ -99,7 +99,7 @@ jobs:
       run: |
         # Re-run tests to generate coverage data
         ./build/tests/laya_tests_unit
-        
+
         # Generate coverage with lcov
         lcov --gcov-tool gcov-13 --capture --directory . --output-file coverage.info || true
         lcov --gcov-tool gcov-13 --remove coverage.info \
@@ -107,11 +107,11 @@ jobs:
           '*/build/_deps/*' \
           '*/tests/*' \
           --output-file coverage.info || true
-        
+
         # Generate HTML report
         mkdir -p coverage-html
         genhtml coverage.info --output-directory coverage-html || true
-        
+
         # Display summary
         lcov --list coverage.info || true
 
@@ -171,13 +171,13 @@ jobs:
       shell: pwsh
       run: |
         New-Item -ItemType Directory -Force -Path test-results
-        
+
         # Set PATH to find SDL3.dll
         $env:PATH = "$PWD\build\_deps\sdl3-build\Debug;$env:PATH"
-        
+
         # Run with JUnit XML output
         & .\build\tests\Debug\laya_tests_unit.exe --reporters=junit --out=test-results/junit-msvc-debug.xml
-        
+
         # Also run with console output for logs
         & .\build\tests\Debug\laya_tests_unit.exe --reporters=console | Tee-Object -FilePath test-results/console-msvc-debug.txt
 

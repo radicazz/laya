@@ -155,7 +155,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: gate-docs
     if: needs.gate-docs.outputs.should_run == 'true'
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -171,12 +171,12 @@ jobs:
         run-id: ${{ needs.gate-docs.outputs.build_run_id }}
         name: ci-clang-build-info
         path: ci-meta/build-info
-    
+
     - name: Generate CI metrics page
       env:
         CI_CLANG_INFO_DIR: ci-meta/build-info
       run: bash .github/scripts/generate-metrics.sh
-    
+
     - name: Upload metrics artifact
       uses: actions/upload-artifact@v4
       with:
@@ -189,41 +189,41 @@ jobs:
     needs: [gate-docs, collect-metrics]
     runs-on: ubuntu-latest
     if: needs.gate-docs.outputs.should_run == 'true'
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-    
+
     - name: Download metrics
       uses: actions/download-artifact@v4
       continue-on-error: true
       with:
         name: ci-metrics
         path: docs/ci-metrics/
-    
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.12'
-    
+
     - name: Install uv
       uses: astral-sh/setup-uv@v5
-    
+
     - name: Sync Python dependencies
       run: |
         cd tools
         uv sync --group docs
-    
+
     - name: Build documentation
       run: |
         uv run --directory tools mkdocs build --clean --strict --config-file ../mkdocs.yml --site-dir site
-    
+
     - name: Upload artifact for GitHub Pages
       if: ${{ env.ACT != 'true' }}
       uses: actions/upload-pages-artifact@v3
       with:
         path: site/
-    
+
     - name: Deploy to GitHub Pages
       if: ${{ env.ACT != 'true' }}
       id: deployment
@@ -233,28 +233,28 @@ jobs:
     name: Build Documentation (Preview)
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-    
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.12'
-    
+
     - name: Install uv
       uses: astral-sh/setup-uv@v5
-    
+
     - name: Sync Python dependencies
       run: |
         cd tools
         uv sync --group docs
-    
+
     - name: Build documentation
       run: |
         uv run --directory tools mkdocs build --clean --strict --config-file ../mkdocs.yml --site-dir site
-    
+
     - name: Upload preview artifact
       uses: actions/upload-artifact@v4
       with:

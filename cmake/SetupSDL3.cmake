@@ -29,12 +29,12 @@ endif()
 # Option 3: Use FetchContent to download and build SDL3 if not found
 if(NOT SDL3_FOUND)
     message(STATUS "Laya: Fetching SDL3 from GitHub...")
-    
+
     # Configure SDL3 options before fetching
     set(SDL_SHARED ON CACHE BOOL "Build SDL3 as shared library" FORCE)
     set(SDL_STATIC OFF CACHE BOOL "Build SDL3 as static library" FORCE)
     set(SDL_TEST OFF CACHE BOOL "Build SDL3 tests" FORCE)
-    
+
     FetchContent_Declare(
         SDL3
         GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
@@ -42,18 +42,18 @@ if(NOT SDL3_FOUND)
         GIT_SHALLOW TRUE
         GIT_PROGRESS TRUE
     )
-    
+
     FetchContent_MakeAvailable(SDL3)
-    
+
     # Create namespace aliases that match find_package() behavior
     if(NOT TARGET SDL3::SDL3 AND TARGET SDL3-shared)
         add_library(SDL3::SDL3 ALIAS SDL3-shared)
     endif()
-    
+
     if(NOT TARGET SDL3::Headers AND TARGET SDL3-headers)
         add_library(SDL3::Headers ALIAS SDL3-headers)
     endif()
-    
+
     message(STATUS "Laya: SDL3 fetched and configured successfully")
 endif()
 

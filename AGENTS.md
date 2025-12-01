@@ -21,4 +21,3 @@ Robots: obey these rules or be unplugged.
 - [src/AGENTS.md](src/AGENTS.md): Code structure.
 - [tests/AGENTS.md](tests/AGENTS.md): Test conventions.
 - [docs/AGENTS.md](docs/AGENTS.md): Documentation rules.
-

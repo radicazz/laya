@@ -34,7 +34,7 @@ int main() {
     laya::log_warn("Warning message");
     laya::log_error("Error message");       // Auto includes file:line
     laya::log_critical("Critical error");   // Auto includes file:line
-    
+
     return 0;
 }
 ```
@@ -71,10 +71,10 @@ This uses C++20's `std::source_location` automatically.
 Log to specific SDL categories:
 
 ```cpp
-laya::log(laya::log_category::video, laya::log_priority::info, 
+laya::log(laya::log_category::video, laya::log_priority::info,
           "Video subsystem initialized");
-          
-laya::log(laya::log_category::audio, laya::log_priority::debug, 
+
+laya::log(laya::log_category::audio, laya::log_priority::debug,
           "Audio buffer size: {}", buffer_size);
 ```
 
@@ -120,7 +120,7 @@ Control which messages are shown per category:
 
 ```cpp
 // Set minimum priority for a category
-laya::set_log_priority(laya::log_category::render, 
+laya::set_log_priority(laya::log_category::render,
                        laya::log_priority::verbose);
 
 // Set priority for all categories
@@ -139,7 +139,7 @@ Temporarily change priorities with automatic restoration:
 
 ```cpp
 {
-    auto guard = laya::with_log_priority(laya::log_category::render, 
+    auto guard = laya::with_log_priority(laya::log_category::render,
                                           laya::log_priority::verbose);
     // Verbose render logs enabled here
     laya::log(laya::log_category::render, laya::log_priority::verbose,
@@ -193,15 +193,15 @@ laya::disable_log_colors();  // Disable when done
 int main() {
     laya::context ctx{laya::subsystem::video};
     laya::log_info("Application started");
-    
+
     laya::window win{"My App", {800, 600}};
     laya::log_info("Window created: ID={}", win.id().value());
-    
+
     laya::renderer renderer{win};
     laya::log_debug("Renderer initialized");
-    
+
     // ... application code ...
-    
+
     laya::log_info("Application shutting down");
 }
 ```
@@ -213,7 +213,7 @@ int main() {
 laya::set_all_log_priorities(laya::log_priority::verbose);
 
 // Or just for specific subsystems
-laya::set_log_priority(laya::log_category::render, 
+laya::set_log_priority(laya::log_category::render,
                        laya::log_priority::verbose);
 ```
 

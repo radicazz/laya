@@ -101,7 +101,7 @@ check_act_available() {
 # List available workflows
 list_workflows() {
     local workflow_dir="$PROJECT_ROOT/.github/workflows"
-    
+
     if [[ ! -d "$workflow_dir" ]]; then
         error "Workflows directory not found: $workflow_dir"
         exit 1
@@ -109,7 +109,7 @@ list_workflows() {
 
     info "Available workflows in .github/workflows/:"
     echo ""
-    
+
     local count=0
     while IFS= read -r -d '' workflow; do
         local name
@@ -121,7 +121,7 @@ list_workflows() {
         printf "  %-20s - %s\n" "$name" "$description"
         count=$((count + 1))
     done < <(find "$workflow_dir" -maxdepth 1 -name "*.yml" -type f -print0 | sort -z)
-    
+
     echo ""
     info "Total workflows found: $count"
 }
@@ -130,7 +130,7 @@ list_workflows() {
 validate_workflow() {
     local workflow_name="$1"
     local workflow_file="$PROJECT_ROOT/.github/workflows/${workflow_name}.yml"
-    
+
     if [[ ! -f "$workflow_file" ]]; then
         error "Workflow not found: $workflow_file"
         echo ""

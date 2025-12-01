@@ -14,7 +14,7 @@ jobs:
     name: Benchmark-${{ matrix.compiler }}-Release
     runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'success'
-    
+
     strategy:
       fail-fast: false
       matrix:
@@ -57,7 +57,7 @@ jobs:
         echo "XVFB_PID=$!" >> $GITHUB_ENV
         sleep 3
         echo "DISPLAY=:99" >> $GITHUB_ENV
-        
+
         if ! xdpyinfo -display :99 >/dev/null 2>&1; then
           echo "ERROR: Xvfb failed to start"
           exit 1
@@ -71,18 +71,18 @@ jobs:
     - name: Run benchmarks
       run: |
         mkdir -p benchmark-results
-        
+
         # Run with JSON output for later processing
         ./build/tests/laya_tests_benchmark \
           --test-suite=benchmark \
           --reporters=json \
           --out=benchmark-results/benchmarks-${{ matrix.compiler }}-release.json || true
-        
+
         # Run with console output for human readability
         ./build/tests/laya_tests_benchmark \
           --test-suite=benchmark \
           --reporters=console | tee benchmark-results/benchmarks-${{ matrix.compiler }}-release.txt || true
-        
+
         # Add metadata
         echo "Compiler: ${{ matrix.compiler }}" > benchmark-results/metadata-${{ matrix.compiler }}.txt
         echo "Build Type: Release" >> benchmark-results/metadata-${{ matrix.compiler }}.txt
@@ -128,21 +128,21 @@ jobs:
       shell: pwsh
       run: |
         New-Item -ItemType Directory -Force -Path benchmark-results
-        
+
         # Set PATH to find SDL3.dll
         $env:PATH = "$PWD\build\_deps\sdl3-build\Release;$env:PATH"
-        
+
         # Run with JSON output
         & .\build\tests\Release\laya_tests_benchmark.exe `
           --test-suite=benchmark `
           --reporters=json `
           --out=benchmark-results/benchmarks-msvc-release.json
-        
+
         # Run with console output
         & .\build\tests\Release\laya_tests_benchmark.exe `
           --test-suite=benchmark `
           --reporters=console | Tee-Object -FilePath benchmark-results/benchmarks-msvc-release.txt
-        
+
         # Add metadata
         "Compiler: MSVC" | Out-File -FilePath benchmark-results/metadata-msvc.txt
         "Build Type: Release" | Out-File -FilePath benchmark-results/metadata-msvc.txt -Append
@@ -177,37 +177,37 @@ jobs:
     - name: Create summary
       run: |
         mkdir -p aggregated-benchmarks
-        
+
         # Move all results into aggregated folder
         find all-benchmarks -type f -exec cp {} aggregated-benchmarks/ ';'
-        
+
         # Create summary README
         cat > aggregated-benchmarks/README.md << EOF
         # Benchmark Results
-        
+
         **Commit**: ${{ github.sha }}
         **Branch**: ${{ github.ref_name }}
         **Timestamp**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
         **Workflow Run**: ${{ github.run_number }}
-        
+
         ## Available Results
-        
+
         - Linux GCC Release: \`benchmarks-gcc-release.json\`, \`benchmarks-gcc-release.txt\`
         - Linux Clang Release: \`benchmarks-clang-release.json\`, \`benchmarks-clang-release.txt\`
         - Windows MSVC Release: \`benchmarks-msvc-release.json\`, \`benchmarks-msvc-release.txt\`
-        
+
         ## Metadata Files
-        
+
         - \`metadata-gcc.txt\`
         - \`metadata-clang.txt\`
         - \`metadata-msvc.txt\`
-        
+
         ## Usage
-        
+
         JSON files can be parsed programmatically for historical comparison and visualization.
         Text files provide human-readable output for quick review.
         EOF
-        
+
         # List all files
         ls -lah aggregated-benchmarks/
 

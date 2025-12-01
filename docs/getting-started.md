@@ -131,10 +131,10 @@ Create a simple window application:
 int main() {
     // Initialize SDL subsystems
     laya::context ctx{laya::subsystem::video};
-    
+
     // Create a window
     laya::window win{"My First Window", {800, 600}};
-    
+
     // Keep window open until user closes it
     bool running = true;
     while (running) {
@@ -144,7 +144,7 @@ int main() {
             }
         }
     }
-    
+
     return 0;
 }
 ```
@@ -190,16 +190,16 @@ int main() {
         // Initialize video subsystem
         laya::context ctx{laya::subsystem::video};
         laya::log_info("Laya initialized successfully");
-        
+
         // Create window
-        laya::window win{"Laya Example", {800, 600}, 
+        laya::window win{"Laya Example", {800, 600},
                          laya::window_flags::resizable};
         laya::log_info("Window created");
-        
+
         // Create renderer
         laya::renderer renderer{win};
         laya::log_info("Renderer created");
-        
+
         // Main loop
         bool running = true;
         while (running) {
@@ -209,25 +209,25 @@ int main() {
                     running = false;
                 }
             }
-            
+
             // Clear screen with blue color
             renderer.clear(laya::color{100, 149, 237});
-            
+
             // Draw a red rectangle
             renderer.set_draw_color(laya::color{255, 0, 0});
             renderer.fill_rect({100, 100, 200, 150});
-            
+
             // Present to screen
             renderer.present();
         }
-        
+
         laya::log_info("Application exiting");
-        
+
     } catch (const laya::error& e) {
         laya::log_critical("Fatal error: {}", e.what());
         return 1;
     }
-    
+
     return 0;
 }
 ```

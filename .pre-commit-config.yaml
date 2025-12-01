@@ -5,6 +5,7 @@ repos:
       - id: end-of-file-fixer
       - id: trailing-whitespace
       - id: check-yaml
+        args: [--unsafe]
       - id: check-json
       - id: check-added-large-files
       - id: check-merge-conflict
@@ -19,6 +20,21 @@ repos:
 
   - repo: local
     hooks:
+      - id: black-check
+        name: black (uv)
+        entry: uv run --project tools --group format black --check --diff
+        language: system
+        types: [python]
+      - id: isort-check
+        name: isort (uv)
+        entry: uv run --project tools --group format isort --profile black --check-only --diff
+        language: system
+        types: [python]
+      - id: yamllint
+        name: yamllint (uv)
+        entry: uv run --project tools yamllint
+        language: system
+        types: [yaml]
       - id: clang-tidy
         name: clang-tidy
         entry: uv run --project tools clang-tidy

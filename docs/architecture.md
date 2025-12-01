@@ -21,27 +21,27 @@ class window {
     SDL_Window* m_window;
 public:
     window(std::string_view title, size sz, window_flags flags = window_flags::none)
-        : m_window(SDL_CreateWindow(title.data(), sz.width, sz.height, 
+        : m_window(SDL_CreateWindow(title.data(), sz.width, sz.height,
                                      static_cast<uint32_t>(flags)))
     {
         if (!m_window) {
             throw error::from_sdl();
         }
     }
-    
+
     ~window() {
         if (m_window) {
             SDL_DestroyWindow(m_window);
         }
     }
-    
+
     // Non-copyable, movable
     window(const window&) = delete;
     window& operator=(const window&) = delete;
-    
-    window(window&& other) noexcept 
+
+    window(window&& other) noexcept
         : m_window(std::exchange(other.m_window, nullptr)) {}
-        
+
     window& operator=(window&& other) noexcept {
         if (this != &other) {
             if (m_window) SDL_DestroyWindow(m_window);
@@ -118,7 +118,7 @@ Convert SDL's error codes into C++ exceptions for automatic error propagation.
 class error : public std::runtime_error {
 public:
     explicit error(const std::string& msg) : std::runtime_error(msg) {}
-    
+
     static error from_sdl() {
         const char* sdl_error = SDL_GetError();
         return error(sdl_error ? sdl_error : "Unknown SDL error");
@@ -127,7 +127,7 @@ public:
 
 // Usage in constructors
 window::window(std::string_view title, size sz, window_flags flags) {
-    m_window = SDL_CreateWindow(title.data(), sz.width, sz.height, 
+    m_window = SDL_CreateWindow(title.data(), sz.width, sz.height,
                                  static_cast<uint32_t>(flags));
     if (!m_window) {
         throw error::from_sdl();
@@ -167,12 +167,12 @@ Use `constexpr` to move computations to compile time when possible.
 ```cpp
 struct color {
     uint8_t r, g, b, a;
-    
+
     // Compile-time color creation
     static constexpr color rgb(uint8_t red, uint8_t green, uint8_t blue) {
         return {red, green, blue, 255};
     }
-    
+
     // Compile-time color from hex
     static constexpr color from_hex(uint32_t hex) {
         return {
@@ -182,7 +182,7 @@ struct color {
             255
         };
     }
-    
+
     // Common colors as compile-time constants
     static constexpr color white() { return from_hex(0xFFFFFF); }
     static constexpr color black() { return from_hex(0x000000); }
@@ -256,7 +256,7 @@ Provide a range-based interface for event polling.
 ```cpp
 class event_range {
     std::vector<event> m_events;
-    
+
 public:
     event_range() {
         SDL_Event sdl_event;
@@ -264,7 +264,7 @@ public:
             m_events.push_back(from_sdl_event(sdl_event));
         }
     }
-    
+
     auto begin() const { return m_events.begin(); }
     auto end() const { return m_events.end(); }
     bool empty() const { return m_events.empty(); }
@@ -294,13 +294,13 @@ Mark simple wrapper functions as `inline` to ensure zero overhead.
 ```cpp
 class window {
     SDL_Window* m_window;
-    
+
 public:
     inline void show() { SDL_ShowWindow(m_window); }
     inline void hide() { SDL_HideWindow(m_window); }
     inline void maximize() { SDL_MaximizeWindow(m_window); }
     inline void minimize() { SDL_MinimizeWindow(m_window); }
-    
+
     inline size size() const {
         int w, h;
         SDL_GetWindowSize(m_window, &w, &h);
@@ -320,7 +320,7 @@ static_assert(sizeof(laya::point) == 8, "Point should be 8 bytes");
 static_assert(sizeof(laya::rect) == 16, "Rect should be 16 bytes");
 
 // Ensure enum values match SDL constants
-static_assert(static_cast<uint32_t>(window_flags::resizable) 
+static_assert(static_cast<uint32_t>(window_flags::resizable)
               == SDL_WINDOW_RESIZABLE);
 ```
 
@@ -335,16 +335,16 @@ All resource-owning types are non-copyable but movable.
 ```cpp
 class window {
     SDL_Window* m_window;
-    
+
 public:
     // Non-copyable
     window(const window&) = delete;
     window& operator=(const window&) = delete;
-    
+
     // Movable
-    window(window&& other) noexcept 
+    window(window&& other) noexcept
         : m_window(std::exchange(other.m_window, nullptr)) {}
-        
+
     window& operator=(window&& other) noexcept {
         if (this != &other) {
             if (m_window) SDL_DestroyWindow(m_window);
@@ -352,7 +352,7 @@ public:
         }
         return *this;
     }
-    
+
     ~window() {
         if (m_window) {
             SDL_DestroyWindow(m_window);
@@ -399,7 +399,7 @@ namespace {  // anonymous namespace - internal only
     constexpr int to_sdl_category(log_category cat) noexcept {
         return static_cast<int>(cat);
     }
-    
+
     constexpr SDL_LogPriority to_sdl_priority(log_priority pri) noexcept {
         return static_cast<SDL_LogPriority>(pri);
     }
@@ -452,7 +452,7 @@ Test individual components in isolation:
 ```cpp
 TEST_CASE("Window RAII") {
     laya::context ctx{laya::subsystem::video};
-    
+
     {
         laya::window win{"Test", {800, 600}};
         CHECK(win.native_handle() != nullptr);
@@ -469,11 +469,11 @@ Ensure zero-overhead abstractions:
 void benchmark_laya_wrapper() {
     laya::renderer ren{window};
     auto start = std::chrono::high_resolution_clock::now();
-    
+
     for (int i = 0; i < 1000000; ++i) {
         ren.set_draw_color(laya::color::red());
     }
-    
+
     auto end = std::chrono::high_resolution_clock::now();
     // Should have identical timing to raw SDL
 }
@@ -489,11 +489,11 @@ Test real-world usage patterns in the `examples/` directory.
 
 Laya's architecture demonstrates these key principles:
 
-✅ **RAII** - Automatic resource management  
-✅ **Type Safety** - Strong enums, compile-time checks  
-✅ **Modern C++20** - Concepts, `std::format`, constexpr  
-✅ **Zero Overhead** - Inline functions, no runtime cost  
-✅ **Thin Wrapper** - Direct mapping to SDL3  
-✅ **No SDL Exposure** - Clean public API  
+✅ **RAII** - Automatic resource management
+✅ **Type Safety** - Strong enums, compile-time checks
+✅ **Modern C++20** - Concepts, `std::format`, constexpr
+✅ **Zero Overhead** - Inline functions, no runtime cost
+✅ **Thin Wrapper** - Direct mapping to SDL3
+✅ **No SDL Exposure** - Clean public API
 
 This architecture serves as the foundation for all Laya components, ensuring consistency, safety, and performance across the entire library.
