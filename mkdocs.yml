@@ -61,8 +61,7 @@ theme:
 # Documentation structure
 nav:
   - Home: index.md
-  - Getting Started: getting-started.md
-  - About:
+  - Core:
       - Goals: goals.md
       - Architecture: architecture.md
   - Features:

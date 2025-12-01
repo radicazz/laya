@@ -241,7 +241,7 @@ try {
 
 ## Performance Considerations
 
-### Zero Overhead When Disabled
+### Minimal Overhead When Disabled
 
 SDL3's logging system checks priority **before** formatting:
 
@@ -250,7 +250,7 @@ laya::log_debug("Expensive: {}", compute_expensive_value());
 // If debug priority is disabled, compute_expensive_value() is NOT called
 ```
 
-This is handled by SDL internally - Laya doesn't add overhead.
+This is handled by SDL internally - Laya's wrapper preserves this efficiency.
 
 ### Compile-Time Format Checking
 

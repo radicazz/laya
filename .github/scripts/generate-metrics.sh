@@ -5,50 +5,62 @@ REPO="${GITHUB_REPOSITORY:-radicazz/laya}"
 
 mkdir -p docs/ci-metrics
 
-cat > docs/ci-metrics/index.md <<EOF
+cat > docs/ci-metrics/index.md <<'EOF'
 # CI/CD Metrics & Status
 
-Real-time CI status and project metrics.
+<div align="center">
 
-## Build Status
+[![Build](https://github.com/radicazz/laya/actions/workflows/build.yml/badge.svg)](https://github.com/radicazz/laya/actions/workflows/build.yml)
+[![Tests](https://github.com/radicazz/laya/actions/workflows/test.yml/badge.svg)](https://github.com/radicazz/laya/actions/workflows/test.yml)
+[![Benchmarks](https://github.com/radicazz/laya/actions/workflows/benchmark.yml/badge.svg)](https://github.com/radicazz/laya/actions/workflows/benchmark.yml)
+[![Static Analysis](https://github.com/radicazz/laya/actions/workflows/static.yml/badge.svg)](https://github.com/radicazz/laya/actions/workflows/static.yml)
 
-![Build](https://github.com/${REPO}/actions/workflows/build.yml/badge.svg)
-![Tests](https://github.com/${REPO}/actions/workflows/test.yml/badge.svg)
-![Benchmarks](https://github.com/${REPO}/actions/workflows/benchmark.yml/badge.svg)
-![Static Analysis](https://github.com/${REPO}/actions/workflows/static.yml/badge.svg)
+</div>
 
-## Platform Support
+---
 
-| Platform | Compiler Matrix | Status |
-|----------|-----------------|--------|
-| Ubuntu (ubuntu-latest) | GCC 13 — Debug & Release | ✅ Covered |
-| Ubuntu (ubuntu-latest) | Clang 18 — Debug & Release | ✅ Covered |
-| Windows Server 2022 | MSVC 2022 — Debug & Release | ✅ Covered |
+## 🏗️ Platform Support
 
-## Performance Benchmarks
+| Platform | Compiler | Build Types | Status |
+|----------|----------|-------------|--------|
+| **Ubuntu** (ubuntu-latest) | GCC 13 | Debug + Release | ✅ Active |
+| **Ubuntu** (ubuntu-latest) | Clang 18 | Debug + Release | ✅ Active |
+| **Windows** (Server 2022) | MSVC 2022 | Debug + Release | ✅ Active |
 
-```
-laya::event_range: ~0.033ms (1000 events)
-laya::event_view:  ~0.030ms (1000 events)
-Raw SDL3:          ~0.028ms (1000 events)
-```
+## 🚀 Performance Benchmarks
 
-**Performance**: Within ~7% of raw SDL3 (zero-overhead abstraction)
+> Benchmarks are run continuously on every build
 
-## Links
+| Platform | Compiler | Latest Results |
+|----------|----------|----------------|
+| **Linux** | GCC 13 | [View Results](https://github.com/radicazz/laya/actions/workflows/benchmark.yml) |
+| **Linux** | Clang 18 | [View Results](https://github.com/radicazz/laya/actions/workflows/benchmark.yml) |
+| **Windows** | MSVC 2022 | [View Results](https://github.com/radicazz/laya/actions/workflows/benchmark.yml) |
 
-- [View Build Workflow](https://github.com/${REPO}/actions/workflows/build.yml)
-- [View Tests](https://github.com/${REPO}/actions/workflows/test.yml)
-- [View Benchmarks](https://github.com/${REPO}/actions/workflows/benchmark.yml)
-- [View Static Analysis](https://github.com/${REPO}/actions/workflows/static.yml)
+**Note**: Click "View Results" to see the latest benchmark artifacts from the most recent successful run.
+
+## 📊 Workflow Links
+
+<div align="center">
+
+| Workflow | Status | Link |
+|----------|--------|------|
+| Build | ![Build](https://github.com/radicazz/laya/actions/workflows/build.yml/badge.svg) | [View Runs](https://github.com/radicazz/laya/actions/workflows/build.yml) |
+| Tests | ![Tests](https://github.com/radicazz/laya/actions/workflows/test.yml/badge.svg) | [View Runs](https://github.com/radicazz/laya/actions/workflows/test.yml) |
+| Benchmarks | ![Benchmarks](https://github.com/radicazz/laya/actions/workflows/benchmark.yml/badge.svg) | [View Runs](https://github.com/radicazz/laya/actions/workflows/benchmark.yml) |
+| Static Analysis | ![Static](https://github.com/radicazz/laya/actions/workflows/static.yml/badge.svg) | [View Runs](https://github.com/radicazz/laya/actions/workflows/static.yml) |
+
+</div>
+
 EOF
 
 CI_INFO_DIR="${CI_CLANG_INFO_DIR:-ci-meta/build-info}"
 
 if compgen -G "${CI_INFO_DIR}"/*.md > /dev/null 2>&1; then
   {
+    echo "---"
     echo
-    echo "## Latest Ubuntu Clang Builds"
+    echo "## 🔧 Latest Build Information"
     echo
   } >> docs/ci-metrics/index.md
 

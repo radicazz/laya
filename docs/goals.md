@@ -6,9 +6,9 @@ This document outlines the core goals, motivations, and vision for the Laya C++2
 
 ## Primary Goals
 
-### 1. **Zero-Overhead Abstraction**
+### 1. **Minimal-Overhead Abstraction**
 
-Provide a modern C++ interface to SDL3 that compiles down to the same assembly as hand-written SDL3 code. The wrapper should add no runtime cost while dramatically improving compile-time safety and developer experience.
+Provide a modern C++ interface to SDL3 with minimal runtime cost while dramatically improving compile-time safety and developer experience. The wrapper should be as efficient as practical while maintaining type safety and ease of use.
 
 ### 2. **Complete SDL3 Coverage**
 
@@ -52,7 +52,7 @@ Provide identical behavior across all platforms that support C++20 and SDL3, abs
 
 - **Library Authors** building higher-level frameworks on top of SDL3
 - **Research Projects** requiring rapid prototyping with multimedia capabilities
-- **Embedded Developers** working on resource-constrained systems where zero-overhead is critical
+- **Embedded Developers** working on resource-constrained systems where performance is critical
 
 ---
 
@@ -173,7 +173,7 @@ Prefer compile-time errors over runtime errors. When runtime errors are unavoida
 
 #### 2. **Pay Only for What You Use**
 
-Template-based design ensures unused features add zero overhead to final binaries.
+Template-based design ensures unused features do not bloat final binaries.
 
 #### 3. **Principle of Least Surprise**
 
@@ -233,7 +233,7 @@ Most existing SDL wrappers:
 - **Modern**: Built for C++20 from the ground up
 - **Complete**: 100% SDL3 API coverage goal
 - **Safe**: Comprehensive compile-time and runtime safety
-- **Zero-Cost**: True zero-overhead abstraction
+- **Efficient**: Minimal runtime overhead with maximum type safety
 - **Maintained**: Active development following SDL3 evolution
 
 ---

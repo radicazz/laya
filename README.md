@@ -7,10 +7,10 @@
 
 <div align="center">
     <p>
-        <a href="docs/quick_start.md">Getting Started</a> •
+        <a href="docs/getting-started.md">Getting Started</a> •
         <a href="examples">Usage Examples</a> •
         <a href="https://github.com/radicazz/laya/releases">Releases</a> •
-        <a href="docs/design/roadmap.md">Roadmap</a>
+        <a href="docs/goals.md">Goals & Roadmap</a>
     </p>
 </div>
 

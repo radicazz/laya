@@ -285,11 +285,11 @@ for (const auto& ev : laya::poll_events()) {
 
 ---
 
-## Zero-Overhead Abstractions
+## Efficient Abstractions
 
 ### 1. **Inline Functions for Simple Wrappers**
 
-Mark simple wrapper functions as `inline` to ensure zero overhead.
+Mark simple wrapper functions as `inline` to minimize overhead.
 
 ```cpp
 class window {
@@ -463,7 +463,7 @@ TEST_CASE("Window RAII") {
 
 ### 2. **Performance Benchmarks**
 
-Ensure zero-overhead abstractions:
+Measure overhead and optimize hot paths:
 
 ```cpp
 void benchmark_laya_wrapper() {
@@ -475,7 +475,7 @@ void benchmark_laya_wrapper() {
     }
 
     auto end = std::chrono::high_resolution_clock::now();
-    // Should have identical timing to raw SDL
+    // Compare with raw SDL to measure wrapper overhead
 }
 ```
 
@@ -492,7 +492,7 @@ Laya's architecture demonstrates these key principles:
 ✅ **RAII** - Automatic resource management
 ✅ **Type Safety** - Strong enums, compile-time checks
 ✅ **Modern C++20** - Concepts, `std::format`, constexpr
-✅ **Zero Overhead** - Inline functions, no runtime cost
+✅ **Minimal Overhead** - Inline functions, efficient design
 ✅ **Thin Wrapper** - Direct mapping to SDL3
 ✅ **No SDL Exposure** - Clean public API
 
