@@ -31,6 +31,7 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         name: laya-linux-${{ matrix.compiler }}-Release
         run-id: ${{ github.event.workflow_run.id }}
+        path: build
 
     - name: Install Ubuntu dependencies
       run: |
@@ -123,6 +124,7 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         name: laya-windows-msvc-Release
         run-id: ${{ github.event.workflow_run.id }}
+        path: build
 
     - name: Run benchmarks
       shell: pwsh
