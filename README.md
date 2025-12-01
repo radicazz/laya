@@ -19,10 +19,16 @@
 </div>
 
 <div align="center">
-    <image alt="GitHub Last Commit" src="https://img.shields.io/github/last-commit/radicazz/laya?logo=github&logoColor=white"/>
-    <image alt="Build Status" src="https://github.com/radicazz/laya/actions/workflows/build.yml/badge.svg"/>
-    <image alt="Tests Status" src="https://github.com/radicazz/laya/actions/workflows/test.yml/badge.svg"/>
-    <image alt="Static Analysis" src="https://github.com/radicazz/laya/actions/workflows/static.yml/badge.svg"/>
+    <img alt="GitHub Last Commit" src="https://img.shields.io/github/last-commit/radicazz/laya/master?logo=github&logoColor=white"/>
+    <a href="https://github.com/radicazz/laya/actions/workflows/build.yml">
+        <img alt="Build Status" src="https://github.com/radicazz/laya/actions/workflows/build.yml/badge.svg?branch=master&event=push"/>
+    </a>
+    <a href="https://github.com/radicazz/laya/actions/workflows/test.yml">
+        <img alt="Tests Status" src="https://github.com/radicazz/laya/actions/workflows/test.yml/badge.svg?branch=master&event=push"/>
+    </a>
+    <a href="https://github.com/radicazz/laya/actions/workflows/static.yml">
+        <img alt="Static Analysis" src="https://github.com/radicazz/laya/actions/workflows/static.yml/badge.svg?branch=master&event=push"/>
+    </a>
 </div>
 
 <div align="center">

@@ -163,13 +163,22 @@ jobs:
     - name: Prepare CI metadata inputs
       run: mkdir -p ci-meta/build-info
 
-    - name: Download clang build info
+    - name: Download clang Debug build info
       if: ${{ needs.gate-docs.outputs.build_run_id != '' && env.ACT != 'true' }}
       uses: actions/download-artifact@v4
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         run-id: ${{ needs.gate-docs.outputs.build_run_id }}
-        name: ci-clang-build-info
+        name: ci-clang-build-info-Debug
+        path: ci-meta/build-info
+
+    - name: Download clang Release build info
+      if: ${{ needs.gate-docs.outputs.build_run_id != '' && env.ACT != 'true' }}
+      uses: actions/download-artifact@v4
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        run-id: ${{ needs.gate-docs.outputs.build_run_id }}
+        name: ci-clang-build-info-Release
         path: ci-meta/build-info
 
     - name: Generate CI metrics page
