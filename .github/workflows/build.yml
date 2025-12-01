@@ -1,10 +1,6 @@
 name: Build
 
 on:
-  push:
-    branches: [master, develop]
-  pull_request:
-    branches: [master, develop]
   workflow_dispatch:
   workflow_run:
     workflows: ["Static Analysis"]
@@ -15,24 +11,10 @@ env:
   ACT: 'false'
 
 jobs:
-  # Only run builds if static analysis passed (on workflow_run) or on manual/push/PR
-  check-static-analysis:
-    name: Check Prerequisites
-    runs-on: ubuntu-latest
-    if: |
-      github.event_name != 'workflow_run' ||
-      github.event.workflow_run.conclusion == 'success'
-    outputs:
-      should_run: ${{ steps.check.outputs.result }}
-    steps:
-      - id: check
-        run: echo "result=true" >> $GITHUB_OUTPUT
-
   build-linux:
     name: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.build_type }}
     runs-on: ${{ matrix.os }}
-    needs: check-static-analysis
-    if: needs.check-static-analysis.outputs.should_run == 'true'
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     
     strategy:
       fail-fast: false
@@ -147,21 +129,29 @@ jobs:
           -G "Ninja"
         )
 
-        # Add AddressSanitizer for Debug builds
+        extra_cxx_flags=""
+        extra_exe_linker_flags=""
+        extra_shared_linker_flags=""
+
         if [[ "${{ matrix.build_type }}" == "Debug" ]]; then
-          cmake_args+=(-DCMAKE_CXX_FLAGS="-fsanitize=address -fno-omit-frame-pointer -g")
-          cmake_args+=(-DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address")
+          extra_cxx_flags="${extra_cxx_flags} -fsanitize=address -fno-omit-frame-pointer -g"
+          extra_exe_linker_flags="${extra_exe_linker_flags} -fsanitize=address"
         fi
 
-        # Use libc++ for Clang
         if [[ "${{ matrix.compiler }}" == "clang" ]]; then
-          if [[ "${{ matrix.build_type }}" == "Debug" ]]; then
-            cmake_args+=(-DCMAKE_CXX_FLAGS="-stdlib=libc++ -fsanitize=address -fno-omit-frame-pointer -g")
-          else
-            cmake_args+=(-DCMAKE_CXX_FLAGS="-stdlib=libc++")
-          fi
-          cmake_args+=(-DCMAKE_EXE_LINKER_FLAGS="-stdlib=libc++ -lc++ -lc++abi -fsanitize=address")
-          cmake_args+=(-DCMAKE_SHARED_LINKER_FLAGS="-stdlib=libc++ -lc++ -lc++abi")
+          extra_cxx_flags="${extra_cxx_flags} -stdlib=libc++"
+          extra_exe_linker_flags="${extra_exe_linker_flags} -stdlib=libc++ -lc++ -lc++abi"
+          extra_shared_linker_flags="${extra_shared_linker_flags} -stdlib=libc++ -lc++ -lc++abi"
+        fi
+
+        if [[ -n "${extra_cxx_flags// /}" ]]; then
+          cmake_args+=(-DCMAKE_CXX_FLAGS="${extra_cxx_flags}")
+        fi
+        if [[ -n "${extra_exe_linker_flags// /}" ]]; then
+          cmake_args+=(-DCMAKE_EXE_LINKER_FLAGS="${extra_exe_linker_flags}")
+        fi
+        if [[ -n "${extra_shared_linker_flags// /}" ]]; then
+          cmake_args+=(-DCMAKE_SHARED_LINKER_FLAGS="${extra_shared_linker_flags}")
         fi
 
         cmake "${cmake_args[@]}"
@@ -193,8 +183,7 @@ jobs:
   build-windows:
     name: ${{ matrix.os }}-msvc-${{ matrix.build_type }}
     runs-on: ${{ matrix.os }}
-    needs: check-static-analysis
-    if: needs.check-static-analysis.outputs.should_run == 'true'
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     
     strategy:
       fail-fast: false

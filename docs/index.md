@@ -6,7 +6,6 @@ Welcome to the Laya documentation! Laya is a modern C++20 wrapper around SDL3, p
 
 Laya wraps SDL3's C API in idiomatic C++20, offering:
 
-- **Zero-Overhead Abstraction** - Compiles to identical assembly as hand-written SDL3
 - **Memory Safety** - RAII for automatic resource management, eliminating leaks
 - **Type Safety** - Strong types and compile-time checks prevent logical errors
 - **Modern C++ Ergonomics** - Concepts, ranges, `std::format`, and more
@@ -93,7 +92,7 @@ try {
 
 ## Contributing
 
-Contributions are welcome! Please see [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines.
+Contributions are welcome! Please see [CONTRIBUTING.md](https://github.com/radicazz/laya/blob/master/CONTRIBUTING.md) for guidelines.
 
 ## Community
 

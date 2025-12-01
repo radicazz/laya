@@ -50,6 +50,7 @@ jobs:
     
     - name: Download metrics
       uses: actions/download-artifact@v4
+      continue-on-error: true
       with:
         name: ci-metrics
         path: docs/ci-metrics/
@@ -69,7 +70,7 @@ jobs:
     
     - name: Build documentation
       run: |
-        uv run --directory tools mkdocs build --clean --strict
+        uv run --directory tools mkdocs build --clean --strict --config-file ../mkdocs.yml --site-dir site
     
     - name: Upload artifact for GitHub Pages
       if: ${{ env.ACT != 'true' }}
@@ -106,7 +107,7 @@ jobs:
     
     - name: Build documentation
       run: |
-        uv run --directory tools mkdocs build --clean --strict
+        uv run --directory tools mkdocs build --clean --strict --config-file ../mkdocs.yml --site-dir site
     
     - name: Upload preview artifact
       uses: actions/upload-artifact@v4

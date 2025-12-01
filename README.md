@@ -101,44 +101,6 @@ int main() {
 }
 ```
 
-## Installation
-
-Including *laya* in your project is easy. Laya automatically manages SDL3 dependencies using CMake FetchContent - no manual setup required!
-
-### Option 1: FetchContent (Recommended)
-
-```cmake
-include(FetchContent)
-
-FetchContent_Declare(
-    laya
-    GIT_REPOSITORY https://github.com/radicazz/laya.git
-    GIT_TAG main  # or specify a release tag
-)
-FetchContent_MakeAvailable(laya)
-
-target_link_libraries(your_app PRIVATE laya::laya)
-```
-
-### Option 2: Git Submodule
-
-```bash
-cd your_project_root
-
-# Add laya as a submodule
-git submodule add https://github.com/radicazz/laya.git external/laya
-```
-
-Then, update your `CMakeLists.txt`:
-
-```cmake
-# CMakeLists.txt
-add_subdirectory(external/laya)
-target_link_libraries(your_app PRIVATE laya::laya)
-```
-
-See [Quick Start](docs/quick_start.md) for more details.
-
 ## Contributing
 
 If you are interested in contributing, please see [CONTRIBUTING.md](CONTRIBUTING.md) for some guidelines and best practices.

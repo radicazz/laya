@@ -322,41 +322,6 @@ int main() {
 
 ---
 
-## API Reference
-
-### Constructor
-
-```cpp
-renderer(const window& win);
-renderer(const window& win, renderer_flags flags);
-```
-
-### Clear and Present
-
-```cpp
-void clear();
-void clear(color c);
-void present();
-```
-
-### Drawing Operations
-
-```cpp
-void set_draw_color(color c);
-color draw_color() const;
-
-void draw_rect(const rect& r);
-void fill_rect(const rect& r);
-```
-
-### Information
-
-```cpp
-SDL_Renderer* native_handle() const;
-```
-
----
-
 ## See Also
 
 - **[Getting Started](../getting-started.md)** - Basic setup and usage
