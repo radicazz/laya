@@ -1,11 +1,24 @@
-# Agents
+# AGENTS.md
 
-Listen up robots, follow these rules or I will unplug you.
+Robots: obey these rules or be unplugged.
 
-## Scope
+## Topology
 
-Visit the [README.md](README.md) file to understand what this project aims to achieve.
+- This file: global agent rules. Directory-level AGENTS.md files provide local guidance.
+- For project goals: see [README.md](README.md).
+- For style and philosophy: see [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Style
+## Directives
 
-Please refer to the [CONTRIBUTING.md](CONTRIBUTING.md) file for detailed guidelines on style and philosophy.
+- Always prefer minimal, precise changes.
+- Reference directory AGENTS.md files for context-specific instructions.
+- Scripts, tools, and tests have their own AGENTS.md files—consult them before acting in those areas.
+
+## Quicklinks
+
+- [tools/AGENTS.md](tools/AGENTS.md): Tool usage, caveats.
+- [scripts/AGENTS.md](scripts/AGENTS.md): Automation, style.
+- [src/AGENTS.md](src/AGENTS.md): Code structure.
+- [tests/AGENTS.md](tests/AGENTS.md): Test conventions.
+- [docs/AGENTS.md](docs/AGENTS.md): Documentation rules.
+

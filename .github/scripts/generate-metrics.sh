@@ -42,3 +42,18 @@ Raw SDL3:          ~0.028ms (1000 events)
 - [View Benchmarks](https://github.com/${REPO}/actions/workflows/benchmark.yml)
 - [View Static Analysis](https://github.com/${REPO}/actions/workflows/static.yml)
 EOF
+
+CI_INFO_DIR="${CI_CLANG_INFO_DIR:-ci-meta/build-info}"
+
+if compgen -G "${CI_INFO_DIR}"/*.md > /dev/null 2>&1; then
+  {
+    echo
+    echo "## Latest Ubuntu Clang Builds"
+    echo
+  } >> docs/ci-metrics/index.md
+
+  for info_file in "${CI_INFO_DIR}"/*.md; do
+    cat "$info_file" >> docs/ci-metrics/index.md
+    echo >> docs/ci-metrics/index.md
+  done
+fi

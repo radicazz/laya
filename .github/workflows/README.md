@@ -10,6 +10,27 @@ The GitHub Actions in this directory implement a four-stage pipeline that mirror
 | 3B | `benchmark.yml` | `workflow_run` after **Build** succeeds | Reuses Release build artifacts to run benchmarks + aggregate reports |
 | — | `docs.yml` | Push/PR to `master`, manual dispatch | Builds MkDocs site, publishes CI metrics page, deploys to GitHub Pages |
 
+### Flow at a Glance
+
+```
+Push/PR on master/develop
+        |
+        v
+  Static Analysis (static.yml)
+        |
+        v
+      Build (build.yml)
+      /   \
+     v     v
+ Tests   Benchmarks
+ (test)   (benchmark)
+      \   /
+       v v
+      Docs Gate*  --(docs/** changed?)-->  Docs Deploy (docs.yml)
+
+* Gate requires: branch==master, docs/ modified, and Static/Build/Test/Benchmark all succeeded.
+```
+
 ## Stage Details
 
 ### Static Analysis (`static.yml`)

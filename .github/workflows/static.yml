@@ -11,6 +11,70 @@ env:
   ACT: 'false'
 
 jobs:
+  change-metadata:
+    name: Capture Change Metadata
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Detect docs changes
+      id: detect-docs
+      run: |
+        set -euo pipefail
+
+        mkdir -p ci/change
+
+        head_sha="${GITHUB_SHA}"
+        event_name="${GITHUB_EVENT_NAME}"
+        base_sha=""
+        if [[ "${event_name}" == "push" ]]; then
+          base_sha=$(python -c "import json, os
+            with open(os.environ['GITHUB_EVENT_PATH'], 'r', encoding='utf-8') as fh:
+                data = json.load(fh)
+            print(data.get('before', ''))")
+        elif [[ "${event_name}" == "pull_request" ]]; then
+          base_sha=$(python -c "import json, os
+            with open(os.environ['GITHUB_EVENT_PATH'], 'r', encoding='utf-8') as fh:
+                data = json.load(fh)
+            base = data.get('pull_request', {}).get('base', {})
+            print(base.get('sha', ''))")
+        fi
+
+        if [[ -n "${base_sha}" ]]; then
+          base_ref="${base_sha}"
+        else
+          base_ref=$(git rev-parse "${head_sha}^" 2>/dev/null || true)
+        fi
+
+        if [[ -z "${base_ref}" ]]; then
+          base_ref=$(git rev-list --max-parents=0 "${head_sha}" | tail -n1)
+        fi
+
+        git diff --name-only "${base_ref}" "${head_sha}" | sort > ci/change/changed-files.txt || true
+
+        docs_changed="false"
+        if grep -E '^docs/' ci/change/changed-files.txt >/dev/null 2>&1; then
+          docs_changed="true"
+        fi
+
+        printf '%s\n' "${docs_changed}" > ci/change/docs-changed.txt
+        printf '%s\n' "${head_sha}" > ci/change/head-sha.txt
+        printf '%s\n' "${base_ref}" > ci/change/base-sha.txt
+
+        echo "docs_changed=${docs_changed}" >> "${GITHUB_OUTPUT}"
+
+    - name: Upload change metadata
+      if: ${{ env.ACT != 'true' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: ci-change-flags
+        path: ci/change/
+        retention-days: 30
+
   format-check:
     name: Format Check
     runs-on: ubuntu-latest

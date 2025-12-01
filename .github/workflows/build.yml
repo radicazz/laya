@@ -159,6 +159,22 @@ jobs:
     - name: Build
       run: cmake --build build --parallel
 
+    - name: Generate clang build summary
+      if: matrix.compiler == 'clang'
+      run: |
+        mkdir -p ci/build-info
+        cat <<EOF > ci/build-info/clang-${{ matrix.build_type }}.md
+        ### Ubuntu Clang ${{ matrix.build_type }} build
+
+        - Status: success
+        - Compiler: ${{ matrix.compiler }} (CC=${{ matrix.cc }}, CXX=${{ matrix.cxx }})
+        - Build Type: ${{ matrix.build_type }}
+        - Artifact: laya-linux-${{ matrix.compiler }}-${{ matrix.build_type }}
+        - Commit: ${{ github.sha }}
+        - Run ID: ${{ github.run_id }} (attempt ${{ github.run_attempt }})
+        - Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+        EOF
+
     - name: Upload build artifacts
       if: ${{ env.ACT != 'true' }}
       uses: actions/upload-artifact@v4
@@ -179,6 +195,14 @@ jobs:
           sudo kill $XVFB_PID || true
           echo "✓ Xvfb stopped"
         fi
+
+    - name: Upload clang build info
+      if: ${{ env.ACT != 'true' && matrix.compiler == 'clang' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: ci-clang-build-info
+        path: ci/build-info/clang-${{ matrix.build_type }}.md
+        retention-days: 30
 
   build-windows:
     name: ${{ matrix.os }}-msvc-${{ matrix.build_type }}
