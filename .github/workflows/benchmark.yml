@@ -30,7 +30,6 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         name: laya-linux-${{ matrix.compiler }}-Release
-        path: .
         run-id: ${{ github.event.workflow_run.id }}
 
     - name: Install Ubuntu dependencies
@@ -123,7 +122,6 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         name: laya-windows-msvc-Release
-        path: .
         run-id: ${{ github.event.workflow_run.id }}
 
     - name: Run benchmarks
