@@ -32,9 +32,28 @@ jobs:
         event_name="${GITHUB_EVENT_NAME}"
         base_sha=""
         if [[ "${event_name}" == "push" ]]; then
-          base_sha=$(python -c "import json, os; with open(os.environ['GITHUB_EVENT_PATH'], 'r', encoding='utf-8') as fh: data = json.load(fh); print(data.get('before', ''))")
+          base_sha=$(python - <<'PY'
+        import json
+        import os
+
+        with open(os.environ['GITHUB_EVENT_PATH'], 'r', encoding='utf-8') as fh:
+            data = json.load(fh)
+
+        print(data.get('before', ''))
+        PY
+          )
         elif [[ "${event_name}" == "pull_request" ]]; then
-          base_sha=$(python -c "import json, os; with open(os.environ['GITHUB_EVENT_PATH'], 'r', encoding='utf-8') as fh: data = json.load(fh); base = data.get('pull_request', {}).get('base', {}); print(base.get('sha', ''))")
+          base_sha=$(python - <<'PY'
+        import json
+        import os
+
+        with open(os.environ['GITHUB_EVENT_PATH'], 'r', encoding='utf-8') as fh:
+            data = json.load(fh)
+
+        base = data.get('pull_request', {}).get('base', {})
+        print(base.get('sha', ''))
+        PY
+          )
         fi
 
         if [[ -n "${base_sha}" ]]; then
