@@ -68,7 +68,13 @@ done
 ###############################################################################
 
 # Find SDL3 library - search for .so.0 or versioned .so.0.* files
-SDL3_LIB_PATH=$(find "$SEARCH_DIR" -type f \( -name "libSDL3.so.0" -o -name "libSDL3.so.0.*" \) -exec dirname {} \; 2>/dev/null | head -1)
+# Prioritize build/tests directory first for test executables
+SDL3_LIB_PATH=$(find "$SEARCH_DIR/tests" -type f \( -name "libSDL3.so.0" -o -name "libSDL3.so.0.*" \) -exec dirname {} \; 2>/dev/null | head -1)
+
+# If not found in tests, search entire build directory
+if [[ -z "$SDL3_LIB_PATH" ]]; then
+    SDL3_LIB_PATH=$(find "$SEARCH_DIR" -type f \( -name "libSDL3.so.0" -o -name "libSDL3.so.0.*" \) -exec dirname {} \; 2>/dev/null | head -1)
+fi
 
 if [[ -z "$SDL3_LIB_PATH" ]]; then
     echo "Error: libSDL3.so.0 or libSDL3.so.0.* not found in ${SEARCH_DIR}" >&2
