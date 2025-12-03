@@ -119,6 +119,4 @@ HeaderFilterRegex: '(src|include)/.*\.(h|hpp)$'
 FormatStyle: file
 
 # Used if no `compile_commands.json` is found.
-User: '
-  -std=c++20
-'
+User: '-std=c++20'

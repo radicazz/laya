@@ -9,8 +9,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 # Source color utility
-# shellcheck source=scripts/utils/print-color.sh
-. "${SCRIPT_DIR}/utils/print-color.sh"
+# shellcheck source=scripts/print-color.sh
+. "${SCRIPT_DIR}/print-color.sh"
 
 printf '%b========================================%b\n' "$CYAN" "$RESET"
 printf '%b  Laya Benchmark Runner%b\n' "$CYAN" "$RESET"

@@ -34,51 +34,18 @@ jobs:
         path: build
 
     - name: Install Ubuntu dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          xvfb \
-          x11-utils \
-          libx11-6 \
-          libxext6 \
-          libxrandr2 \
-          libxcursor1 \
-          libxfixes3 \
-          libxi6 \
-          libwayland-client0 \
-          libxkbcommon0 \
-          libgl1 \
-          libgles2 \
-          libegl1 \
-          libdbus-1-3
+      run: ./scripts/ci/install-ubuntu-deps.sh --runtime
 
     - name: Setup headless display
-      run: |
-        sudo Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX +render -noreset > /dev/null 2>&1 &
-        echo "XVFB_PID=$!" >> $GITHUB_ENV
-        sleep 3
-        echo "DISPLAY=:99" >> $GITHUB_ENV
-
-        if ! xdpyinfo -display :99 >/dev/null 2>&1; then
-          echo "ERROR: Xvfb failed to start"
-          exit 1
-        fi
-        echo "✓ Virtual display :99 ready"
+      run: ./scripts/ci/setup-xvfb.sh
 
     - name: Install GCC 13
       if: matrix.compiler == 'gcc'
-      run: |
-        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-        sudo apt-get update
-        sudo apt-get install -y gcc-13 g++-13 lcov
+      run: ./scripts/ci/install-compiler.sh --gcc 13 --with-coverage
 
     - name: Install Clang 18
       if: matrix.compiler == 'clang'
-      run: |
-        wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-        sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-18 main"
-        sudo apt-get update
-        sudo apt-get install -y clang-18 libc++-18-dev libc++abi-18-dev
+      run: ./scripts/ci/install-compiler.sh --clang 18
 
     - name: Make executables runnable
       run: |
@@ -87,48 +54,15 @@ jobs:
 
     - name: Run unit tests
       run: |
-        mkdir -p test-results
-
-        # Find and set LD_LIBRARY_PATH to find SDL3.so
-        SDL3_LIB_PATH=$(find build -name "libSDL3.so.0" -type f -exec dirname {} \; | head -1)
-        if [ -z "$SDL3_LIB_PATH" ]; then
-          echo "Error: libSDL3.so.0 not found in build directory"
-          find build -name "libSDL3*" -type f
-          exit 1
-        fi
-        export LD_LIBRARY_PATH=$SDL3_LIB_PATH:$LD_LIBRARY_PATH
-        echo "Using SDL3 from: $SDL3_LIB_PATH"
-
-        # Run with JUnit XML output
-        ./build/tests/laya_tests_unit --reporters=junit --out=test-results/junit-${{ matrix.compiler }}-debug.xml
-
-        # Also run with console output for logs
-        ./build/tests/laya_tests_unit --reporters=console | tee test-results/console-${{ matrix.compiler }}-debug.txt
+        eval "$(./scripts/ci/find-sdl3-lib.sh)"
+        ./scripts/ci/run-tests.sh \
+          --junit junit-${{ matrix.compiler }}-debug.xml \
+          --console console-${{ matrix.compiler }}-debug.txt \
+          --no-sdl-search
 
     - name: Generate coverage report (GCC only)
       if: matrix.compiler == 'gcc'
-      run: |
-        # Find and set LD_LIBRARY_PATH to find SDL3.so
-        SDL3_LIB_PATH=$(find build -name "libSDL3.so.0" -type f -exec dirname {} \; | head -1)
-        export LD_LIBRARY_PATH=$SDL3_LIB_PATH:$LD_LIBRARY_PATH
-
-        # Re-run tests to generate coverage data
-        ./build/tests/laya_tests_unit
-
-        # Generate coverage with lcov
-        lcov --gcov-tool gcov-13 --capture --directory . --output-file coverage.info || true
-        lcov --gcov-tool gcov-13 --remove coverage.info \
-          '/usr/*' \
-          '*/build/_deps/*' \
-          '*/tests/*' \
-          --output-file coverage.info || true
-
-        # Generate HTML report
-        mkdir -p coverage-html
-        genhtml coverage.info --output-directory coverage-html || true
-
-        # Display summary
-        lcov --list coverage.info || true
+      run: ./scripts/ci/generate-coverage.sh --gcov gcov-13
 
     - name: Upload coverage to Codecov
       if: ${{ matrix.compiler == 'gcc' && env.ACT != 'true' }}
@@ -159,11 +93,7 @@ jobs:
 
     - name: Cleanup headless display
       if: always()
-      run: |
-        if [ -n "$XVFB_PID" ]; then
-          sudo kill $XVFB_PID || true
-          echo "✓ Xvfb stopped"
-        fi
+      run: ./scripts/ci/cleanup-xvfb.sh
 
   test-windows:
     name: Test-msvc-Debug

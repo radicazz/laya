@@ -2,6 +2,10 @@
 
 Useful scripts for various tasks like building, testing, and more live in this directory.
 
+## CI/CD Scripts
+
+See [ci/README.md](./ci/README.md) for automation scripts used in GitHub Actions workflows. These scripts can also be run locally for development and debugging.
+
 ## Style Guide
 
 Please refer to the [Scripting Style Guide](./STYLE.md) for conventions and best practices when creating or modifying scripts in this project.
@@ -25,6 +29,7 @@ Serves the MkDocs documentation site locally for development and preview.
 ```
 
 The script will:
+
 - Automatically install documentation dependencies via `uv`
 - Start the MkDocs development server with live reload
 - Watch for changes and auto-refresh the browser

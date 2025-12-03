@@ -10,8 +10,8 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 TOOLS_DIR="$PROJECT_ROOT/tools"
 
 # Source color utility
-# shellcheck source=scripts/utils/print-color.sh
-. "${SCRIPT_DIR}/utils/print-color.sh"
+# shellcheck source=scripts/print-color.sh
+. "${SCRIPT_DIR}/print-color.sh"
 
 # Default values
 PORT=8000

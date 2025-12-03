@@ -45,72 +45,18 @@ jobs:
           ${{ runner.os }}-${{ matrix.compiler }}-fetchcontent-
 
     - name: Install Ubuntu dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          build-essential \
-          cmake \
-          ninja-build \
-          pkg-config \
-          libasound2-dev \
-          libpulse-dev \
-          libaudio-dev \
-          libjack-dev \
-          libsndio-dev \
-          libsamplerate0-dev \
-          libx11-dev \
-          libxext-dev \
-          libxrandr-dev \
-          libxcursor-dev \
-          libxfixes-dev \
-          libxi-dev \
-          libxss-dev \
-          libwayland-dev \
-          libxkbcommon-dev \
-          libdrm-dev \
-          libgl1-mesa-dev \
-          libgles2-mesa-dev \
-          libegl1-mesa-dev \
-          libdbus-1-dev \
-          libibus-1.0-dev \
-          libudev-dev \
-          fcitx-libs-dev \
-          libfreetype6-dev \
-          libharfbuzz-dev \
-          libpng-dev \
-          libjpeg-dev \
-          libtiff-dev \
-          zlib1g-dev \
-          xvfb \
-          x11-utils
+      run: ./scripts/ci/install-ubuntu-deps.sh --build
 
     - name: Setup headless display
-      run: |
-        sudo Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX +render -noreset > /dev/null 2>&1 &
-        echo "XVFB_PID=$!" >> $GITHUB_ENV
-        sleep 3
-        echo "DISPLAY=:99" >> $GITHUB_ENV
-
-        if ! xdpyinfo -display :99 >/dev/null 2>&1; then
-          echo "ERROR: Xvfb failed to start"
-          exit 1
-        fi
-        echo "✓ Virtual display :99 ready (1920x1080x24)"
+      run: ./scripts/ci/setup-xvfb.sh
 
     - name: Install GCC 13
       if: matrix.compiler == 'gcc'
-      run: |
-        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-        sudo apt-get update
-        sudo apt-get install -y gcc-13 g++-13
+      run: ./scripts/ci/install-compiler.sh --gcc 13
 
     - name: Install Clang 18
       if: matrix.compiler == 'clang'
-      run: |
-        wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-        sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-18 main"
-        sudo apt-get update
-        sudo apt-get install -y clang-18 clang++-18 libc++-18-dev libc++abi-18-dev
+      run: ./scripts/ci/install-compiler.sh --clang 18
 
     - name: Set up environment variables
       run: |
@@ -192,11 +138,7 @@ jobs:
 
     - name: Cleanup headless display
       if: always()
-      run: |
-        if [ -n "$XVFB_PID" ]; then
-          sudo kill $XVFB_PID || true
-          echo "✓ Xvfb stopped"
-        fi
+      run: ./scripts/ci/cleanup-xvfb.sh
 
     - name: Upload clang build info
       if: ${{ env.ACT != 'true' && matrix.compiler == 'clang' }}
