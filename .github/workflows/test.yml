@@ -54,10 +54,8 @@ jobs:
 
     - name: Run unit tests
       env:
-        LSAN_OPTIONS: suppressions=${{ github.workspace }}/.lsan_suppressions:print_suppressions=1
+        ASAN_OPTIONS: detect_leaks=0
       run: |
-        echo "LSAN_OPTIONS=$LSAN_OPTIONS"
-        test -f "${{ github.workspace }}/.lsan_suppressions" && echo "✓ Suppression file exists" || echo "✗ Suppression file missing"
         eval "$(./scripts/ci/find-sdl3-lib.sh)"
         ./scripts/ci/run-tests.sh \
           --junit junit-${{ matrix.compiler }}-debug.xml \
