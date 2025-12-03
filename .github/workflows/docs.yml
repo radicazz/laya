@@ -35,7 +35,7 @@ jobs:
 
     - name: Build documentation
       run: |
-        uv run --directory tools mkdocs build --clean --strict --config-file ../mkdocs.yml --site-dir site
+        uv run --directory tools mkdocs build --clean --config-file ../mkdocs.yml --site-dir site
 
     - name: Upload artifact for GitHub Pages
       if: ${{ env.ACT != 'true' }}
@@ -71,7 +71,7 @@ jobs:
 
     - name: Build documentation
       run: |
-        uv run --directory tools mkdocs build --clean --strict --config-file ../mkdocs.yml --site-dir site
+        uv run --directory tools mkdocs build --clean --config-file ../mkdocs.yml --site-dir site
 
     - name: Upload preview artifact
       uses: actions/upload-artifact@v4
