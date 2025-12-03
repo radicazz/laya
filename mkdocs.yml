@@ -134,7 +134,7 @@ extra:
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/radicazz/laya
-      name: *laya* on GitHub
+      name: laya on GitHub
 
   generator: false  # Remove "Made with Material for MkDocs"
 
