@@ -89,6 +89,9 @@ jobs:
       run: |
         mkdir -p test-results
 
+        # Set LD_LIBRARY_PATH to find SDL3.so
+        export LD_LIBRARY_PATH=$PWD/build/tests:$LD_LIBRARY_PATH
+
         # Run with JUnit XML output
         ./build/tests/laya_tests_unit --reporters=junit --out=test-results/junit-${{ matrix.compiler }}-debug.xml
 
@@ -98,6 +101,9 @@ jobs:
     - name: Generate coverage report (GCC only)
       if: matrix.compiler == 'gcc'
       run: |
+        # Set LD_LIBRARY_PATH to find SDL3.so
+        export LD_LIBRARY_PATH=$PWD/build/tests:$LD_LIBRARY_PATH
+
         # Re-run tests to generate coverage data
         ./build/tests/laya_tests_unit
 

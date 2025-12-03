@@ -73,6 +73,9 @@ jobs:
       run: |
         mkdir -p benchmark-results
 
+        # Set LD_LIBRARY_PATH to find SDL3.so
+        export LD_LIBRARY_PATH=$PWD/build/tests:$LD_LIBRARY_PATH
+
         # Run with JSON output for later processing
         ./build/tests/laya_tests_benchmark \
           --test-suite=benchmark \
