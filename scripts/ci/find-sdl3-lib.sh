@@ -67,13 +67,15 @@ done
 # Main
 ###############################################################################
 
-# Find SDL3 library
-SDL3_LIB_PATH=$(find "$SEARCH_DIR" -name "libSDL3.so.0" -type f -exec dirname {} \; 2>/dev/null | head -1)
+# Find SDL3 library - search for .so.0 or versioned .so.0.* files
+SDL3_LIB_PATH=$(find "$SEARCH_DIR" -type f \( -name "libSDL3.so.0" -o -name "libSDL3.so.0.*" \) -exec dirname {} \; 2>/dev/null | head -1)
 
 if [[ -z "$SDL3_LIB_PATH" ]]; then
-    echo "Error: libSDL3.so.0 not found in ${SEARCH_DIR}" >&2
+    echo "Error: libSDL3.so.0 or libSDL3.so.0.* not found in ${SEARCH_DIR}" >&2
     echo "Available SDL3 files:" >&2
-    find "$SEARCH_DIR" -name "libSDL3*" -type f 2>/dev/null || true >&2
+    find "$SEARCH_DIR" -name "libSDL3*" -type f 2>/dev/null | while read -r file; do
+        echo "  $file" >&2
+    done
     exit 1
 fi
 
