@@ -63,64 +63,11 @@ jobs:
       if: always()
       run: ./scripts/ci/cleanup-xvfb.sh
 
-  benchmark-windows:
-    name: Benchmark-msvc-Release
-    runs-on: windows-latest
-    if: github.event.workflow_run.conclusion == 'success'
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Download build artifacts
-      if: ${{ env.ACT != 'true' }}
-      uses: actions/download-artifact@v4
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        name: laya-windows-msvc-Release
-        run-id: ${{ github.event.workflow_run.id }}
-        path: build
-
-    - name: Run benchmarks
-      shell: pwsh
-      run: |
-        New-Item -ItemType Directory -Force -Path benchmark-results
-
-        # Set PATH to find SDL3.dll
-        $env:PATH = "$PWD\build\_deps\sdl3-build\Release;$env:PATH"
-
-        # Run with JSON output
-        & .\build\tests\Release\laya_tests_benchmark.exe `
-          --test-suite=benchmark `
-          --reporters=json `
-          --out=benchmark-results/benchmarks-msvc-release.json
-
-        # Run with console output
-        & .\build\tests\Release\laya_tests_benchmark.exe `
-          --test-suite=benchmark `
-          --reporters=console | Tee-Object -FilePath benchmark-results/benchmarks-msvc-release.txt
-
-        # Add metadata
-        "Compiler: MSVC" | Out-File -FilePath benchmark-results/metadata-msvc.txt
-        "Build Type: Release" | Out-File -FilePath benchmark-results/metadata-msvc.txt -Append
-        "Platform: Windows (windows-latest)" | Out-File -FilePath benchmark-results/metadata-msvc.txt -Append
-        "Timestamp: $(Get-Date -Format 'yyyy-MM-ddTHH:mm:ssZ' -AsUTC)" | Out-File -FilePath benchmark-results/metadata-msvc.txt -Append
-        "Commit: ${{ github.sha }}" | Out-File -FilePath benchmark-results/metadata-msvc.txt -Append
-        "Branch: ${{ github.ref_name }}" | Out-File -FilePath benchmark-results/metadata-msvc.txt -Append
-
-    - name: Upload benchmark results
-      if: ${{ env.ACT != 'true' }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: benchmark-results-windows-msvc-release
-        path: benchmark-results/
-        retention-days: 365  # Extended retention for historical comparison
-
   # Aggregate all benchmark results into a single artifact
   aggregate-results:
     name: Aggregate Benchmark Results
     runs-on: ubuntu-latest
-    needs: [benchmark-linux, benchmark-windows]
+    needs: [benchmark-linux]
     if: github.event.workflow_run.conclusion == 'success'
 
     steps:
@@ -151,13 +98,11 @@ jobs:
 
         - Linux GCC Release: \`benchmarks-gcc-release.json\`, \`benchmarks-gcc-release.txt\`
         - Linux Clang Release: \`benchmarks-clang-release.json\`, \`benchmarks-clang-release.txt\`
-        - Windows MSVC Release: \`benchmarks-msvc-release.json\`, \`benchmarks-msvc-release.txt\`
 
         ## Metadata Files
 
         - \`metadata-gcc.txt\`
         - \`metadata-clang.txt\`
-        - \`metadata-msvc.txt\`
 
         ## Usage
 
