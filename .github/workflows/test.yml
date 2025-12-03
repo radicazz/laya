@@ -53,6 +53,8 @@ jobs:
         chmod +x build/examples/*/laya_examples_* || true
 
     - name: Run unit tests
+      env:
+        LSAN_OPTIONS: suppressions=${{ github.workspace }}/.lsan_suppressions
       run: |
         eval "$(./scripts/ci/find-sdl3-lib.sh)"
         ./scripts/ci/run-tests.sh \

@@ -1,0 +1,13 @@
+# LeakSanitizer suppression file for Laya
+# Suppress known false positives from external libraries
+
+# SDL3 X11 keyboard initialization leaks
+# These are indirect leaks from X11 library internals that SDL3 can't control
+leak:X11_InitKeyboard
+leak:X11_VideoInit
+leak:SDL_VideoInit
+leak:SDL_InitSubSystem
+
+# X11 library internal allocations
+leak:libX11
+leak:libxcb
