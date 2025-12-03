@@ -89,8 +89,15 @@ jobs:
       run: |
         mkdir -p test-results
 
-        # Set LD_LIBRARY_PATH to find SDL3.so
-        export LD_LIBRARY_PATH=$PWD/build/tests:$LD_LIBRARY_PATH
+        # Find and set LD_LIBRARY_PATH to find SDL3.so
+        SDL3_LIB_PATH=$(find build -name "libSDL3.so.0" -type f -exec dirname {} \; | head -1)
+        if [ -z "$SDL3_LIB_PATH" ]; then
+          echo "Error: libSDL3.so.0 not found in build directory"
+          find build -name "libSDL3*" -type f
+          exit 1
+        fi
+        export LD_LIBRARY_PATH=$SDL3_LIB_PATH:$LD_LIBRARY_PATH
+        echo "Using SDL3 from: $SDL3_LIB_PATH"
 
         # Run with JUnit XML output
         ./build/tests/laya_tests_unit --reporters=junit --out=test-results/junit-${{ matrix.compiler }}-debug.xml
@@ -101,8 +108,9 @@ jobs:
     - name: Generate coverage report (GCC only)
       if: matrix.compiler == 'gcc'
       run: |
-        # Set LD_LIBRARY_PATH to find SDL3.so
-        export LD_LIBRARY_PATH=$PWD/build/tests:$LD_LIBRARY_PATH
+        # Find and set LD_LIBRARY_PATH to find SDL3.so
+        SDL3_LIB_PATH=$(find build -name "libSDL3.so.0" -type f -exec dirname {} \; | head -1)
+        export LD_LIBRARY_PATH=$SDL3_LIB_PATH:$LD_LIBRARY_PATH
 
         # Re-run tests to generate coverage data
         ./build/tests/laya_tests_unit
