@@ -1,4 +1,4 @@
-site_name: *laya* Documentation
+site_name: laya Documentation
 site_description: Modern C++20 wrapper for SDL3
 site_author: radicazz
 site_url: https://radicazz.github.io/laya
