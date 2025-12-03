@@ -184,7 +184,9 @@ jobs:
           build/src/liblaya.a
           build/tests/laya_tests_unit
           build/tests/laya_tests_benchmark
+          build/tests/libSDL3.so*
           build/examples/**/laya_examples_*
+          build/examples/**/libSDL3.so*
           !build/**/*.o
         retention-days: 90
 
