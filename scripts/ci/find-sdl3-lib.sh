@@ -85,6 +85,15 @@ if [[ -z "$SDL3_LIB_PATH" ]]; then
     exit 1
 fi
 
+# Create symlink if libSDL3.so.0 doesn't exist but versioned library does
+if [[ ! -f "$SDL3_LIB_PATH/libSDL3.so.0" ]]; then
+    versioned_lib=$(find "$SDL3_LIB_PATH" -maxdepth 1 -type f -name "libSDL3.so.0.*" | head -1)
+    if [[ -n "$versioned_lib" ]]; then
+        echo "Creating symlink: libSDL3.so.0 -> $(basename "$versioned_lib")" >&2
+        ln -sf "$(basename "$versioned_lib")" "$SDL3_LIB_PATH/libSDL3.so.0"
+    fi
+fi
+
 # Output export statements for eval
 cat << EOF
 export SDL3_LIB_PATH="${SDL3_LIB_PATH}"
