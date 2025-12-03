@@ -2,15 +2,15 @@
 <!-- markdownlint-disable MD033 MD041 -->
 
 <div align="center">
-  <image alt="logo" src="docs/assets/logo_cropped.png" width="300"/>
+  <image alt="logo" src="docs/assets/logo-header.png" width="300"/>
 </div>
 
 <div align="center">
     <p>
-        <a href="docs/getting-started.md">Getting Started</a> •
-        <a href="examples">Usage Examples</a> •
-        <a href="https://github.com/radicazz/laya/releases">Releases</a> •
-        <a href="docs/goals.md">Goals & Roadmap</a>
+        <a href="docs/getting-started.md">Documentation</a> •
+        <a href="examples">Examples</a> •
+        <a href="https://github.com/radicazz/laya/releases">Releases</a> <!-- •
+        <a href="docs/goals.md">Goals & Roadmap</a> -->
     </p>
 </div>
 
@@ -21,13 +21,13 @@
 <div align="center">
     <img alt="GitHub Last Commit" src="https://img.shields.io/github/last-commit/radicazz/laya/master?logo=github&logoColor=white"/>
     <a href="https://github.com/radicazz/laya/actions/workflows/build.yml">
-        <img alt="Build Status" src="https://github.com/radicazz/laya/actions/workflows/build.yml/badge.svg?branch=master&event=push"/>
+        <img alt="Build Status" src="https://github.com/radicazz/laya/actions/workflows/build.yml/badge.svg"/>
     </a>
     <a href="https://github.com/radicazz/laya/actions/workflows/test.yml">
-        <img alt="Tests Status" src="https://github.com/radicazz/laya/actions/workflows/test.yml/badge.svg?branch=master&event=push"/>
+        <img alt="Tests Status" src="https://github.com/radicazz/laya/actions/workflows/test.yml/badge.svg"/>
     </a>
     <a href="https://github.com/radicazz/laya/actions/workflows/static.yml">
-        <img alt="Static Analysis" src="https://github.com/radicazz/laya/actions/workflows/static.yml/badge.svg?branch=master&event=push"/>
+        <img alt="Static Analysis" src="https://github.com/radicazz/laya/actions/workflows/static.yml/badge.svg"/>
     </a>
 </div>
 

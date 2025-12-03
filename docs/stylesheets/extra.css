@@ -1,42 +1,50 @@
-/* Custom styling for Laya documentation - Purple theme enhancement */
+/* Custom styling for *laya* documentation - Space-grey theme with chroma accents */
 
 :root {
-  /* Purple color palette */
-  --md-primary-fg-color: #673ab7;
-  --md-primary-fg-color--light: #9575cd;
-  --md-primary-fg-color--dark: #512da8;
-  --md-accent-fg-color: #ba68c8;
-  --md-accent-fg-color--transparent: rgba(186, 104, 200, 0.1);
+  /* Space-grey color palette with vibrant accents */
+  --md-primary-fg-color: #546e7a;
+  --md-primary-fg-color--light: #78909c;
+  --md-primary-fg-color--dark: #37474f;
+  --md-accent-fg-color: #00e5ff;
+  --md-accent-fg-color--transparent: rgba(0, 229, 255, 0.1);
+  --gradient-accent: linear-gradient(135deg, #00e5ff 0%, #00bcd4 50%, #0097a7 100%);
+  --gradient-warm: linear-gradient(135deg, #ff6b9d 0%, #c44569 50%, #ffa502 100%);
 }
 
-/* Dark mode overrides */
+/* Dark mode overrides - Deep space grey */
 [data-md-color-scheme="slate"] {
-  --md-primary-fg-color: #9575cd;
-  --md-primary-fg-color--light: #b39ddb;
-  --md-primary-fg-color--dark: #7e57c2;
-  --md-accent-fg-color: #ce93d8;
-  --md-default-bg-color: #0f0f1a;
-  --md-default-fg-color--light: #b8b8c8;
-  --md-code-bg-color: #1a1a2e;
+  --md-primary-fg-color: #607d8b;
+  --md-primary-fg-color--light: #78909c;
+  --md-primary-fg-color--dark: #455a64;
+  --md-accent-fg-color: #00e5ff;
+  --md-default-bg-color: #0d1117;
+  --md-default-fg-color--light: #b0bec5;
+  --md-code-bg-color: #161b22;
+  --md-code-fg-color: #cfd8dc;
 }
 
-/* Code block styling with purple accents */
+/* Code block styling with cyan accents */
 .highlight .hll {
-  background-color: rgba(156, 39, 176, 0.15);
+  background-color: rgba(0, 229, 255, 0.12);
 }
 
-/* Links with purple */
+/* Links with chroma gradient effect */
 .md-typeset a {
   color: var(--md-accent-fg-color);
+  transition: all 0.3s ease;
 }
 
 .md-typeset a:hover {
-  color: var(--md-primary-fg-color--light);
+  background: var(--gradient-accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-/* Admonitions with purple tint */
+/* Admonitions with gradient accents */
 .md-typeset .admonition.note {
-  border-left-color: var(--md-primary-fg-color);
+  border-left: 0.2rem solid;
+  border-image: var(--gradient-accent) 1;
 }
 
 /* Search highlighting */
@@ -49,9 +57,12 @@
   color: var(--md-accent-fg-color);
 }
 
-/* Header gradient effect */
+/* Header with space-grey gradient and chroma highlight */
 .md-header {
-  background: linear-gradient(135deg, #512da8 0%, #673ab7 50%, #7e57c2 100%);
+  background: linear-gradient(135deg, #263238 0%, #37474f 50%, #455a64 100%);
+  border-bottom: 0.1rem solid transparent;
+  border-image: var(--gradient-accent) 1;
+  border-image-slice: 0 0 1 0;
 }
 
 /* Code copy button styling */
@@ -63,7 +74,7 @@
   color: var(--md-primary-fg-color--light);
 }
 
-/* Scrollbar styling for webkit browsers */
+/* Scrollbar styling with gradient */
 ::-webkit-scrollbar {
   width: 0.5rem;
   height: 0.5rem;
@@ -75,18 +86,22 @@
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--md-accent-fg-color);
+  background: var(--gradient-accent);
 }
 
-/* Footer styling */
+/* Footer with space-grey gradient */
 .md-footer {
-  background: linear-gradient(135deg, #512da8 0%, #673ab7 100%);
+  background: linear-gradient(135deg, #1c2428 0%, #263238 100%);
+  border-top: 0.1rem solid transparent;
+  border-image: var(--gradient-accent) 1;
+  border-image-slice: 1 0 0 0;
 }
 
-/* Inline code with purple tint */
+/* Inline code with subtle cyan border */
 .md-typeset code {
   background-color: var(--md-code-bg-color);
-  border: 0.05rem solid rgba(156, 39, 176, 0.2);
+  border: 0.05rem solid rgba(0, 229, 255, 0.15);
+  box-shadow: 0 0 0.3rem rgba(0, 229, 255, 0.05);
 }
 
 /* Table of contents active link */
@@ -96,17 +111,21 @@
   font-weight: 500;
 }
 
-/* Button styling */
+/* Button styling with gradient effects */
 .md-typeset .md-button {
   border: 0.1rem solid var(--md-primary-fg-color);
+  transition: all 0.3s ease;
 }
 
 .md-typeset .md-button--primary {
-  background-color: var(--md-primary-fg-color);
-  border-color: var(--md-primary-fg-color);
+  background: var(--gradient-accent);
+  border: none;
+  color: #fff;
+  font-weight: 500;
 }
 
 .md-typeset .md-button--primary:hover {
-  background-color: var(--md-primary-fg-color--light);
-  border-color: var(--md-primary-fg-color--light);
+  background: var(--gradient-warm);
+  transform: translateY(-0.1rem);
+  box-shadow: 0 0.4rem 0.8rem rgba(0, 229, 255, 0.3);
 }

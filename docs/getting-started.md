@@ -1,18 +1,18 @@
 # Getting Started
 
-Welcome to the getting started guide for integrating Laya into your C++ project. This guide covers installation, configuration, and your first Laya application.
+Welcome to the getting started guide for integrating *laya* into your C++ project. This guide covers installation, configuration, and your first *laya* application.
 
 ## Prerequisites
 
 - **C++20 compatible compiler** (GCC 11+, Clang 14+, MSVC 2022+)
 - **CMake 3.21 or higher**
-- **SDL3** (automatically handled by Laya)
+- **SDL3** (automatically handled by *laya*)
 
 ## Installation
 
 ### Option 1: FetchContent (Recommended)
 
-The easiest way to add Laya to your project. SDL3 dependencies are managed automatically!
+The easiest way to add *laya* to your project. SDL3 dependencies are managed automatically!
 
 ```cmake
 include(FetchContent)
@@ -25,7 +25,7 @@ FetchContent_MakeAvailable(laya)
 target_link_libraries(your_app PRIVATE laya::laya)
 ```
 
-**Note:** No manual dependency setup required! Laya will automatically download and configure SDL3 on first build.
+**Note:** No manual dependency setup required! *laya* will automatically download and configure SDL3 on first build.
 
 ### Option 2: Git Submodule
 
@@ -73,12 +73,12 @@ target_link_libraries(your_app PRIVATE laya::laya)
 
 ## SDL Dependency Handling
 
-Laya uses an intelligent fallback chain to manage SDL3 dependencies automatically:
+*laya* uses an intelligent fallback chain to manage SDL3 dependencies automatically:
 
 ### Automatic Resolution (Default)
 
 1. **Parent-provided targets**: If your project already has SDL3 targets, they're used automatically
-2. **System SDL3**: Laya tries `find_package(SDL3)` first
+2. **System SDL3**: *laya* tries `find_package(SDL3)` first
 3. **FetchContent**: If not found, SDL3 is downloaded and built automatically
 
 **Benefits:**
@@ -90,7 +90,7 @@ Laya uses an intelligent fallback chain to manage SDL3 dependencies automaticall
 
 ### Using System SDL3
 
-If you have SDL3 installed system-wide, Laya will detect and use it automatically via `find_package()`:
+If you have SDL3 installed system-wide, *laya* will detect and use it automatically via `find_package()`:
 
 ```bash
 # Ubuntu/Debian
@@ -113,12 +113,12 @@ If your project already provides SDL3 targets:
 # Your project provides SDL3::SDL3 target
 find_package(SDL3 REQUIRED)  # or FetchContent, etc.
 
-# Tell Laya to use your targets
+# Tell *laya* to use your targets
 set(LAYA_SDL_TARGETS_PROVIDED ON)
 add_subdirectory(external/laya)
 ```
 
-## Your First Laya Application
+## Your First *laya* Application
 
 ### Minimal Example
 
@@ -159,7 +159,7 @@ project(my_app)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Add Laya
+# Add *laya*
 add_subdirectory(external/laya)
 
 # Create executable
@@ -189,10 +189,10 @@ int main() {
     try {
         // Initialize video subsystem
         laya::context ctx{laya::subsystem::video};
-        laya::log_info("Laya initialized successfully");
+        laya::log_info("*laya* initialized successfully");
 
         // Create window
-        laya::window win{"Laya Example", {800, 600},
+        laya::window win{"*laya* Example", {800, 600},
                          laya::window_flags::resizable};
         laya::log_info("Window created");
 
@@ -246,18 +246,18 @@ add_subdirectory(external/laya)
 ### For Library Developers
 
 ```cmake
-# When Laya is a dependency of your library
+# When *laya* is a dependency of your library
 set(LAYA_BUILD_ALL OFF)
 set(LAYA_SDL_TARGETS_PROVIDED ON)  # You provide SDL
 add_subdirectory(external/laya)
 ```
 
-### For Laya Contributors
+### For *laya* Contributors
 
 ```cmake
 # Development with all features
 set(LAYA_BUILD_ALL ON)
-add_subdirectory(.)  # Building Laya as root project
+add_subdirectory(.)  # Building *laya* as root project
 # SDL3 is fetched automatically on first build
 ```
 
@@ -328,8 +328,8 @@ cmake --build build --config Release
 
 ## Next Steps
 
-- **[Goals](goals.md)** - Understand Laya's design philosophy
-- **[Architecture](architecture.md)** - Learn about Laya's design patterns
+- **[Goals](goals.md)** - Understand *laya*'s design philosophy
+- **[Architecture](architecture.md)** - Learn about *laya*'s design patterns
 - **[Features](features/logging.md)** - Explore specific features like logging, events, and rendering
 - **[Examples](../examples/)** - See complete example applications
 
@@ -339,4 +339,4 @@ cmake --build build --config Release
 - **Documentation**: This documentation
 - **Examples**: Check the `examples/` directory in the repository
 
-Happy coding with Laya!
+Happy coding with *laya*!

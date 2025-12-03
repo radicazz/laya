@@ -80,8 +80,7 @@ jobs:
         extra_shared_linker_flags=""
 
         if [[ "${{ matrix.build_type }}" == "Debug" ]]; then
-          extra_cxx_flags="${extra_cxx_flags} -fsanitize=address -fno-omit-frame-pointer -g"
-          extra_exe_linker_flags="${extra_exe_linker_flags} -fsanitize=address"
+          extra_cxx_flags="${extra_cxx_flags} -fno-omit-frame-pointer -g"
         fi
 
         if [[ "${{ matrix.compiler }}" == "clang" ]]; then

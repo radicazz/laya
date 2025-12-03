@@ -1,4 +1,4 @@
-site_name: Laya Documentation
+site_name: *laya* Documentation
 site_description: Modern C++20 wrapper for SDL3
 site_author: radicazz
 site_url: https://radicazz.github.io/laya
@@ -13,13 +13,13 @@ theme:
   name: material
   language: en
 
-  # Dark theme with purple accents
+  # Space-grey theme with chroma accents
   palette:
     # Dark mode (default)
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: deep purple
-      accent: purple
+      primary: blue grey
+      accent: cyan
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
@@ -27,8 +27,8 @@ theme:
     # Light mode option
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: deep purple
-      accent: purple
+      primary: blue grey
+      accent: cyan
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
@@ -61,9 +61,6 @@ theme:
 # Documentation structure
 nav:
   - Home: index.md
-  - Core:
-      - Goals: goals.md
-      - Architecture: architecture.md
   - Features:
       - Windows: features/windows.md
       - Rendering: features/rendering.md
@@ -135,7 +132,7 @@ extra:
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/radicazz/laya
-      name: Laya on GitHub
+      name: *laya* on GitHub
 
   generator: false  # Remove "Made with Material for MkDocs"
 

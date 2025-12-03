@@ -53,8 +53,6 @@ jobs:
         chmod +x build/examples/*/laya_examples_* || true
 
     - name: Run unit tests
-      env:
-        ASAN_OPTIONS: detect_leaks=0
       run: |
         eval "$(./scripts/ci/find-sdl3-lib.sh)"
         ./scripts/ci/run-tests.sh \
