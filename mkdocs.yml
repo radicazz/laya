@@ -61,12 +61,14 @@ theme:
 # Documentation structure
 nav:
   - Home: index.md
+  - Getting Started: getting-started.md
+  - Goals: goals.md
+  - Architecture: architecture.md
   - Features:
       - Windows: features/windows.md
       - Rendering: features/rendering.md
       - Events: features/events.md
       - Logging: features/logging.md
-  - CI/CD Metrics: ci-metrics/index.md
 
 # Extensions
 markdown_extensions:

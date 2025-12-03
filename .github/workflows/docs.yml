@@ -1,17 +1,6 @@
 name: Documentation
 
 on:
-  workflow_run:
-    workflows: ["Benchmark"]
-    types:
-      - completed
-  pull_request:
-    branches: [master]
-    paths:
-      - 'docs/**'
-      - 'mkdocs.yml'
-      - 'tools/**'
-      - '.github/workflows/docs.yml'
   workflow_dispatch:
 
 permissions:
@@ -23,192 +12,13 @@ env:
   ACT: 'false'
 
 jobs:
-  gate-docs:
-    name: Gate Documentation Deployment
-    runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success')
-    outputs:
-      should_run: ${{ steps.evaluate.outputs.should_run }}
-      static_run_id: ${{ steps.resolve.outputs.static_run_id }}
-      build_run_id: ${{ steps.resolve.outputs.build_run_id }}
-      test_run_id: ${{ steps.resolve.outputs.test_run_id }}
-      benchmark_run_id: ${{ steps.resolve.outputs.benchmark_run_id }}
-      head_sha: ${{ steps.resolve.outputs.head_sha }}
-      head_branch: ${{ steps.resolve.outputs.head_branch }}
-      docs_changed: ${{ steps.docs_change.outputs.docs_changed }}
-
-    steps:
-    - name: Resolve workflow runs
-      id: resolve
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const core = require('@actions/core');
-          const workflows = [
-            { key: 'static', file: 'static.yml' },
-            { key: 'build', file: 'build.yml' },
-            { key: 'test', file: 'test.yml' },
-            { key: 'benchmark', file: 'benchmark.yml' },
-          ];
-
-          const headSha = context.payload.workflow_run?.head_sha || process.env.GITHUB_SHA || '';
-          const headBranch = context.payload.workflow_run?.head_branch || process.env.GITHUB_REF_NAME || '';
-
-          const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-          for (const wf of workflows) {
-            let runId = '';
-            let conclusion = '';
-            if (context.eventName === 'workflow_run') {
-              const { data } = await github.rest.actions.listWorkflowRuns({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                workflow_id: wf.file,
-                per_page: 100,
-                branch: headBranch || undefined,
-              });
-              const match = data.workflow_runs.find((run) => run.head_sha === headSha);
-              if (match) {
-                runId = String(match.id);
-                conclusion = match.conclusion || '';
-                if (match.status !== 'completed') {
-                  const maxAttempts = 40;
-                  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-                    await wait(15000);
-                    const { data: refreshed } = await github.rest.actions.getWorkflowRun({
-                      owner: context.repo.owner,
-                      repo: context.repo.repo,
-                      run_id: match.id,
-                    });
-                    if (refreshed.status === 'completed') {
-                      conclusion = refreshed.conclusion || '';
-                      break;
-                    }
-                  }
-                }
-              }
-            }
-            core.setOutput(`${wf.key}_run_id`, runId);
-            core.setOutput(`${wf.key}_conclusion`, conclusion);
-          }
-
-          core.setOutput('head_sha', headSha);
-          core.setOutput('head_branch', headBranch);
-
-    - name: Prepare metadata workspace
-      run: mkdir -p ci-meta/change
-
-    - name: Download docs change metadata
-      if: ${{ steps.resolve.outputs.static_run_id != '' && env.ACT != 'true' }}
-      uses: actions/download-artifact@v4
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        run-id: ${{ steps.resolve.outputs.static_run_id }}
-        name: ci-change-flags
-        path: ci-meta/change
-
-    - name: Inspect docs change flag
-      id: docs_change
-      run: |
-        set -euo pipefail
-        docs_flag="false"
-        flag_path="ci-meta/change/docs-changed.txt"
-        if [[ -f "$flag_path" ]]; then
-          docs_flag=$(tr -d '\r' < "$flag_path" | tr '[:upper:]' '[:lower:]')
-        fi
-        echo "docs_changed=${docs_flag}" >> "$GITHUB_OUTPUT"
-
-    - name: Evaluate deployment gate
-      id: evaluate
-      env:
-        HEAD_BRANCH: ${{ steps.resolve.outputs.head_branch }}
-      run: |
-        set -euo pipefail
-
-        if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
-          echo "should_run=true" >> "$GITHUB_OUTPUT"
-          exit 0
-        fi
-
-        if [[ "${HEAD_BRANCH}" != "master" ]]; then
-          echo "should_run=false" >> "$GITHUB_OUTPUT"
-          exit 0
-        fi
-
-        required=("${{ steps.resolve.outputs.static_conclusion }}" "${{ steps.resolve.outputs.build_conclusion }}" "${{ steps.resolve.outputs.test_conclusion }}" "${{ steps.resolve.outputs.benchmark_conclusion }}")
-        all_ok="true"
-        for status in "${required[@]}"; do
-          if [[ "$status" != "success" ]]; then
-            all_ok="false"
-          fi
-        done
-
-        docs_changed="${{ steps.docs_change.outputs.docs_changed || 'false' }}"
-        if [[ "$all_ok" == "true" && "$docs_changed" == "true" ]]; then
-          echo "should_run=true" >> "$GITHUB_OUTPUT"
-        else
-          echo "should_run=false" >> "$GITHUB_OUTPUT"
-        fi
-
-  collect-metrics:
-    name: Collect CI Metrics
-    runs-on: ubuntu-latest
-    needs: gate-docs
-    if: needs.gate-docs.outputs.should_run == 'true'
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Prepare CI metadata inputs
-      run: mkdir -p ci-meta/build-info
-
-    - name: Download clang Debug build info
-      if: ${{ needs.gate-docs.outputs.build_run_id != '' && env.ACT != 'true' }}
-      uses: actions/download-artifact@v4
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        run-id: ${{ needs.gate-docs.outputs.build_run_id }}
-        name: ci-clang-build-info-Debug
-        path: ci-meta/build-info
-
-    - name: Download clang Release build info
-      if: ${{ needs.gate-docs.outputs.build_run_id != '' && env.ACT != 'true' }}
-      uses: actions/download-artifact@v4
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        run-id: ${{ needs.gate-docs.outputs.build_run_id }}
-        name: ci-clang-build-info-Release
-        path: ci-meta/build-info
-
-    - name: Generate CI metrics page
-      env:
-        CI_CLANG_INFO_DIR: ci-meta/build-info
-      run: bash .github/scripts/generate-metrics.sh
-
-    - name: Upload metrics artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: ci-metrics
-        path: docs/ci-metrics/
-        retention-days: 90
-
   build-deploy:
     name: Build and Deploy Documentation
-    needs: [gate-docs, collect-metrics]
     runs-on: ubuntu-latest
-    if: needs.gate-docs.outputs.should_run == 'true'
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-
-    - name: Download metrics
-      uses: actions/download-artifact@v4
-      continue-on-error: true
-      with:
-        name: ci-metrics
-        path: docs/ci-metrics/
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -241,7 +51,6 @@ jobs:
   build-preview:
     name: Build Documentation (Preview)
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
 
     steps:
     - name: Checkout code
