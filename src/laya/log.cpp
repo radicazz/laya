@@ -146,11 +146,11 @@ void color_log_output(void* userdata, int category, SDL_LogPriority priority, co
 
 namespace detail {
 
-void log_message(log_category category, log_priority priority, const char* message) {
-    SDL_LogMessage(to_sdl_category(category), to_sdl_priority(priority), "%s", message);
+void log_message(log_category category, log_priority priority, std::string_view message) {
+    SDL_LogMessage(to_sdl_category(category), to_sdl_priority(priority), "%s", std::string(message).c_str());
 }
 
-void log_message_with_location(log_category category, log_priority priority, const char* message,
+void log_message_with_location(log_category category, log_priority priority, std::string_view message,
                                const std::source_location& loc) {
     const auto formatted = std::format("[{}:{}] {}", loc.file_name(), loc.line(), message);
     SDL_LogMessage(to_sdl_category(category), to_sdl_priority(priority), "%s", formatted.c_str());

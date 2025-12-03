@@ -135,51 +135,51 @@ private:
 
 namespace detail {
 // Internal helper functions (implemented in log.cpp)
-void log_message(log_category category, log_priority priority, const char* message);
-void log_message_with_location(log_category category, log_priority priority, const char* message,
+void log_message(log_category category, log_priority priority, std::string_view message);
+void log_message_with_location(log_category category, log_priority priority, std::string_view message,
                                const std::source_location& loc);
 }  // namespace detail
 
 template <class... Args>
 inline void log(std::format_string<Args...> fmt, Args&&... args) {
     detail::log_message(log_category::application, log_priority::info,
-                        std::format(fmt, std::forward<Args>(args)...).c_str());
+                        std::format(fmt, std::forward<Args>(args)...));
 }
 
 template <class... Args>
 inline void log_trace(std::format_string<Args...> fmt, Args&&... args) {
     detail::log_message(log_category::application, log_priority::trace,
-                        std::format(fmt, std::forward<Args>(args)...).c_str());
+                        std::format(fmt, std::forward<Args>(args)...));
 }
 
 template <class... Args>
 inline void log_verbose(std::format_string<Args...> fmt, Args&&... args) {
     detail::log_message(log_category::application, log_priority::verbose,
-                        std::format(fmt, std::forward<Args>(args)...).c_str());
+                        std::format(fmt, std::forward<Args>(args)...));
 }
 
 template <class... Args>
 inline void log_debug(std::format_string<Args...> fmt, Args&&... args) {
     detail::log_message(log_category::application, log_priority::debug,
-                        std::format(fmt, std::forward<Args>(args)...).c_str());
+                        std::format(fmt, std::forward<Args>(args)...));
 }
 
 template <class... Args>
 inline void log_info(std::format_string<Args...> fmt, Args&&... args) {
     detail::log_message(log_category::application, log_priority::info,
-                        std::format(fmt, std::forward<Args>(args)...).c_str());
+                        std::format(fmt, std::forward<Args>(args)...));
 }
 
 template <class... Args>
 inline void log_warn(std::format_string<Args...> fmt, Args&&... args) {
     detail::log_message(log_category::application, log_priority::warn,
-                        std::format(fmt, std::forward<Args>(args)...).c_str());
+                        std::format(fmt, std::forward<Args>(args)...));
 }
 
 template <class... Args>
 inline void log_error(const std::source_location& loc, std::format_string<Args...> fmt, Args&&... args) {
     detail::log_message_with_location(log_category::application, log_priority::error,
-                                      std::format(fmt, std::forward<Args>(args)...).c_str(), loc);
+                                      std::format(fmt, std::forward<Args>(args)...), loc);
 }
 
 template <class... Args>
@@ -190,7 +190,7 @@ inline void log_error(std::format_string<Args...> fmt, Args&&... args) {
 template <class... Args>
 inline void log_critical(const std::source_location& loc, std::format_string<Args...> fmt, Args&&... args) {
     detail::log_message_with_location(log_category::application, log_priority::critical,
-                                      std::format(fmt, std::forward<Args>(args)...).c_str(), loc);
+                                      std::format(fmt, std::forward<Args>(args)...), loc);
 }
 
 template <class... Args>
@@ -200,13 +200,13 @@ inline void log_critical(std::format_string<Args...> fmt, Args&&... args) {
 
 template <class... Args>
 inline void log(log_category category, log_priority priority, std::format_string<Args...> fmt, Args&&... args) {
-    detail::log_message(category, priority, std::format(fmt, std::forward<Args>(args)...).c_str());
+    detail::log_message(category, priority, std::format(fmt, std::forward<Args>(args)...));
 }
 
 template <class... Args>
 inline void log(log_category category, log_priority priority, const std::source_location& loc,
                 std::format_string<Args...> fmt, Args&&... args) {
-    detail::log_message_with_location(category, priority, std::format(fmt, std::forward<Args>(args)...).c_str(), loc);
+    detail::log_message_with_location(category, priority, std::format(fmt, std::forward<Args>(args)...), loc);
 }
 
 }  // namespace laya

@@ -1,13 +1,8 @@
-# LeakSanitizer suppression file for Laya
-# Suppress known false positives from external libraries
+# LeakSanitizer suppressions for external library leaks
+# These leaks are in SDL3's backend libraries, not our code
 
-# SDL3 X11 keyboard initialization leaks
-# These are indirect leaks from X11 library internals that SDL3 can't control
-leak:X11_InitKeyboard
-leak:X11_VideoInit
-leak:SDL_VideoInit
-leak:SDL_InitSubSystem
-
-# X11 library internal allocations
-leak:libX11
-leak:libxcb
+# GTK/GDK/libdecor leaks in SDL3 Wayland backend
+leak:libglib-2.0.so
+leak:libgdk-3.so
+leak:libdecor-gtk.so
+leak:libdecor-0.so
