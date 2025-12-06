@@ -9,32 +9,38 @@ namespace laya {
 
 std::optional<event> wait_event() {
     SDL_Event sdl_event;
-    if (SDL_WaitEvent(&sdl_event)) {
+    while (true) {
+        if (SDL_WaitEvent(&sdl_event) == 0) {
+            return std::nullopt;
+        }
+
         try {
             return from_sdl_event(sdl_event);
         } catch (const std::runtime_error&) {
-            // If we get an unsupported event, try again
-            return wait_event();
+            // Skip unsupported events and keep waiting
+            continue;
         }
     }
-    return std::nullopt;
 }
 
 std::optional<event> wait_event_timeout(std::chrono::milliseconds timeout) {
     SDL_Event sdl_event;
-    if (SDL_WaitEventTimeout(&sdl_event, static_cast<int32_t>(timeout.count()))) {
+    while (true) {
+        if (SDL_WaitEventTimeout(&sdl_event, static_cast<int32_t>(timeout.count())) == 0) {
+            return std::nullopt;
+        }
+
         try {
             return from_sdl_event(sdl_event);
         } catch (const std::runtime_error&) {
-            // If we get an unsupported event, return nullopt for timeout case
-            return std::nullopt;
+            // Skip unsupported events and keep waiting within timeout window
+            continue;
         }
     }
-    return std::nullopt;
 }
 
 bool has_events() {
-    return SDL_PollEvent(nullptr) == true;
+    return SDL_HasEvents(SDL_EVENT_FIRST, SDL_EVENT_LAST) != 0;
 }
 
 void flush_events() {

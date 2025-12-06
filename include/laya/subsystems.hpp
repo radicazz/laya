@@ -34,6 +34,9 @@ struct context {
     context& operator=(const context&) = delete;
     context(context&&) = delete;
     context& operator=(context&&) = delete;
+
+private:
+    subsystem m_system;
 };
 
 }  // namespace laya

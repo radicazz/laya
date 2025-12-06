@@ -13,6 +13,7 @@ Robots: obey these rules or be unplugged.
 - Always prefer minimal, precise changes.
 - Reference directory AGENTS.md files for context-specific instructions.
 - Scripts, tools, and tests have their own AGENTS.md files—consult them before acting in those areas.
+- Follow conventional commit prefixes (e.g., feat:, fix:, chore:, docs:, test:) for commit messages.
 
 ## Quicklinks
 
