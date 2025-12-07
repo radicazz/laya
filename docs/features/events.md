@@ -50,7 +50,7 @@ Using `std::visit`:
 for (const auto& event : laya::poll_events()) {
     std::visit([&](const auto& ev) {
         using T = std::decay_t<decltype(ev)>;
-        
+
         if constexpr (std::is_same_v<T, laya::quit_event>) {
             running = false;
         }
@@ -76,7 +76,7 @@ while (running) {
             running = false;
         }
     }
-    
+
     ren.clear(laya::color::black());
     ren.present();
 }

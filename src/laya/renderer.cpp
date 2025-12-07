@@ -93,8 +93,7 @@ renderer::renderer(window& win, const renderer_args& args) : m_renderer{nullptr}
         throw error::from_sdl();
     }
 
-    const bool request_vsync_flag =
-        (args.flags & renderer_flags::present_vsync) == renderer_flags::present_vsync;
+    const bool request_vsync_flag = (args.flags & renderer_flags::present_vsync) == renderer_flags::present_vsync;
     const auto requested_vsync_value =
         static_cast<Sint64>(request_vsync_flag ? static_cast<int>(vsync_mode::enabled) : static_cast<int>(args.vsync));
     if (!SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, requested_vsync_value)) {

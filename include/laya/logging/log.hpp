@@ -142,14 +142,12 @@ void log_message_with_location(log_category category, log_priority priority, std
 
 template <class... Args>
 inline void log(std::format_string<Args...> fmt, Args&&... args) {
-    detail::log_message(log_category::application, log_priority::info,
-                        std::format(fmt, std::forward<Args>(args)...));
+    detail::log_message(log_category::application, log_priority::info, std::format(fmt, std::forward<Args>(args)...));
 }
 
 template <class... Args>
 inline void log_trace(std::format_string<Args...> fmt, Args&&... args) {
-    detail::log_message(log_category::application, log_priority::trace,
-                        std::format(fmt, std::forward<Args>(args)...));
+    detail::log_message(log_category::application, log_priority::trace, std::format(fmt, std::forward<Args>(args)...));
 }
 
 template <class... Args>
@@ -160,20 +158,17 @@ inline void log_verbose(std::format_string<Args...> fmt, Args&&... args) {
 
 template <class... Args>
 inline void log_debug(std::format_string<Args...> fmt, Args&&... args) {
-    detail::log_message(log_category::application, log_priority::debug,
-                        std::format(fmt, std::forward<Args>(args)...));
+    detail::log_message(log_category::application, log_priority::debug, std::format(fmt, std::forward<Args>(args)...));
 }
 
 template <class... Args>
 inline void log_info(std::format_string<Args...> fmt, Args&&... args) {
-    detail::log_message(log_category::application, log_priority::info,
-                        std::format(fmt, std::forward<Args>(args)...));
+    detail::log_message(log_category::application, log_priority::info, std::format(fmt, std::forward<Args>(args)...));
 }
 
 template <class... Args>
 inline void log_warn(std::format_string<Args...> fmt, Args&&... args) {
-    detail::log_message(log_category::application, log_priority::warn,
-                        std::format(fmt, std::forward<Args>(args)...));
+    detail::log_message(log_category::application, log_priority::warn, std::format(fmt, std::forward<Args>(args)...));
 }
 
 template <class... Args>

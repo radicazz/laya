@@ -10,7 +10,7 @@ Create and manage windows with automatic cleanup and type safety.
 int main() {
     laya::context ctx{laya::subsystem::video};
     laya::window win{"My Window", {800, 600}};
-    
+
     // Window cleans itself up when it goes out of scope
 }
 ```

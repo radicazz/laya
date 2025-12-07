@@ -87,37 +87,37 @@ if [[ "$COMPILER" == "gcc" ]]; then
     echo "Installing GCC ${VERSION}..."
     sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
     sudo apt-get update
-    
+
     PACKAGES=(gcc-"${VERSION}" g++-"${VERSION}")
-    
+
     if [[ "$WITH_COVERAGE" == true ]]; then
         PACKAGES+=(lcov)
     fi
-    
+
     sudo apt-get install -y "${PACKAGES[@]}"
-    
+
     CC="gcc-${VERSION}"
     CXX="g++-${VERSION}"
-    
+
     echo "✓ GCC ${VERSION} installed"
-    
+
 elif [[ "$COMPILER" == "clang" ]]; then
     echo "Installing Clang ${VERSION}..."
-    
+
     # Add LLVM repository key and source
     wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
     sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-${VERSION} main" -y
     sudo apt-get update
-    
+
     sudo apt-get install -y \
         clang-"${VERSION}" \
         clang++-"${VERSION}" \
         libc++-"${VERSION}"-dev \
         libc++abi-"${VERSION}"-dev
-    
+
     CC="clang-${VERSION}"
     CXX="clang++-${VERSION}"
-    
+
     echo "✓ Clang ${VERSION} installed"
 fi
 
