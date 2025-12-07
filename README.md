@@ -7,7 +7,7 @@
 
 <div align="center">
     <p>
-        <a href="docs/getting-started.md">Documentation</a> •
+        <a href="https://radicazz.github.io/laya/">Documentation</a> •
         <a href="examples">Examples</a> •
         <a href="https://github.com/radicazz/laya/releases">Releases</a> <!-- •
         <a href="docs/goals.md">Goals & Roadmap</a> -->
@@ -74,6 +74,13 @@
 
 A modern library targetting C++20 and SDL3 for cross-platform, immediate-mode, desktop application development. With *laya*, you can create windows, handle input events, render 2D graphics and manage resources in a type-safe and efficient manner while leveraging the full power of the underlying SDL library.
 
+<div align="center">
+    <image alt="example" src="docs/assets/simple-code-example.png">
+</div>
+
+
+<!--
+
 ```cpp
 #include <laya/laya.hpp>
 
@@ -106,6 +113,7 @@ int main() {
     }
 }
 ```
+-->
 
 ## Contributing
 
