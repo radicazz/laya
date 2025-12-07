@@ -107,10 +107,9 @@ renderer::renderer(window& win, const renderer_args& args) : m_renderer{nullptr}
         throw error("Failed to create renderer: {}", SDL_GetError());
     }
 
-    // Set VSync mode
-    if (SDL_SetRenderVSync(m_renderer, static_cast<int>(args.vsync)) != 0) {
-        SDL_DestroyRenderer(m_renderer);
-        throw error("Failed to set VSync: {}", SDL_GetError());
+    // Set VSync mode (non-fatal if unsupported)
+    if (SDL_SetRenderVSync(m_renderer, static_cast<int>(args.vsync)) == false) {
+        std::fprintf(stderr, "Warning: Failed to set VSync: %s\n", SDL_GetError());
     }
 
     // Cache the renderer ID using pointer value as unique identifier
@@ -146,13 +145,13 @@ renderer& renderer::operator=(renderer&& other) noexcept {
 // ============================================================================
 
 void renderer::clear() {
-    if (SDL_RenderClear(m_renderer) != 0) {
+    if (SDL_RenderClear(m_renderer) == false) {
         throw error("Failed to clear renderer: {}", SDL_GetError());
     }
 }
 
 void renderer::present() {
-    if (SDL_RenderPresent(m_renderer) != 0) {
+    if (SDL_RenderPresent(m_renderer) == false) {
         throw error("Failed to present renderer: {}", SDL_GetError());
     }
 }
@@ -162,39 +161,39 @@ void renderer::present() {
 // ============================================================================
 
 void renderer::set_draw_color(color c) {
-    if (SDL_SetRenderDrawColor(m_renderer, c.r, c.g, c.b, c.a) != 0) {
+    if (SDL_SetRenderDrawColor(m_renderer, c.r, c.g, c.b, c.a) == false) {
         throw error("Failed to set draw color: {}", SDL_GetError());
     }
 }
 
 void renderer::set_draw_color(std::uint8_t r, std::uint8_t g, std::uint8_t b, std::uint8_t a) {
-    if (SDL_SetRenderDrawColor(m_renderer, r, g, b, a) != 0) {
+    if (SDL_SetRenderDrawColor(m_renderer, r, g, b, a) == false) {
         throw error("Failed to set draw color: {}", SDL_GetError());
     }
 }
 
 void renderer::set_blend_mode(blend_mode mode) {
-    if (SDL_SetRenderDrawBlendMode(m_renderer, to_sdl_blend_mode(mode)) != 0) {
+    if (SDL_SetRenderDrawBlendMode(m_renderer, to_sdl_blend_mode(mode)) == false) {
         throw error("Failed to set blend mode: {}", SDL_GetError());
     }
 }
 
 void renderer::set_viewport(const rect& viewport) {
     SDL_Rect sdl_rect = to_sdl_rect(viewport);
-    if (SDL_SetRenderViewport(m_renderer, &sdl_rect) != 0) {
+    if (SDL_SetRenderViewport(m_renderer, &sdl_rect) == false) {
         throw error("Failed to set viewport: {}", SDL_GetError());
     }
 }
 
 void renderer::reset_viewport() {
-    if (SDL_SetRenderViewport(m_renderer, nullptr) != 0) {
+    if (SDL_SetRenderViewport(m_renderer, nullptr) == false) {
         throw error("Failed to reset viewport: {}", SDL_GetError());
     }
 }
 
 color renderer::get_draw_color() const {
     std::uint8_t r, g, b, a;
-    if (SDL_GetRenderDrawColor(m_renderer, &r, &g, &b, &a) != 0) {
+    if (SDL_GetRenderDrawColor(m_renderer, &r, &g, &b, &a) == false) {
         throw error("Failed to get draw color: {}", SDL_GetError());
     }
     return {r, g, b, a};
@@ -202,7 +201,7 @@ color renderer::get_draw_color() const {
 
 blend_mode renderer::get_blend_mode() const {
     SDL_BlendMode mode;
-    if (SDL_GetRenderDrawBlendMode(m_renderer, &mode) != 0) {
+    if (SDL_GetRenderDrawBlendMode(m_renderer, &mode) == false) {
         throw error("Failed to get blend mode: {}", SDL_GetError());
     }
     return from_sdl_blend_mode(mode);
@@ -210,7 +209,7 @@ blend_mode renderer::get_blend_mode() const {
 
 rect renderer::get_viewport() const {
     SDL_Rect viewport;
-    if (SDL_GetRenderViewport(m_renderer, &viewport) != 0) {
+    if (SDL_GetRenderViewport(m_renderer, &viewport) == false) {
         throw error("Failed to get viewport: {}", SDL_GetError());
     }
     return from_sdl_rect(viewport);
@@ -218,7 +217,7 @@ rect renderer::get_viewport() const {
 
 dimentions renderer::get_output_size() const {
     int w, h;
-    if (SDL_GetRenderOutputSize(m_renderer, &w, &h) != 0) {
+    if (SDL_GetRenderOutputSize(m_renderer, &w, &h) == false) {
         throw error("Failed to get output size: {}", SDL_GetError());
     }
     return {w, h};
@@ -245,7 +244,7 @@ viewport_guard renderer::with_viewport(const rect& viewport) {
 // ============================================================================
 
 void renderer::draw_point(point p) {
-    if (SDL_RenderPoint(m_renderer, static_cast<float>(p.x), static_cast<float>(p.y)) != 0) {
+    if (SDL_RenderPoint(m_renderer, static_cast<float>(p.x), static_cast<float>(p.y)) == false) {
         throw error("Failed to draw point: {}", SDL_GetError());
     }
 }
@@ -261,14 +260,14 @@ void renderer::draw_points(const point* points, int count) {
         sdl_points[i] = {static_cast<float>(points[i].x), static_cast<float>(points[i].y)};
     }
 
-    if (SDL_RenderPoints(m_renderer, sdl_points.get(), count) != 0) {
+    if (SDL_RenderPoints(m_renderer, sdl_points.get(), count) == false) {
         throw error("Failed to draw points: {}", SDL_GetError());
     }
 }
 
 void renderer::draw_line(point from, point to) {
     if (SDL_RenderLine(m_renderer, static_cast<float>(from.x), static_cast<float>(from.y), static_cast<float>(to.x),
-                       static_cast<float>(to.y)) != 0) {
+                       static_cast<float>(to.y)) == false) {
         throw error("Failed to draw line: {}", SDL_GetError());
     }
 }
@@ -284,7 +283,7 @@ void renderer::draw_lines(const point* points, int count) {
         sdl_points[i] = {static_cast<float>(points[i].x), static_cast<float>(points[i].y)};
     }
 
-    if (SDL_RenderLines(m_renderer, sdl_points.get(), count) != 0) {
+    if (SDL_RenderLines(m_renderer, sdl_points.get(), count) == false) {
         throw error("Failed to draw lines: {}", SDL_GetError());
     }
 }
@@ -292,7 +291,7 @@ void renderer::draw_lines(const point* points, int count) {
 void renderer::draw_rect(const rect& r) {
     SDL_FRect sdl_rect{static_cast<float>(r.x), static_cast<float>(r.y), static_cast<float>(r.w),
                        static_cast<float>(r.h)};
-    if (SDL_RenderRect(m_renderer, &sdl_rect) != 0) {
+    if (SDL_RenderRect(m_renderer, &sdl_rect) == false) {
         throw error("Failed to draw rect: {}", SDL_GetError());
     }
 }
@@ -309,7 +308,7 @@ void renderer::draw_rects(const rect* rects, int count) {
                         static_cast<float>(rects[i].h)};
     }
 
-    if (SDL_RenderRects(m_renderer, sdl_rects.get(), count) != 0) {
+    if (SDL_RenderRects(m_renderer, sdl_rects.get(), count) == false) {
         throw error("Failed to draw rects: {}", SDL_GetError());
     }
 }
@@ -317,7 +316,7 @@ void renderer::draw_rects(const rect* rects, int count) {
 void renderer::fill_rect(const rect& r) {
     SDL_FRect sdl_rect{static_cast<float>(r.x), static_cast<float>(r.y), static_cast<float>(r.w),
                        static_cast<float>(r.h)};
-    if (SDL_RenderFillRect(m_renderer, &sdl_rect) != 0) {
+    if (SDL_RenderFillRect(m_renderer, &sdl_rect) == false) {
         throw error("Failed to fill rect: {}", SDL_GetError());
     }
 }
@@ -334,7 +333,7 @@ void renderer::fill_rects(const rect* rects, int count) {
                         static_cast<float>(rects[i].h)};
     }
 
-    if (SDL_RenderFillRects(m_renderer, sdl_rects.get(), count) != 0) {
+    if (SDL_RenderFillRects(m_renderer, sdl_rects.get(), count) == false) {
         throw error("Failed to fill rects: {}", SDL_GetError());
     }
 }

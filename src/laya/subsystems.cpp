@@ -19,19 +19,8 @@ void set_headless_hints(subsystem system) {
 }  // namespace
 
 void create_subsystem(subsystem system) {
-    set_headless_hints(system);
-
-    auto result = SDL_Init(underlying_type(system));
-    if (result != 0) {
-        std::fprintf(stderr, "SDL_Init failed for flags 0x%X: %s\n", underlying_type(system), SDL_GetError());
-        // Fallback to events-only initialization in headless or constrained environments
-        if ((system & subsystem::events) != subsystem::events) {
-            if (SDL_Init(SDL_INIT_EVENTS) == 0) {
-                return;
-            }
-        }
-        std::fprintf(stderr, "SDL_Init fallback to events-only also failed: %s\n", SDL_GetError());
-        return;
+    if (SDL_Init(underlying_type(system)) == false) {
+        throw error::from_sdl();
     }
 }
 

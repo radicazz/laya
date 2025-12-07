@@ -1,0 +1,2 @@
+add_library(laya_examples_common INTERFACE)
+target_include_directories(laya_examples_common INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
