@@ -14,14 +14,39 @@ namespace laya {
 // texture_lock_guard implementation
 // ============================================================================
 
-texture_lock_guard::texture_lock_guard(class texture& tex) : m_texture(tex) {
-    if (!SDL_LockTexture(tex.native_handle(), nullptr, &m_pixels, &m_pitch)) {
+texture_lock_guard::texture_lock_guard(class texture& tex, const rect* region) : m_texture(&tex) {
+    SDL_Rect sdl_rect{};
+    SDL_Rect* rect_ptr = nullptr;
+    if (region) {
+        sdl_rect = SDL_Rect{region->x, region->y, region->w, region->h};
+        rect_ptr = &sdl_rect;
+    }
+
+    if (!SDL_LockTexture(tex.native_handle(), rect_ptr, &m_pixels, &m_pitch)) {
         throw error::from_sdl();
     }
 }
 
+texture_lock_guard::texture_lock_guard(texture_lock_guard&& other) noexcept
+    : m_texture{std::exchange(other.m_texture, nullptr)}, m_pixels{other.m_pixels}, m_pitch{other.m_pitch} {
+}
+
+texture_lock_guard& texture_lock_guard::operator=(texture_lock_guard&& other) noexcept {
+    if (this != &other) {
+        if (m_texture) {
+            SDL_UnlockTexture(m_texture->native_handle());
+        }
+        m_texture = std::exchange(other.m_texture, nullptr);
+        m_pixels = other.m_pixels;
+        m_pitch = other.m_pitch;
+    }
+    return *this;
+}
+
 texture_lock_guard::~texture_lock_guard() noexcept {
-    SDL_UnlockTexture(m_texture.native_handle());
+    if (m_texture) {
+        SDL_UnlockTexture(m_texture->native_handle());
+    }
 }
 
 void* texture_lock_guard::pixels() const noexcept {
@@ -36,16 +61,12 @@ int texture_lock_guard::pitch() const noexcept {
 // texture implementation
 // ============================================================================
 
-texture::texture(const class renderer& renderer, const texture_args& args) {
-    m_texture = SDL_CreateTexture(renderer.native_handle(), static_cast<SDL_PixelFormat>(args.format),
-                                  static_cast<SDL_TextureAccess>(args.access), args.size.width, args.size.height);
-
-    if (!m_texture) {
-        throw error::from_sdl();
-    }
+texture::texture(const class renderer& renderer, const texture_args& args)
+    : texture(renderer, args.format, args.size, args.access) {
 }
 
-texture::texture(const class renderer& renderer, pixel_format format, dimentions size, texture_access access) {
+texture::texture(const class renderer& renderer, pixel_format format, dimentions size, texture_access access)
+    : m_size{size}, m_format{format}, m_access{access} {
     m_texture = SDL_CreateTexture(renderer.native_handle(), static_cast<SDL_PixelFormat>(format),
                                   static_cast<SDL_TextureAccess>(access), size.width, size.height);
 
@@ -59,7 +80,23 @@ texture texture::from_surface(const class renderer& renderer, const surface& sur
     if (!tex) {
         throw error::from_sdl();
     }
-    return texture(tex);
+
+    texture result(tex);
+    SDL_PropertiesID props = SDL_GetTextureProperties(tex);
+    if (props) {
+        result.m_size.width = SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_WIDTH_NUMBER, surf.size().width);
+        result.m_size.height = SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_HEIGHT_NUMBER, surf.size().height);
+        result.m_format = static_cast<pixel_format>(
+            SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_FORMAT_NUMBER, static_cast<Sint64>(surf.format())));
+        result.m_access = static_cast<texture_access>(
+            SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_ACCESS_NUMBER, SDL_TEXTUREACCESS_STATIC));
+    } else {
+        result.m_size = surf.size();
+        result.m_format = surf.format();
+        result.m_access = texture_access::static_;
+    }
+
+    return result;
 }
 
 texture texture::load_bmp(const class renderer& renderer, std::string_view path) {
@@ -80,7 +117,11 @@ texture::~texture() noexcept {
     }
 }
 
-texture::texture(texture&& other) noexcept : m_texture{std::exchange(other.m_texture, nullptr)} {
+texture::texture(texture&& other) noexcept
+    : m_texture{std::exchange(other.m_texture, nullptr)},
+      m_size{std::exchange(other.m_size, dimentions{0, 0})},
+      m_format{std::exchange(other.m_format, pixel_format::rgba32)},
+      m_access{std::exchange(other.m_access, texture_access::static_)} {
 }
 
 texture& texture::operator=(texture&& other) noexcept {
@@ -89,6 +130,9 @@ texture& texture::operator=(texture&& other) noexcept {
             SDL_DestroyTexture(m_texture);
         }
         m_texture = std::exchange(other.m_texture, nullptr);
+        m_size = std::exchange(other.m_size, dimentions{0, 0});
+        m_format = std::exchange(other.m_format, pixel_format::rgba32);
+        m_access = std::exchange(other.m_access, texture_access::static_);
     }
     return *this;
 }
@@ -107,15 +151,11 @@ void texture::update(const rect& r, const void* pixels, int pitch) {
 }
 
 texture_lock_guard texture::lock() {
-    return texture_lock_guard(*this);
+    return texture_lock_guard(*this, nullptr);
 }
 
 texture_lock_guard texture::lock(const rect& r) {
-    // For region locking, we need to use SDL_LockTexture with a rect
-    // This is handled by a specialized lock guard constructor
-    // For now, we'll implement basic lock and document the limitation
-    (void)r;  // Mark parameter as used
-    throw error("Regional texture locking not yet implemented: {}", "feature limitation");
+    return texture_lock_guard(*this, &r);
 }
 
 void texture::set_alpha_mod(std::uint8_t alpha) {
@@ -181,36 +221,15 @@ scale_mode texture::get_scale_mode() const {
 }
 
 dimentions texture::size() const noexcept {
-    // In SDL3, we use SDL_GetTextureProperties to get texture information
-    SDL_PropertiesID props = SDL_GetTextureProperties(m_texture);
-    if (props) {
-        int w = SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_WIDTH_NUMBER, 0);
-        int h = SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_HEIGHT_NUMBER, 0);
-        return {w, h};
-    }
-    return {0, 0};
+    return m_size;
 }
 
 pixel_format texture::format() const {
-    // In SDL3, we use SDL_GetTextureProperties to get texture information
-    SDL_PropertiesID props = SDL_GetTextureProperties(m_texture);
-    if (props) {
-        SDL_PixelFormat format = static_cast<SDL_PixelFormat>(
-            SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_FORMAT_NUMBER, SDL_PIXELFORMAT_RGBA32));
-        return static_cast<pixel_format>(format);
-    }
-    return pixel_format::rgba32;  // Default fallback
+    return m_format;
 }
 
 texture_access texture::access() const {
-    // In SDL3, we use SDL_GetTextureProperties to get texture information
-    SDL_PropertiesID props = SDL_GetTextureProperties(m_texture);
-    if (props) {
-        SDL_TextureAccess access = static_cast<SDL_TextureAccess>(
-            SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_ACCESS_NUMBER, SDL_TEXTUREACCESS_STATIC));
-        return static_cast<texture_access>(access);
-    }
-    return texture_access::static_;  // Default fallback
+    return m_access;
 }
 
 SDL_Texture* texture::native_handle() const noexcept {

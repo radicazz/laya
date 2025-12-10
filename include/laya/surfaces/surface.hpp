@@ -38,11 +38,11 @@ public:
     explicit surface_lock_guard(class surface& surf);
     ~surface_lock_guard() noexcept;
 
-    // Non-copyable, non-movable
+    // Non-copyable but movable
     surface_lock_guard(const surface_lock_guard&) = delete;
     surface_lock_guard& operator=(const surface_lock_guard&) = delete;
-    surface_lock_guard(surface_lock_guard&&) = delete;
-    surface_lock_guard& operator=(surface_lock_guard&&) = delete;
+    surface_lock_guard(surface_lock_guard&& other) noexcept;
+    surface_lock_guard& operator=(surface_lock_guard&& other) noexcept;
 
     /// Get direct pixel data pointer
     [[nodiscard]] void* pixels() const noexcept;
@@ -51,7 +51,9 @@ public:
     [[nodiscard]] int pitch() const noexcept;
 
 private:
-    class surface& m_surface;
+    class surface* m_surface;
+    void* m_pixels{nullptr};
+    int m_pitch{0};
 };
 
 /// RAII wrapper for SDL_Surface

@@ -39,8 +39,9 @@ class texture_lock_guard {
 public:
     /// Locks the texture for pixel access.
     /// \param tex Texture to lock.
+    /// \param region Optional region to lock.
     /// \throws laya::error if the texture cannot be locked.
-    explicit texture_lock_guard(class texture& tex);
+    explicit texture_lock_guard(class texture& tex, const rect* region = nullptr);
 
     /// Unlocks the texture automatically.
     ~texture_lock_guard() noexcept;
@@ -48,8 +49,8 @@ public:
     // Non-copyable but movable
     texture_lock_guard(const texture_lock_guard&) = delete;
     texture_lock_guard& operator=(const texture_lock_guard&) = delete;
-    texture_lock_guard(texture_lock_guard&&) = default;
-    texture_lock_guard& operator=(texture_lock_guard&&) = default;
+    texture_lock_guard(texture_lock_guard&& other) noexcept;
+    texture_lock_guard& operator=(texture_lock_guard&& other) noexcept;
 
     /// Gets raw pixel data pointer.
     /// \returns Non-owning pointer to pixel data.
@@ -60,7 +61,7 @@ public:
     [[nodiscard]] int pitch() const noexcept;
 
 private:
-    class texture& m_texture;
+    class texture* m_texture{nullptr};
     void* m_pixels{nullptr};
     int m_pitch{0};
 };
@@ -218,6 +219,9 @@ public:
 
 private:
     SDL_Texture* m_texture{nullptr};
+    dimentions m_size{0, 0};
+    pixel_format m_format{pixel_format::rgba32};
+    texture_access m_access{texture_access::static_};
 
     /// Private constructor for factory methods.
     explicit texture(SDL_Texture* tex);

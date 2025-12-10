@@ -101,6 +101,32 @@ while (running) {
 
 ---
 
+## Textures and Surfaces
+
+You can upload pixels from an SDL surface, tint them, and draw them like any other primitive. This is useful when loading BMP files (built-in) or PNG files (via SDL_image).
+
+```cpp
+laya::context ctx{laya::subsystem::video};
+laya::window win{"Textures", {800, 600}};
+laya::renderer ren{win};
+
+// Load a surface from disk.
+auto surf = laya::surface::load_bmp("assets/logo.bmp");
+// Create a texture bound to the renderer.
+auto tex = laya::texture::from_surface(ren, surf);
+tex.set_color_mod(laya::color{255, 255, 255});
+
+ren.clear(laya::color::black());
+ren.render(tex, {100, 100, 256, 256});
+ren.present();
+```
+
+### Limitations
+
+- `surface::load_png` and `surface::save_png` currently throw until SDL_image support is integrated.
+- `texture::load_png` mirrors this limitation because it depends on surfaces.
+- Regional texture locking is supported, but surfaces generally do not require locking in SDL3; `surface::must_lock()` returns `false` for now.
+
 ## Native Handle
 
 Access the underlying SDL renderer for interop:

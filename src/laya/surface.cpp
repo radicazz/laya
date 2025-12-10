@@ -14,22 +14,42 @@ namespace laya {
 // surface_lock_guard implementation
 // ============================================================================
 
-surface_lock_guard::surface_lock_guard(class surface& surf) : m_surface(surf) {
+surface_lock_guard::surface_lock_guard(class surface& surf) : m_surface(&surf) {
     if (!SDL_LockSurface(surf.native_handle())) {
         throw error::from_sdl();
     }
+    m_pixels = surf.native_handle()->pixels;
+    m_pitch = surf.native_handle()->pitch;
+}
+
+surface_lock_guard::surface_lock_guard(surface_lock_guard&& other) noexcept
+    : m_surface{std::exchange(other.m_surface, nullptr)}, m_pixels{other.m_pixels}, m_pitch{other.m_pitch} {
+}
+
+surface_lock_guard& surface_lock_guard::operator=(surface_lock_guard&& other) noexcept {
+    if (this != &other) {
+        if (m_surface) {
+            SDL_UnlockSurface(m_surface->native_handle());
+        }
+        m_surface = std::exchange(other.m_surface, nullptr);
+        m_pixels = other.m_pixels;
+        m_pitch = other.m_pitch;
+    }
+    return *this;
 }
 
 surface_lock_guard::~surface_lock_guard() noexcept {
-    SDL_UnlockSurface(m_surface.native_handle());
+    if (m_surface) {
+        SDL_UnlockSurface(m_surface->native_handle());
+    }
 }
 
 void* surface_lock_guard::pixels() const noexcept {
-    return m_surface.native_handle()->pixels;
+    return m_pixels;
 }
 
 int surface_lock_guard::pitch() const noexcept {
-    return m_surface.native_handle()->pitch;
+    return m_pitch;
 }
 
 // ============================================================================
@@ -41,6 +61,12 @@ surface::surface(const surface_args& args) {
 
     if (!m_surface) {
         throw error::from_sdl();
+    }
+
+    if ((args.flags & surface_flags::rle_optimized) == surface_flags::rle_optimized) {
+        if (!SDL_SetSurfaceRLE(m_surface, true)) {
+            throw error::from_sdl();
+        }
     }
 }
 
@@ -212,15 +238,15 @@ color surface::get_color_key() const {
     if (!SDL_GetSurfaceColorKey(m_surface, &key)) {
         throw error::from_sdl();
     }
-    // For now, return the raw key value as RGBA bytes
-    // This is a simplified implementation - proper color key conversion
-    // would require more complex pixel format handling
-    return color{
-        static_cast<std::uint8_t>((key >> 24) & 0xFF),  // R
-        static_cast<std::uint8_t>((key >> 16) & 0xFF),  // G
-        static_cast<std::uint8_t>((key >> 8) & 0xFF),   // B
-        static_cast<std::uint8_t>(key & 0xFF)           // A
-    };
+
+    auto* format_details = SDL_GetPixelFormatDetails(m_surface->format);
+    if (!format_details) {
+        throw error::from_sdl();
+    }
+
+    std::uint8_t r{}, g{}, b{}, a{};
+    SDL_GetRGBA(key, format_details, nullptr, &r, &g, &b, &a);
+    return color{r, g, b, a};
 }
 
 dimentions surface::size() const noexcept {

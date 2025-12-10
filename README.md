@@ -72,7 +72,11 @@
 
 # About
 
-A modern library targetting C++20 and SDL3 for cross-platform, immediate-mode, desktop application development. With *laya*, you can create windows, handle input events, render 2D graphics and manage resources in a type-safe and efficient manner while leveraging the full power of the underlying SDL library.
+A modern library targetting C++20 and SDL3 for cross-platform, immediate-mode, desktop application development. With *laya*, you can create windows, handle input events, render 2D graphics, upload textures from surfaces, and manage resources in a type-safe and efficient manner while leveraging the full power of the underlying SDL library.
+
+> **PNG note**: `surface::load_png`/`save_png` and `texture::load_png` require SDL_image integration, which is not yet wired up in this branch. Use BMP helpers or bring your own PNG loader for now.
+
+> **Locking note**: Surfaces generally do not require explicit locking in SDL3, but `surface_lock_guard` is available for compatibility. Textures support regional locking through `texture_lock_guard`.
 
 <div align="center">
     <image alt="example" src="docs/assets/simple-code-example.png">
