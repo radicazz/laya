@@ -118,6 +118,68 @@ texture_lock_guard texture::lock(const rect& r) {
     throw error("Regional texture locking not yet implemented: {}", "feature limitation");
 }
 
+void texture::set_alpha_mod(std::uint8_t alpha) {
+    if (!SDL_SetTextureAlphaMod(m_texture, alpha)) {
+        throw error::from_sdl();
+    }
+}
+
+void texture::set_color_mod(color c) {
+    if (!SDL_SetTextureColorMod(m_texture, c.r, c.g, c.b)) {
+        throw error::from_sdl();
+    }
+}
+
+void texture::set_color_mod(std::uint8_t r, std::uint8_t g, std::uint8_t b) {
+    if (!SDL_SetTextureColorMod(m_texture, r, g, b)) {
+        throw error::from_sdl();
+    }
+}
+
+void texture::set_blend_mode(blend_mode mode) {
+    if (!SDL_SetTextureBlendMode(m_texture, static_cast<SDL_BlendMode>(mode))) {
+        throw error::from_sdl();
+    }
+}
+
+void texture::set_scale_mode(scale_mode mode) {
+    if (!SDL_SetTextureScaleMode(m_texture, static_cast<SDL_ScaleMode>(mode))) {
+        throw error::from_sdl();
+    }
+}
+
+std::uint8_t texture::get_alpha_mod() const {
+    std::uint8_t alpha;
+    if (!SDL_GetTextureAlphaMod(m_texture, &alpha)) {
+        throw error::from_sdl();
+    }
+    return alpha;
+}
+
+color texture::get_color_mod() const {
+    std::uint8_t r, g, b;
+    if (!SDL_GetTextureColorMod(m_texture, &r, &g, &b)) {
+        throw error::from_sdl();
+    }
+    return color{r, g, b};
+}
+
+blend_mode texture::get_blend_mode() const {
+    SDL_BlendMode mode;
+    if (!SDL_GetTextureBlendMode(m_texture, &mode)) {
+        throw error::from_sdl();
+    }
+    return static_cast<blend_mode>(mode);
+}
+
+scale_mode texture::get_scale_mode() const {
+    SDL_ScaleMode mode;
+    if (!SDL_GetTextureScaleMode(m_texture, &mode)) {
+        throw error::from_sdl();
+    }
+    return static_cast<scale_mode>(mode);
+}
+
 dimentions texture::size() const noexcept {
     // In SDL3, we use SDL_GetTextureProperties to get texture information
     SDL_PropertiesID props = SDL_GetTextureProperties(m_texture);
