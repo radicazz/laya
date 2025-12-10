@@ -6,6 +6,7 @@
 #include <memory>
 
 #include <laya/laya.hpp>
+#include <laya/textures/texture.hpp>
 #include <SDL3/SDL.h>
 
 namespace laya {
@@ -335,6 +336,96 @@ void renderer::fill_rects(const rect* rects, int count) {
 
     if (SDL_RenderFillRects(m_renderer, sdl_rects.get(), count) == false) {
         throw error("Failed to fill rects: {}", SDL_GetError());
+    }
+}
+
+// ============================================================================
+// Texture rendering operations
+// ============================================================================
+
+void renderer::render(const texture& tex, point dst_pos) {
+    auto tex_size = tex.size();
+    SDL_FRect dst_rect{static_cast<float>(dst_pos.x), static_cast<float>(dst_pos.y), static_cast<float>(tex_size.width),
+                       static_cast<float>(tex_size.height)};
+
+    if (!SDL_RenderTexture(m_renderer, tex.native_handle(), nullptr, &dst_rect)) {
+        throw error("Failed to render texture: {}", SDL_GetError());
+    }
+}
+
+void renderer::render(const texture& tex, const rect& dst_rect) {
+    SDL_FRect sdl_dst{static_cast<float>(dst_rect.x), static_cast<float>(dst_rect.y), static_cast<float>(dst_rect.w),
+                      static_cast<float>(dst_rect.h)};
+
+    if (!SDL_RenderTexture(m_renderer, tex.native_handle(), nullptr, &sdl_dst)) {
+        throw error("Failed to render texture: {}", SDL_GetError());
+    }
+}
+
+void renderer::render(const texture& tex, const rect& src_rect, const rect& dst_rect) {
+    SDL_FRect sdl_src{static_cast<float>(src_rect.x), static_cast<float>(src_rect.y), static_cast<float>(src_rect.w),
+                      static_cast<float>(src_rect.h)};
+    SDL_FRect sdl_dst{static_cast<float>(dst_rect.x), static_cast<float>(dst_rect.y), static_cast<float>(dst_rect.w),
+                      static_cast<float>(dst_rect.h)};
+
+    if (!SDL_RenderTexture(m_renderer, tex.native_handle(), &sdl_src, &sdl_dst)) {
+        throw error("Failed to render texture: {}", SDL_GetError());
+    }
+}
+
+void renderer::render(const texture& tex, const rect& dst_rect, double angle) {
+    SDL_FRect sdl_dst{static_cast<float>(dst_rect.x), static_cast<float>(dst_rect.y), static_cast<float>(dst_rect.w),
+                      static_cast<float>(dst_rect.h)};
+
+    if (!SDL_RenderTextureRotated(m_renderer, tex.native_handle(), nullptr, &sdl_dst, angle, nullptr, SDL_FLIP_NONE)) {
+        throw error("Failed to render rotated texture: {}", SDL_GetError());
+    }
+}
+
+void renderer::render(const texture& tex, const rect& dst_rect, double angle, point center) {
+    SDL_FRect sdl_dst{static_cast<float>(dst_rect.x), static_cast<float>(dst_rect.y), static_cast<float>(dst_rect.w),
+                      static_cast<float>(dst_rect.h)};
+    SDL_FPoint sdl_center{static_cast<float>(center.x), static_cast<float>(center.y)};
+
+    if (!SDL_RenderTextureRotated(m_renderer, tex.native_handle(), nullptr, &sdl_dst, angle, &sdl_center,
+                                  SDL_FLIP_NONE)) {
+        throw error("Failed to render rotated texture: {}", SDL_GetError());
+    }
+}
+
+void renderer::render(const texture& tex, const rect& src_rect, const rect& dst_rect, double angle, point center,
+                      texture_flip flip) {
+    SDL_FRect sdl_src{static_cast<float>(src_rect.x), static_cast<float>(src_rect.y), static_cast<float>(src_rect.w),
+                      static_cast<float>(src_rect.h)};
+    SDL_FRect sdl_dst{static_cast<float>(dst_rect.x), static_cast<float>(dst_rect.y), static_cast<float>(dst_rect.w),
+                      static_cast<float>(dst_rect.h)};
+    SDL_FPoint sdl_center{static_cast<float>(center.x), static_cast<float>(center.y)};
+
+    if (!SDL_RenderTextureRotated(m_renderer, tex.native_handle(), &sdl_src, &sdl_dst, angle, &sdl_center,
+                                  static_cast<SDL_FlipMode>(flip))) {
+        throw error("Failed to render rotated texture: {}", SDL_GetError());
+    }
+}
+
+void renderer::render(const texture& tex, const rect& dst_rect, texture_flip flip) {
+    SDL_FRect sdl_dst{static_cast<float>(dst_rect.x), static_cast<float>(dst_rect.y), static_cast<float>(dst_rect.w),
+                      static_cast<float>(dst_rect.h)};
+
+    if (!SDL_RenderTextureRotated(m_renderer, tex.native_handle(), nullptr, &sdl_dst, 0.0, nullptr,
+                                  static_cast<SDL_FlipMode>(flip))) {
+        throw error("Failed to render flipped texture: {}", SDL_GetError());
+    }
+}
+
+void renderer::render(const texture& tex, const rect& src_rect, const rect& dst_rect, texture_flip flip) {
+    SDL_FRect sdl_src{static_cast<float>(src_rect.x), static_cast<float>(src_rect.y), static_cast<float>(src_rect.w),
+                      static_cast<float>(src_rect.h)};
+    SDL_FRect sdl_dst{static_cast<float>(dst_rect.x), static_cast<float>(dst_rect.y), static_cast<float>(dst_rect.w),
+                      static_cast<float>(dst_rect.h)};
+
+    if (!SDL_RenderTextureRotated(m_renderer, tex.native_handle(), &sdl_src, &sdl_dst, 0.0, nullptr,
+                                  static_cast<SDL_FlipMode>(flip))) {
+        throw error("Failed to render flipped texture: {}", SDL_GetError());
     }
 }
 

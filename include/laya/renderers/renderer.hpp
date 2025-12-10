@@ -7,6 +7,7 @@
 #include "renderer_flags.hpp"
 #include "renderer_id.hpp"
 #include "renderer_types.hpp"
+#include <laya/textures/texture_access.hpp>
 
 struct SDL_Renderer;
 
@@ -14,6 +15,7 @@ namespace laya {
 
 // Forward declarations
 class window;
+class texture;
 
 // ============================================================================
 // Renderer creation arguments
@@ -192,6 +194,35 @@ public:
 
     /// Fill multiple rectangles with the current draw color
     void fill_rects(const rect* rects, int count);
+
+    // ========================================================================
+    // Texture rendering operations
+    // ========================================================================
+
+    /// Render entire texture at destination position
+    void render(const texture& tex, point dst_pos);
+
+    /// Render entire texture to destination rectangle
+    void render(const texture& tex, const rect& dst_rect);
+
+    /// Render texture region to destination rectangle
+    void render(const texture& tex, const rect& src_rect, const rect& dst_rect);
+
+    /// Render texture with rotation around center
+    void render(const texture& tex, const rect& dst_rect, double angle);
+
+    /// Render texture with rotation around specified center point
+    void render(const texture& tex, const rect& dst_rect, double angle, point center);
+
+    /// Render texture with full control (rotation, center, flip)
+    void render(const texture& tex, const rect& src_rect, const rect& dst_rect, double angle, point center,
+                texture_flip flip);
+
+    /// Render texture with flipping
+    void render(const texture& tex, const rect& dst_rect, texture_flip flip);
+
+    /// Render part of texture with flipping
+    void render(const texture& tex, const rect& src_rect, const rect& dst_rect, texture_flip flip);
 
     // ========================================================================
     // Accessors
