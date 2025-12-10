@@ -9,6 +9,7 @@
 #include "renderers/renderer.hpp"
 #include "surfaces/pixel_format.hpp"
 #include "surfaces/surface_flags.hpp"
+#include "surfaces/surface.hpp"
 #include "windows/window.hpp"
 #include "subsystems.hpp"
 #include "errors.hpp"
