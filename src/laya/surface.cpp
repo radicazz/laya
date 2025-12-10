@@ -142,6 +142,87 @@ void surface::blit(const surface& src, point dst_pos) {
     }
 }
 
+void surface::set_alpha_mod(std::uint8_t alpha) {
+    if (!SDL_SetSurfaceAlphaMod(m_surface, alpha)) {
+        throw error::from_sdl();
+    }
+}
+
+void surface::set_color_mod(color c) {
+    if (!SDL_SetSurfaceColorMod(m_surface, c.r, c.g, c.b)) {
+        throw error::from_sdl();
+    }
+}
+
+void surface::set_color_mod(std::uint8_t r, std::uint8_t g, std::uint8_t b) {
+    if (!SDL_SetSurfaceColorMod(m_surface, r, g, b)) {
+        throw error::from_sdl();
+    }
+}
+
+void surface::set_blend_mode(blend_mode mode) {
+    if (!SDL_SetSurfaceBlendMode(m_surface, static_cast<SDL_BlendMode>(mode))) {
+        throw error::from_sdl();
+    }
+}
+
+void surface::set_color_key(color key) {
+    const std::uint32_t mapped_key = SDL_MapSurfaceRGBA(m_surface, key.r, key.g, key.b, key.a);
+    if (!SDL_SetSurfaceColorKey(m_surface, true, mapped_key)) {
+        throw error::from_sdl();
+    }
+}
+
+void surface::clear_color_key() {
+    if (!SDL_SetSurfaceColorKey(m_surface, false, 0)) {
+        throw error::from_sdl();
+    }
+}
+
+std::uint8_t surface::get_alpha_mod() const {
+    std::uint8_t alpha;
+    if (!SDL_GetSurfaceAlphaMod(m_surface, &alpha)) {
+        throw error::from_sdl();
+    }
+    return alpha;
+}
+
+color surface::get_color_mod() const {
+    std::uint8_t r, g, b;
+    if (!SDL_GetSurfaceColorMod(m_surface, &r, &g, &b)) {
+        throw error::from_sdl();
+    }
+    return color{r, g, b};
+}
+
+blend_mode surface::get_blend_mode() const {
+    SDL_BlendMode mode;
+    if (!SDL_GetSurfaceBlendMode(m_surface, &mode)) {
+        throw error::from_sdl();
+    }
+    return static_cast<blend_mode>(mode);
+}
+
+bool surface::has_color_key() const {
+    return SDL_SurfaceHasColorKey(m_surface);
+}
+
+color surface::get_color_key() const {
+    std::uint32_t key;
+    if (!SDL_GetSurfaceColorKey(m_surface, &key)) {
+        throw error::from_sdl();
+    }
+    // For now, return the raw key value as RGBA bytes
+    // This is a simplified implementation - proper color key conversion
+    // would require more complex pixel format handling
+    return color{
+        static_cast<std::uint8_t>((key >> 24) & 0xFF),  // R
+        static_cast<std::uint8_t>((key >> 16) & 0xFF),  // G
+        static_cast<std::uint8_t>((key >> 8) & 0xFF),   // B
+        static_cast<std::uint8_t>(key & 0xFF)           // A
+    };
+}
+
 dimentions surface::size() const noexcept {
     return {m_surface->w, m_surface->h};
 }
