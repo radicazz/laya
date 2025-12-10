@@ -237,6 +237,58 @@ bool surface::must_lock() const noexcept {
     return false;
 }
 
+surface surface::convert(pixel_format format) const {
+    SDL_Surface* converted = SDL_ConvertSurface(m_surface, static_cast<SDL_PixelFormat>(format));
+    if (!converted) {
+        throw error::from_sdl();
+    }
+    return surface(converted);
+}
+
+surface surface::duplicate() const {
+    SDL_Surface* duplicated = SDL_DuplicateSurface(m_surface);
+    if (!duplicated) {
+        throw error::from_sdl();
+    }
+    return surface(duplicated);
+}
+
+surface surface::scale(dimentions new_size) const {
+    SDL_Surface* scaled = SDL_ScaleSurface(m_surface, new_size.width, new_size.height, SDL_SCALEMODE_LINEAR);
+    if (!scaled) {
+        throw error::from_sdl();
+    }
+    return surface(scaled);
+}
+
+surface surface::flip(flip_mode mode) const {
+    // Create a duplicate first, then flip it in place
+    SDL_Surface* flipped = SDL_DuplicateSurface(m_surface);
+    if (!flipped) {
+        throw error::from_sdl();
+    }
+
+    SDL_FlipMode sdl_flip = SDL_FLIP_NONE;
+    switch (mode) {
+        case flip_mode::horizontal:
+            sdl_flip = SDL_FLIP_HORIZONTAL;
+            break;
+        case flip_mode::vertical:
+            sdl_flip = SDL_FLIP_VERTICAL;
+            break;
+        case flip_mode::none:
+        default:
+            // No flipping needed, just return the duplicate
+            return surface(flipped);
+    }
+
+    if (!SDL_FlipSurface(flipped, sdl_flip)) {
+        SDL_DestroySurface(flipped);
+        throw error::from_sdl();
+    }
+    return surface(flipped);
+}
+
 surface_lock_guard surface::lock() {
     return surface_lock_guard(*this);
 }
