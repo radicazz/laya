@@ -216,13 +216,13 @@ public:
 
     /// Render texture with full control (rotation, center, flip)
     void render(const texture& tex, const rect& src_rect, const rect& dst_rect, double angle, point center,
-                texture_flip flip);
+                flip_mode flip);
 
     /// Render texture with flipping
-    void render(const texture& tex, const rect& dst_rect, texture_flip flip);
+    void render(const texture& tex, const rect& dst_rect, flip_mode flip);
 
     /// Render part of texture with flipping
-    void render(const texture& tex, const rect& src_rect, const rect& dst_rect, texture_flip flip);
+    void render(const texture& tex, const rect& src_rect, const rect& dst_rect, flip_mode flip);
 
     // ========================================================================
     // Accessors

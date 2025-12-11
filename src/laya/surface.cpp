@@ -57,6 +57,11 @@ int surface_lock_guard::pitch() const noexcept {
 // ============================================================================
 
 surface::surface(const surface_args& args) {
+    if ((args.flags & surface_flags::preallocated) == surface_flags::preallocated) {
+        throw std::runtime_error(
+            "surface_flags::preallocated is not supported yet; supply external pixel memory before enabling this flag");
+    }
+
     m_surface = SDL_CreateSurface(args.size.width, args.size.height, static_cast<SDL_PixelFormat>(args.format));
 
     if (!m_surface) {
@@ -258,8 +263,7 @@ pixel_format surface::format() const noexcept {
 }
 
 bool surface::must_lock() const noexcept {
-    // In SDL3, surfaces generally don't need locking for most operations
-    // This is a compatibility function - return false for now
+    // SDL3 surfaces typically do not require locking; retain compatibility hook
     return false;
 }
 

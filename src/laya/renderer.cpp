@@ -394,7 +394,7 @@ void renderer::render(const texture& tex, const rect& dst_rect, double angle, po
 }
 
 void renderer::render(const texture& tex, const rect& src_rect, const rect& dst_rect, double angle, point center,
-                      texture_flip flip) {
+                      flip_mode flip) {
     SDL_FRect sdl_src{static_cast<float>(src_rect.x), static_cast<float>(src_rect.y), static_cast<float>(src_rect.w),
                       static_cast<float>(src_rect.h)};
     SDL_FRect sdl_dst{static_cast<float>(dst_rect.x), static_cast<float>(dst_rect.y), static_cast<float>(dst_rect.w),
@@ -407,7 +407,7 @@ void renderer::render(const texture& tex, const rect& src_rect, const rect& dst_
     }
 }
 
-void renderer::render(const texture& tex, const rect& dst_rect, texture_flip flip) {
+void renderer::render(const texture& tex, const rect& dst_rect, flip_mode flip) {
     SDL_FRect sdl_dst{static_cast<float>(dst_rect.x), static_cast<float>(dst_rect.y), static_cast<float>(dst_rect.w),
                       static_cast<float>(dst_rect.h)};
 
@@ -417,7 +417,7 @@ void renderer::render(const texture& tex, const rect& dst_rect, texture_flip fli
     }
 }
 
-void renderer::render(const texture& tex, const rect& src_rect, const rect& dst_rect, texture_flip flip) {
+void renderer::render(const texture& tex, const rect& src_rect, const rect& dst_rect, flip_mode flip) {
     SDL_FRect sdl_src{static_cast<float>(src_rect.x), static_cast<float>(src_rect.y), static_cast<float>(src_rect.w),
                       static_cast<float>(src_rect.h)};
     SDL_FRect sdl_dst{static_cast<float>(dst_rect.x), static_cast<float>(dst_rect.y), static_cast<float>(dst_rect.w),

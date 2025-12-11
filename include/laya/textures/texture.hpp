@@ -93,21 +93,21 @@ public:
     /// \param renderer Renderer to create the texture for.
     /// \param surf Surface to create texture from.
     /// \throws laya::error if texture creation fails.
-    static texture from_surface(const class renderer& renderer, const surface& surf);
+    [[nodiscard]] static texture from_surface(const class renderer& renderer, const surface& surf);
 
     /// Loads a texture from a BMP file.
     /// \param renderer Renderer to create the texture for.
     /// \param path Path to BMP file.
     /// \returns Loaded texture.
     /// \throws laya::error if loading fails.
-    static texture load_bmp(const class renderer& renderer, std::string_view path);
+    [[nodiscard]] static texture load_bmp(const class renderer& renderer, std::string_view path);
 
     /// Loads a texture from a PNG file (requires SDL_image).
     /// \param renderer Renderer to create the texture for.
     /// \param path Path to PNG file.
     /// \returns Loaded texture.
     /// \throws laya::error if loading fails.
-    static texture load_png(const class renderer& renderer, std::string_view path);
+    [[nodiscard]] static texture load_png(const class renderer& renderer, std::string_view path);
 
     /// Destroys the texture and releases resources.
     ~texture() noexcept;
@@ -127,6 +127,11 @@ public:
     /// \throws laya::error on SDL failure.
     void set_alpha_mod(std::uint8_t alpha);
 
+    /// Sets alpha modulation for the texture using normalized float (0.0 - 1.0).
+    /// \param alpha Alpha value (0.0-1.0).
+    /// \throws laya::error on SDL failure.
+    void set_alpha_mod(float alpha);
+
     /// Sets color modulation for the texture.
     /// \param c Color modulation.
     /// \throws laya::error on SDL failure.
@@ -138,6 +143,13 @@ public:
     /// \param b Blue component (0-255).
     /// \throws laya::error on SDL failure.
     void set_color_mod(std::uint8_t r, std::uint8_t g, std::uint8_t b);
+
+    /// Sets color modulation for the texture using normalized floats (0.0 - 1.0).
+    /// \param r Red component (0.0-1.0).
+    /// \param g Green component (0.0-1.0).
+    /// \param b Blue component (0.0-1.0).
+    /// \throws laya::error on SDL failure.
+    void set_color_mod(float r, float g, float b);
 
     /// Sets blend mode for the texture.
     /// \param mode Blend mode to use.
@@ -154,10 +166,20 @@ public:
     /// \throws laya::error on SDL failure.
     [[nodiscard]] std::uint8_t get_alpha_mod() const;
 
+    /// Gets current alpha modulation as normalized float.
+    /// \returns Alpha value (0.0-1.0).
+    /// \throws laya::error on SDL failure.
+    [[nodiscard]] float get_alpha_mod_float() const;
+
     /// Gets current color modulation.
     /// \returns Color modulation values.
     /// \throws laya::error on SDL failure.
     [[nodiscard]] color get_color_mod() const;
+
+    /// Gets current color modulation as normalized floats.
+    /// \returns Color modulation values (0.0-1.0).
+    /// \throws laya::error on SDL failure.
+    [[nodiscard]] color_f get_color_mod_float() const;
 
     /// Gets current blend mode.
     /// \returns Current blend mode.
@@ -185,6 +207,7 @@ public:
     /// \param pitch Bytes per row.
     /// \throws laya::error on SDL failure.
     void update(const rect& r, const void* pixels, int pitch);
+    void update(const surface& surf);
 
     /// Locks the texture for direct pixel access.
     /// \returns Lock guard that automatically unlocks on destruction.
@@ -207,11 +230,11 @@ public:
 
     /// Gets texture pixel format.
     /// \returns Pixel format of the texture.
-    [[nodiscard]] pixel_format format() const;
+    [[nodiscard]] pixel_format format() const noexcept;
 
     /// Gets texture access pattern.
     /// \returns Access pattern of the texture.
-    [[nodiscard]] texture_access access() const;
+    [[nodiscard]] texture_access access() const noexcept;
 
     /// Gets the native SDL texture handle.
     /// \returns SDL_Texture pointer for direct SDL operations.

@@ -33,21 +33,4 @@ enum class scale_mode : int {
     linear = SDL_SCALEMODE_LINEAR
 };
 
-/// Texture flip modes for rendering operations.
-/// Maps directly to SDL_FlipMode values for type safety.
-enum class texture_flip : int {
-    /// No flipping.
-    none = SDL_FLIP_NONE,
-
-    /// Flip horizontally.
-    horizontal = SDL_FLIP_HORIZONTAL,
-
-    /// Flip vertically.
-    vertical = SDL_FLIP_VERTICAL
-};
-
-// Enable bitmask operations for texture_flip
-template <>
-struct enable_bitmask_operators<texture_flip> : std::true_type {};
-
 }  // namespace laya

@@ -18,18 +18,11 @@ struct SDL_Surface;
 
 namespace laya {
 
-/// Flip modes for surface transformations
-enum class flip_mode {
-    none = 0,        ///< No flipping
-    horizontal = 1,  ///< Horizontal flip
-    vertical = 2     ///< Vertical flip
-};
-
 /// Arguments for surface creation
 struct surface_args {
     dimentions size;                             ///< Surface dimensions
     pixel_format format = pixel_format::rgba32;  ///< Pixel format
-    surface_flags flags = surface_flags::none;   ///< Creation flags
+    surface_flags flags = surface_flags::none;   ///< Creation flags (currently only rle_optimized is applied)
 };
 
 /// RAII lock guard for surface pixel access

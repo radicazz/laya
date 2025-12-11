@@ -150,6 +150,12 @@ void texture::update(const rect& r, const void* pixels, int pitch) {
     }
 }
 
+void texture::update(const surface& surf) {
+    if (!SDL_UpdateTexture(m_texture, nullptr, surf.native_handle()->pixels, surf.native_handle()->pitch)) {
+        throw error::from_sdl();
+    }
+}
+
 texture_lock_guard texture::lock() {
     return texture_lock_guard(*this, nullptr);
 }
@@ -164,6 +170,10 @@ void texture::set_alpha_mod(std::uint8_t alpha) {
     }
 }
 
+void texture::set_alpha_mod(float alpha) {
+    set_alpha_mod(static_cast<std::uint8_t>(alpha * 255.0f));
+}
+
 void texture::set_color_mod(color c) {
     if (!SDL_SetTextureColorMod(m_texture, c.r, c.g, c.b)) {
         throw error::from_sdl();
@@ -176,6 +186,11 @@ void texture::set_color_mod(std::uint8_t r, std::uint8_t g, std::uint8_t b) {
     }
 }
 
+void texture::set_color_mod(float r, float g, float b) {
+    set_color_mod(static_cast<std::uint8_t>(r * 255.0f), static_cast<std::uint8_t>(g * 255.0f),
+                  static_cast<std::uint8_t>(b * 255.0f));
+}
+
 void texture::set_blend_mode(blend_mode mode) {
     if (!SDL_SetTextureBlendMode(m_texture, static_cast<SDL_BlendMode>(mode))) {
         throw error::from_sdl();
@@ -186,6 +201,16 @@ void texture::set_scale_mode(scale_mode mode) {
     if (!SDL_SetTextureScaleMode(m_texture, static_cast<SDL_ScaleMode>(mode))) {
         throw error::from_sdl();
     }
+}
+
+float texture::get_alpha_mod_float() const {
+    return static_cast<float>(get_alpha_mod()) / 255.0f;
+}
+
+color_f texture::get_color_mod_float() const {
+    auto c = get_color_mod();
+    return color_f{static_cast<float>(c.r) / 255.0f, static_cast<float>(c.g) / 255.0f, static_cast<float>(c.b) / 255.0f,
+                   1.0f};
 }
 
 std::uint8_t texture::get_alpha_mod() const {
@@ -224,11 +249,11 @@ dimentions texture::size() const noexcept {
     return m_size;
 }
 
-pixel_format texture::format() const {
+pixel_format texture::format() const noexcept {
     return m_format;
 }
 
-texture_access texture::access() const {
+texture_access texture::access() const noexcept {
     return m_access;
 }
 

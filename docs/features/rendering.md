@@ -121,6 +121,8 @@ ren.render(tex, {100, 100, 256, 256});
 ren.present();
 ```
 
+See the dedicated [Surfaces](surfaces.md) and [Textures](textures.md) feature pages for a deeper dive.
+
 ### Limitations
 
 - `surface::load_png` and `surface::save_png` currently throw until SDL_image support is integrated.

@@ -39,7 +39,7 @@ DESCRIPTION
 
 OPTIONS
     -h, --help          Show this help message
-    
+
     All other options are passed directly to pre-commit. Common options include:
     --files FILE...     Run hooks only on specified files
     --hook-stage STAGE  Run hooks for specific stage (commit, push, etc.)
