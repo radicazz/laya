@@ -9,5 +9,7 @@ target_sources(
     laya/event_types.cpp
     laya/event_polling.cpp
     laya/renderer.cpp
+    laya/surface.cpp
+    laya/texture.cpp
     laya/log.cpp
 )

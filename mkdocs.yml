@@ -67,6 +67,8 @@ nav:
   - Features:
       - Windows: features/windows.md
       - Rendering: features/rendering.md
+      - Surfaces: features/surfaces.md
+      - Textures: features/textures.md
       - Events: features/events.md
       - Logging: features/logging.md
 
