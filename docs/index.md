@@ -1,4 +1,4 @@
-# *laya* Documentation
+# laya docs
 
 A modern C++20 wrapper around SDL3 that makes multimedia programming safer and more pleasant.
 
@@ -66,11 +66,3 @@ win.set_position({100, 50});   // OK
 - **[Goals](goals.md)** - Design philosophy and objectives
 - **[Architecture](architecture.md)** - How it works under the hood
 - **[Features](features/windows.md)** - Explore specific capabilities
-
----
-
-## Links
-
-- [GitHub](https://github.com/radicazz/laya)
-- [SDL3](https://github.com/libsdl-org/SDL)
-- [Contributing](https://github.com/radicazz/laya/blob/master/CONTRIBUTING.md)

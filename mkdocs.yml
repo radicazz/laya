@@ -13,9 +13,9 @@ theme:
   name: material
   language: en
 
-  # Space-grey theme with chroma accents
+  # Modern space-grey theme with rainbow chrome accents
   palette:
-    # Dark mode (default)
+    # Dark mode (space-grey with rainbow chrome)
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
       primary: blue grey
@@ -24,7 +24,7 @@ theme:
         icon: material/brightness-4
         name: Switch to light mode
 
-    # Light mode option
+    # Light mode (off-white with rainbow chrome)
     - media: "(prefers-color-scheme: light)"
       scheme: default
       primary: blue grey

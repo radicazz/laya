@@ -1,4 +1,5 @@
 <!-- Temporary disable markdownlint for specific rules to allow inline html -->
+
 <!-- markdownlint-disable MD033 MD041 -->
 
 <div align="center">
@@ -7,15 +8,15 @@
 
 <div align="center">
     <p>
-        <a href="https://radicazz.github.io/laya/">Documentation</a> •
+        <a href="https://radicazz.github.io/laya/">Get Started</a> •
         <a href="examples">Examples</a> •
-        <a href="https://github.com/radicazz/laya/releases">Releases</a> <!-- •
-        <a href="docs/goals.md">Goals & Roadmap</a> -->
+        <a href="https://github.com/radicazz/laya/releases">Releases</a> •
+        <a href="./CONTRIBUTING">Contribute</a>
     </p>
 </div>
 
 <div align="center">
-    <p>An intuitive cross-platform library for seamless, type-safe and efficient multi-media app development with C++.</p>
+    <p>An intuitive C++ wrapper for modern, idiomatic and efficient multi-media development with SDL.</p>
 </div>
 
 <div align="center">
@@ -68,20 +69,20 @@
 </div>
 -->
 
-<!-- markdownlint-enable MD033 MD041 -->
-
-# About
-
-A modern library targetting C++20 and SDL3 for cross-platform, immediate-mode, desktop application development. With *laya*, you can create windows, handle input events, render 2D graphics, upload textures from surfaces, and manage resources in a type-safe and efficient manner while leveraging the full power of the underlying SDL library.
-
-> **PNG note**: `surface::load_png`/`save_png` and `texture::load_png` require SDL_image integration, which is not yet wired up in this branch. Use BMP helpers or bring your own PNG loader for now. See [Surface docs](docs/features/surfaces.md#file-io) and [Texture docs](docs/features/textures.md#limitations--future-work) for the latest status.
-
-> **Locking note**: Surfaces generally do not require explicit locking in SDL3, but `surface_lock_guard` is available for compatibility. Textures support regional locking through `texture_lock_guard`. The [Rendering docs](docs/features/rendering.md#textures-and-surfaces) outline integration tips and gotchas.
+<h1>
+About
+</h1>
 
 <div align="center">
-    <image alt="example" src="docs/assets/simple-code-example.png">
+  <p>
+    With <i>laya</i> you can create windows, handle input, render graphics, upload textures from surfaces, and manage resources in a type-safe and efficient manner built ontop of SDL. You can find more <a href="examples">examples here</a> to help you get started.
+  </p>
+
+<image alt="example" src="docs/assets/simple-code-example.png"/>
+
 </div>
 
+<!-- markdownlint-enable MD033 MD041 -->
 
 <!--
 
@@ -118,10 +119,6 @@ int main() {
 }
 ```
 -->
-
-## Contributing
-
-If you are interested in contributing, please see [CONTRIBUTING.md](CONTRIBUTING.md) for some guidelines and best practices.
 
 ## License
 
