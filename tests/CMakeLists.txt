@@ -1,30 +1,18 @@
 # doctest testing framework integration
-# Use header-only approach to avoid CMake version issues
-include(FetchContent)
+# Use local submodule to avoid network dependencies during CI builds
+set(DOCTEST_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../extern/doctest")
 
-FetchContent_Declare(
-    doctest
-    URL https://github.com/doctest/doctest/archive/refs/tags/v2.4.11.tar.gz
-    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-)
-
-# Set policy to allow FetchContent_Populate for header-only libraries
-# This is the recommended approach for header-only libraries where we don't want
-# to process their CMakeLists.txt
-if(POLICY CMP0169)
-    cmake_policy(SET CMP0169 OLD)
+# Verify doctest submodule exists
+if(NOT EXISTS "${DOCTEST_SOURCE_DIR}/doctest/doctest.h")
+    message(FATAL_ERROR 
+        "doctest submodule not found at ${DOCTEST_SOURCE_DIR}. "
+        "Please run: git submodule update --init --recursive")
 endif()
 
-# Fetch doctest without adding its CMakeLists.txt (header-only mode)
-FetchContent_GetProperties(doctest)
-if(NOT doctest_POPULATED)
-    FetchContent_Populate(doctest)
-
-    # Create interface library for doctest header (header-only, skip CMakeLists.txt)
-    add_library(doctest INTERFACE)
-    target_include_directories(doctest INTERFACE ${doctest_SOURCE_DIR})
-    add_library(doctest::doctest ALIAS doctest)
-endif()
+# Create interface library for doctest header (header-only)
+add_library(doctest INTERFACE)
+target_include_directories(doctest INTERFACE ${DOCTEST_SOURCE_DIR})
+add_library(doctest::doctest ALIAS doctest)
 
 # Test build options
 option(LAYA_TESTS_UNIT "Build unit tests" ON)

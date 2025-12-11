@@ -11,6 +11,9 @@ compile_commands.json
 # Use this folder to store user specific files that should not be shared
 private/
 
+# Test output directories
+test-results/
+
 .vscode/
 uv.lock
 
