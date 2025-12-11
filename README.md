@@ -20,7 +20,7 @@
 </div>
 
 <div align="center">
-    <img alt="GitHub Last Commit" src="https://img.shields.io/github/last-commit/radicazz/laya/master?logo=github&logoColor=white"/>
+    <img alt="GitHub Last Commit" src="https://img.shields.io/github/last-commit/radicazz/laya/main?logo=github&logoColor=white"/>
     <a href="https://github.com/radicazz/laya/actions/workflows/build.yml">
         <img alt="Build Status" src="https://github.com/radicazz/laya/actions/workflows/build.yml/badge.svg"/>
     </a>

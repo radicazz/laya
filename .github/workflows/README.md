@@ -4,16 +4,16 @@ The GitHub Actions in this directory implement a four-stage pipeline that mirror
 
 | Stage | Workflow | Trigger | Purpose |
 |-------|----------|---------|---------|
-| 1 | `static.yml` | Push/PR to `master` or `develop`, manual dispatch | clang-format/black/isort + clang-tidy + cppcheck gate |
+| 1 | `static.yml` | Push/PR to `main` or `develop`, manual dispatch | clang-format/black/isort + clang-tidy + cppcheck gate |
 | 2 | `build.yml` | `workflow_run` after **Static Analysis** succeeds, manual dispatch | Matrix builds (Linux GCC/Clang Debug+Release, Windows MSVC Debug+Release) + artifacts |
 | 3A | `test.yml` | `workflow_run` after **Build** succeeds | Reuses Debug build artifacts to run unit tests + coverage + Codecov |
 | 3B | `benchmark.yml` | `workflow_run` after **Build** succeeds | Reuses Release build artifacts to run benchmarks + aggregate reports |
-| — | `docs.yml` | Push/PR to `master`, manual dispatch | Builds MkDocs site, publishes CI metrics page, deploys to GitHub Pages |
+| — | `docs.yml` | Push/PR to `main`, manual dispatch | Builds MkDocs site, publishes CI metrics page, deploys to GitHub Pages |
 
 ### Flow at a Glance
 
 ```
-Push/PR on master/develop
+Push/PR on main/develop
         |
         v
   Static Analysis (static.yml)
@@ -28,7 +28,7 @@ Push/PR on master/develop
        v v
       Docs Gate*  --(docs/** changed?)-->  Docs Deploy (docs.yml)
 
-* Gate requires: branch==master, docs/ modified, and Static/Build/Test/Benchmark all succeeded.
+* Gate requires: branch==main, docs/ modified, and Static/Build/Test/Benchmark all succeeded.
 ```
 
 ## Stage Details
