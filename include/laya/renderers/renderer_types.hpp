@@ -166,6 +166,18 @@ enum class blend_mode : std::uint32_t {
 };
 
 // ============================================================================
+// Flip modes
+// ============================================================================
+
+/// Flip modes for surface and texture transformations
+/// Maps directly to SDL_FlipMode values for type safety
+enum class flip_mode : int {
+    none = 0,        ///< No flipping (SDL_FLIP_NONE)
+    horizontal = 1,  ///< Horizontal flip (SDL_FLIP_HORIZONTAL)
+    vertical = 2     ///< Vertical flip (SDL_FLIP_VERTICAL)
+};
+
+// ============================================================================
 // VSync modes
 // ============================================================================
 
