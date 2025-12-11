@@ -37,6 +37,9 @@ jobs:
         fetch-depth: 0
         submodules: recursive
 
+    - name: Update submodules
+      run: git submodule update --init --recursive
+
     - name: Cache FetchContent downloads
       uses: actions/cache@v4
       with:
