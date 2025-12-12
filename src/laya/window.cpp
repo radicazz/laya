@@ -33,11 +33,11 @@ SDL_PropertiesID build_window_properties(const window_args& args) {
     set_or_throw(props, SDL_SetNumberProperty, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER,
                  static_cast<Sint64>(static_cast<std::uint64_t>(args.flags)));
 
-    if (args.position) {
+    if (args.initial_position) {
         set_or_throw(props, SDL_SetNumberProperty, SDL_PROP_WINDOW_CREATE_X_NUMBER,
-                     static_cast<Sint64>(args.position->x));
+                     static_cast<Sint64>(args.initial_position->x));
         set_or_throw(props, SDL_SetNumberProperty, SDL_PROP_WINDOW_CREATE_Y_NUMBER,
-                     static_cast<Sint64>(args.position->y));
+                     static_cast<Sint64>(args.initial_position->y));
     }
 
     if ((args.flags & window_flags::high_pixel_density) == window_flags::high_pixel_density) {

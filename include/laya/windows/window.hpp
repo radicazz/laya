@@ -14,7 +14,7 @@ namespace laya {
 struct window_args {
     std::string_view title;
     dimensions size{800, 600};
-    std::optional<position> position;  ///< Optional initial position
+    std::optional<position> initial_position;  ///< Optional initial position
     window_flags flags = window_flags::none;
 };
 
