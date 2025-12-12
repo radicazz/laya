@@ -27,7 +27,7 @@ struct texture_args {
     pixel_format format = pixel_format::rgba32;
 
     /// Texture dimensions.
-    dimentions size{0, 0};
+    dimensions size{0, 0};
 
     /// Access pattern for the texture.
     texture_access access = texture_access::static_;
@@ -86,7 +86,7 @@ public:
     /// \param size Texture dimensions.
     /// \param access Access pattern.
     /// \throws laya::error if texture creation fails.
-    texture(const class renderer& renderer, pixel_format format, dimentions size,
+    texture(const class renderer& renderer, pixel_format format, dimensions size,
             texture_access access = texture_access::static_);
 
     /// Creates a texture from a surface.
@@ -226,7 +226,7 @@ public:
 
     /// Gets texture dimensions.
     /// \returns Width and height of the texture.
-    [[nodiscard]] dimentions size() const noexcept;
+    [[nodiscard]] dimensions size() const noexcept;
 
     /// Gets texture pixel format.
     /// \returns Pixel format of the texture.
@@ -242,7 +242,7 @@ public:
 
 private:
     SDL_Texture* m_texture{nullptr};
-    dimentions m_size{0, 0};
+    dimensions m_size{0, 0};
     pixel_format m_format{pixel_format::rgba32};
     texture_access m_access{texture_access::static_};
 

@@ -35,9 +35,9 @@ TEST_SUITE("renderer") {
             CHECK(r2.h == 200);
 
             CHECK(r2.position() == laya::point{10, 20});
-            CHECK(r2.size() == laya::dimentions{100, 200});
+            CHECK(r2.size() == laya::dimensions{100, 200});
 
-            laya::rect r3{laya::point{5, 15}, laya::dimentions{50, 75}};
+            laya::rect r3{laya::point{5, 15}, laya::dimensions{50, 75}};
             CHECK(r3.x == 5);
             CHECK(r3.y == 15);
             CHECK(r3.w == 50);

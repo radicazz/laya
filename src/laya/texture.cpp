@@ -65,7 +65,7 @@ texture::texture(const class renderer& renderer, const texture_args& args)
     : texture(renderer, args.format, args.size, args.access) {
 }
 
-texture::texture(const class renderer& renderer, pixel_format format, dimentions size, texture_access access)
+texture::texture(const class renderer& renderer, pixel_format format, dimensions size, texture_access access)
     : m_size{size}, m_format{format}, m_access{access} {
     m_texture = SDL_CreateTexture(renderer.native_handle(), static_cast<SDL_PixelFormat>(format),
                                   static_cast<SDL_TextureAccess>(access), size.width, size.height);
@@ -119,7 +119,7 @@ texture::~texture() noexcept {
 
 texture::texture(texture&& other) noexcept
     : m_texture{std::exchange(other.m_texture, nullptr)},
-      m_size{std::exchange(other.m_size, dimentions{0, 0})},
+      m_size{std::exchange(other.m_size, dimensions{0, 0})},
       m_format{std::exchange(other.m_format, pixel_format::rgba32)},
       m_access{std::exchange(other.m_access, texture_access::static_)} {
 }
@@ -130,7 +130,7 @@ texture& texture::operator=(texture&& other) noexcept {
             SDL_DestroyTexture(m_texture);
         }
         m_texture = std::exchange(other.m_texture, nullptr);
-        m_size = std::exchange(other.m_size, dimentions{0, 0});
+        m_size = std::exchange(other.m_size, dimensions{0, 0});
         m_format = std::exchange(other.m_format, pixel_format::rgba32);
         m_access = std::exchange(other.m_access, texture_access::static_);
     }
@@ -245,7 +245,7 @@ scale_mode texture::get_scale_mode() const {
     return static_cast<scale_mode>(mode);
 }
 
-dimentions texture::size() const noexcept {
+dimensions texture::size() const noexcept {
     return m_size;
 }
 

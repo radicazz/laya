@@ -37,13 +37,16 @@ enum class window_flags : unsigned {
 };
 
 /// Strong types for window properties
-struct dimentions {
+struct dimensions {
     int width;
     int height;
 
-    constexpr dimentions(int w, int h) : width(w), height(h) {
+    constexpr dimensions(int w, int h) : width(w), height(h) {
     }
 };
+
+// Backward compatibility: keep the old misspelling as an alias.
+using dimentions = dimensions;
 
 struct position {
     int x;

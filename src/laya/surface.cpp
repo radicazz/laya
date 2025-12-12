@@ -78,7 +78,7 @@ surface::surface(const surface_args& args) {
     }
 }
 
-surface::surface(dimentions size, pixel_format format) {
+surface::surface(dimensions size, pixel_format format) {
     m_surface = SDL_CreateSurface(size.width, size.height, static_cast<SDL_PixelFormat>(format));
 
     if (!m_surface) {
@@ -257,7 +257,7 @@ color surface::get_color_key() const {
     return color{r, g, b, a};
 }
 
-dimentions surface::size() const noexcept {
+dimensions surface::size() const noexcept {
     return {m_surface->w, m_surface->h};
 }
 
@@ -286,7 +286,7 @@ surface surface::duplicate() const {
     return surface(duplicated);
 }
 
-surface surface::scale(dimentions new_size) const {
+surface surface::scale(dimensions new_size) const {
     SDL_Surface* scaled = SDL_ScaleSurface(m_surface, new_size.width, new_size.height, SDL_SCALEMODE_LINEAR);
     if (!scaled) {
         throw error::from_sdl();

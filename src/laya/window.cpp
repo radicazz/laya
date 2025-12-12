@@ -64,7 +64,7 @@ window::window(const window_args& args) : m_window{nullptr}, m_id{} {
     }
 }
 
-window::window(std::string_view title, dimentions size, window_flags flags)
+window::window(std::string_view title, dimensions size, window_flags flags)
     : window(window_args{title, size, std::nullopt, flags}) {
 }
 
@@ -111,14 +111,14 @@ void window::set_title(std::string_view title) {
     }
 }
 
-void window::set_size(dimentions size) {
+void window::set_size(dimensions size) {
     SDL_Window* win = ensure_handle();
     if (!SDL_SetWindowSize(win, size.width, size.height)) {
         throw error::from_sdl();
     }
 }
 
-dimentions window::get_size() const {
+dimensions window::get_size() const {
     SDL_Window* win = ensure_handle();
     int w, h;
     if (!SDL_GetWindowSize(win, &w, &h)) {
@@ -192,21 +192,21 @@ void window::set_resizable(bool resizable) {
     }
 }
 
-void window::set_minimum_size(dimentions size) {
+void window::set_minimum_size(dimensions size) {
     SDL_Window* win = ensure_handle();
     if (!SDL_SetWindowMinimumSize(win, size.width, size.height)) {
         throw error::from_sdl();
     }
 }
 
-void window::set_maximum_size(dimentions size) {
+void window::set_maximum_size(dimensions size) {
     SDL_Window* win = ensure_handle();
     if (!SDL_SetWindowMaximumSize(win, size.width, size.height)) {
         throw error::from_sdl();
     }
 }
 
-dimentions window::get_minimum_size() const {
+dimensions window::get_minimum_size() const {
     SDL_Window* win = ensure_handle();
     int w = 0, h = 0;
     if (!SDL_GetWindowMinimumSize(win, &w, &h)) {
@@ -215,7 +215,7 @@ dimentions window::get_minimum_size() const {
     return {w, h};
 }
 
-dimentions window::get_maximum_size() const {
+dimensions window::get_maximum_size() const {
     SDL_Window* win = ensure_handle();
     int w = 0, h = 0;
     if (!SDL_GetWindowMaximumSize(win, &w, &h)) {

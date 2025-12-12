@@ -20,7 +20,7 @@ namespace laya {
 
 /// Arguments for surface creation
 struct surface_args {
-    dimentions size;                             ///< Surface dimensions
+    dimensions size;                             ///< Surface dimensions
     pixel_format format = pixel_format::rgba32;  ///< Pixel format
     surface_flags flags = surface_flags::none;   ///< Creation flags (currently only rle_optimized is applied)
 };
@@ -54,7 +54,7 @@ class surface {
 public:
     // Creation
     explicit surface(const surface_args& args);
-    surface(dimentions size, pixel_format format = pixel_format::rgba32);
+    surface(dimensions size, pixel_format format = pixel_format::rgba32);
 
     /// Load surface from BMP file
     [[nodiscard]] static surface load_bmp(std::string_view path);
@@ -80,7 +80,7 @@ public:
     // Transformations (return new surface)
     [[nodiscard]] surface convert(pixel_format format) const;
     [[nodiscard]] surface duplicate() const;
-    [[nodiscard]] surface scale(dimentions new_size) const;
+    [[nodiscard]] surface scale(dimensions new_size) const;
     [[nodiscard]] surface flip(flip_mode mode) const;
 
     // State management
@@ -97,7 +97,7 @@ public:
     [[nodiscard]] blend_mode get_blend_mode() const;
     [[nodiscard]] bool has_color_key() const;
     [[nodiscard]] color get_color_key() const;
-    [[nodiscard]] dimentions size() const noexcept;
+    [[nodiscard]] dimensions size() const noexcept;
     [[nodiscard]] pixel_format format() const noexcept;
     [[nodiscard]] bool must_lock() const noexcept;
 

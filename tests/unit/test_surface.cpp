@@ -9,7 +9,7 @@ using namespace laya;
 
 TEST_SUITE("Surface") {
     // Helper function to create a test surface
-    auto create_test_surface = [](dimentions size = {64, 64}, pixel_format fmt = pixel_format::rgba32) {
+    auto create_test_surface = [](dimensions size = {64, 64}, pixel_format fmt = pixel_format::rgba32) {
         return surface{size, fmt};
     };
 

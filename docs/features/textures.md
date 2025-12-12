@@ -87,7 +87,7 @@ Scale modes map directly to SDL scale filters; `nearest` and `linear` are availa
 Texture instances cache their size/format/access metadata when created, so queries avoid expensive `SDL_GetTextureProperties` calls at runtime:
 
 ```cpp
-auto size = from_surface.size();           // returns cached dimentions
+auto size = from_surface.size();           // returns cached dimensions
 auto format = from_surface.format();
 auto access = from_surface.access();
 ```

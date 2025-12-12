@@ -54,7 +54,7 @@ struct rect {
     }
 
     /// Construct rectangle from point and dimensions
-    constexpr rect(point pos, dimentions size) noexcept : x(pos.x), y(pos.y), w(size.width), h(size.height) {
+    constexpr rect(point pos, dimensions size) noexcept : x(pos.x), y(pos.y), w(size.width), h(size.height) {
     }
 
     /// Get top-left corner as point
@@ -63,7 +63,7 @@ struct rect {
     }
 
     /// Get size as dimensions
-    [[nodiscard]] constexpr dimentions size() const noexcept {
+    [[nodiscard]] constexpr dimensions size() const noexcept {
         return {w, h};
     }
 

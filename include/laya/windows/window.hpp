@@ -13,7 +13,7 @@ namespace laya {
 /// Arguments for window creation
 struct window_args {
     std::string_view title;
-    dimentions size{800, 600};
+    dimensions size{800, 600};
     std::optional<position> position;  ///< Optional initial position
     window_flags flags = window_flags::none;
 };
@@ -25,7 +25,7 @@ public:
     explicit window(const window_args& args);
 
     /// Create a window with title, size, and optional flags
-    window(std::string_view title, dimentions size, window_flags flags = window_flags::none);
+    window(std::string_view title, dimensions size, window_flags flags = window_flags::none);
 
     /// Destructor - automatically destroys the SDL window
     ~window() noexcept;
@@ -46,10 +46,10 @@ public:
     void set_title(std::string_view title);
 
     /// Set the window size
-    void set_size(dimentions size);
+    void set_size(dimensions size);
 
     /// Get the window size
-    dimentions get_size() const;
+    dimensions get_size() const;
 
     /// Set the window position
     void set_position(position pos);
@@ -79,16 +79,16 @@ public:
     void set_resizable(bool resizable);
 
     /// Set minimum allowed window size
-    void set_minimum_size(dimentions size);
+    void set_minimum_size(dimensions size);
 
     /// Set maximum allowed window size
-    void set_maximum_size(dimentions size);
+    void set_maximum_size(dimensions size);
 
     /// Get minimum allowed window size
-    [[nodiscard]] dimentions get_minimum_size() const;
+    [[nodiscard]] dimensions get_minimum_size() const;
 
     /// Get maximum allowed window size
-    [[nodiscard]] dimentions get_maximum_size() const;
+    [[nodiscard]] dimensions get_maximum_size() const;
 
     /// Set window opacity (0.0 transparent, 1.0 opaque)
     void set_opacity(float opacity);

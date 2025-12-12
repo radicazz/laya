@@ -152,7 +152,7 @@ public:
     [[nodiscard]] rect get_viewport() const;
 
     /// Get the output size in pixels
-    [[nodiscard]] dimentions get_output_size() const;
+    [[nodiscard]] dimensions get_output_size() const;
 
     // ========================================================================
     // RAII state guard factories

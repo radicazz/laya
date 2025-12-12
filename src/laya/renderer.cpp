@@ -216,7 +216,7 @@ rect renderer::get_viewport() const {
     return from_sdl_rect(viewport);
 }
 
-dimentions renderer::get_output_size() const {
+dimensions renderer::get_output_size() const {
     int w, h;
     if (SDL_GetRenderOutputSize(m_renderer, &w, &h) == false) {
         throw error("Failed to get output size: {}", SDL_GetError());
