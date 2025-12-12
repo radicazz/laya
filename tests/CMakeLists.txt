@@ -4,7 +4,7 @@ set(DOCTEST_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../extern/doctest")
 
 # Verify doctest submodule exists
 if(NOT EXISTS "${DOCTEST_SOURCE_DIR}/doctest/doctest.h")
-    message(FATAL_ERROR 
+    message(FATAL_ERROR
         "doctest submodule not found at ${DOCTEST_SOURCE_DIR}. "
         "Please run: git submodule update --init --recursive")
 endif()
