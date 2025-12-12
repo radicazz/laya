@@ -201,30 +201,13 @@ jobs:
           -DLAYA_BUILD_TESTS=ON \
           -DLAYA_BUILD_EXAMPLES=ON
 
-    - name: Run clang-tidy
+    - name: Run clang-tidy (CI config)
       run: |
-        mkdir -p reports
-
-        # Run on headers
-        find include -type f -name "*.hpp" | \
-          xargs clang-tidy-18 -p build --config-file=.clang-tidy \
-          > reports/clang-tidy-headers.txt 2>&1 || true
-
-        # Run on source files
-        find src -type f -name "*.cpp" | \
-          xargs clang-tidy-18 -p build --config-file=.clang-tidy \
-          > reports/clang-tidy-sources.txt 2>&1 || true
-
-        # Combine reports
-        cat reports/clang-tidy-*.txt > reports/clang-tidy-full-report.txt
-
-    - name: Upload clang-tidy reports
-      if: ${{ env.ACT != 'true' }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: clang-tidy-reports
-        path: reports/clang-tidy-*.txt
-        retention-days: 30
+        # Run clang-tidy with CI-specific minimal checks on all C++ files
+        # Uses .clang-tidy-ci for focused, non-pedantic checks
+        # Fails the build on serious issues
+        find src include -type f \( -name "*.cpp" -o -name "*.hpp" \) | \
+          xargs clang-tidy-18 -p build --config-file=.clang-tidy-ci
 
   static-analyzers:
     name: Static Analyzers

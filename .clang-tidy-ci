@@ -1,0 +1,59 @@
+#
+# https://clang.llvm.org/extra/clang-tidy/
+#
+# CI config - minimal checks for serious issues only
+#
+
+---
+
+Checks: >
+  -*,
+  bugprone-dangling-handle,
+  bugprone-use-after-move,
+  bugprone-infinite-loop,
+  bugprone-assert-side-effect,
+  bugprone-move-forwarding-reference,
+  bugprone-null-dereference,
+  bugprone-signed-char-misuse,
+  bugprone-sizeof-expression,
+  bugprone-string-constructor,
+  bugprone-string-integer-assignment,
+  bugprone-suspicious-enum-usage,
+  bugprone-suspicious-memset-usage,
+  bugprone-suspicious-missing-comma,
+  bugprone-suspicious-semicolon,
+  bugprone-suspicious-string-compare,
+  bugprone-undelegated-constructor,
+  bugprone-unhandled-self-assignment,
+  cert-dcl50-cpp,
+  cert-dcl58-cpp,
+  cert-env33-c,
+  cert-err34-c,
+  cert-err52-cpp,
+  cert-flp30-c,
+  cert-mem57-cpp,
+  cert-msc50-cpp,
+  cert-msc51-cpp,
+  cert-oop57-cpp,
+  cert-oop58-cpp,
+  clang-analyzer-core.*,
+  clang-analyzer-cplusplus.*,
+  clang-analyzer-deadcode.*,
+  clang-analyzer-nullability.*,
+  clang-analyzer-security.*,
+  concurrency-mt-unsafe,
+  concurrency-thread-canceltype-asynchronous,
+  performance-move-const-arg,
+  performance-no-automatic-move,
+  performance-unnecessary-copy-initialization
+
+CheckOptions:
+  - key: cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
+    value: true
+
+WarningsAsErrors: ''
+HeaderFilterRegex: '(src|include)/.*\.(h|hpp)$'
+FormatStyle: file
+
+# Used if no `compile_commands.json` is found.
+User: '-std=c++20'

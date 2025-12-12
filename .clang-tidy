@@ -1,67 +1,50 @@
 #
 # https://clang.llvm.org/extra/clang-tidy/
 #
+# Local development config - focused on catching real issues
+#
 
 ---
 
 Checks: >
   -*,
   bugprone-*,
-  -bugprone-easily-swappable-parameters,
-  -bugprone-exception-escape,
-  -bugprone-empty-catch,                      # Allow empty catch blocks for intentional error suppression
-  -bugprone-infinite-loop,                    # False positives when loop variables modified in nested scopes (e.g., std::visit)
+  -bugprone-easily-swappable-parameters,      # Too noisy for function parameters
+  -bugprone-empty-catch,                      # Allow intentional empty catch blocks
+  -bugprone-exception-escape,                 # Noisy with destructors
   cert-*,
-  -cert-dcl21-cpp,
-  -cert-dcl58-cpp,
-  -cert-err58-cpp,
+  -cert-dcl21-cpp,                            # Postfix operators are fine
+  -cert-err58-cpp,                            # Static initialization is acceptable
   clang-analyzer-*,
   concurrency-*,
   cppcoreguidelines-*,
-  -cppcoreguidelines-avoid-c-arrays,          # Allow C-style arrays for SDL compatibility and fixed-size buffers
-  -cppcoreguidelines-avoid-magic-numbers,
-  -cppcoreguidelines-macro-usage,
+  -cppcoreguidelines-avoid-c-arrays,          # SDL compatibility
+  -cppcoreguidelines-avoid-magic-numbers,     # Style preference
+  -cppcoreguidelines-macro-usage,             # Macros sometimes necessary
   -cppcoreguidelines-non-private-member-variables-in-classes,
-  -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-owning-memory,           # RAII handles this
   -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
   -cppcoreguidelines-pro-bounds-constant-array-index,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
-  -cppcoreguidelines-pro-type-member-init,    # Allow aggregate initialization without explicit member init
   -cppcoreguidelines-pro-type-reinterpret-cast,
   -cppcoreguidelines-pro-type-union-access,
   -cppcoreguidelines-special-member-functions,
-  google-*,
-  -google-readability-braces-around-statements,
-  -google-readability-namespace-comments,
-  -google-runtime-references,
-  hicpp-*,
-  -hicpp-avoid-c-arrays,                      # Allow C-style arrays (same as cppcoreguidelines)
-  -hicpp-braces-around-statements,
-  -hicpp-member-init,                         # Allow aggregate initialization (same as cppcoreguidelines)
-  -hicpp-named-parameter,
-  -hicpp-no-array-decay,
-  -hicpp-special-member-functions,
-  -hicpp-uppercase-literal-suffix,
   misc-*,
-  -misc-const-correctness,                    # Too noisy, suggests const for variables that may change
-  -misc-include-cleaner,                      # Overly strict about transitive includes, requires all headers
+  -misc-const-correctness,                    # Too noisy
+  -misc-include-cleaner,                      # Overly strict
   -misc-non-private-member-variables-in-classes,
   -misc-no-recursion,
-  -misc-use-internal-linkage,                 # Namespace-scoped functions are intentionally public API
+  -misc-use-internal-linkage,                 # Public API functions
   modernize-*,
-  -modernize-avoid-c-arrays,                  # Allow C-style arrays (same as cppcoreguidelines)
-  -modernize-use-trailing-return-type,
-  -modernize-use-using,                       # Allow typedef for SDL forward declarations
+  -modernize-avoid-c-arrays,                  # SDL compatibility
+  -modernize-use-trailing-return-type,        # Style preference
   performance-*,
-  portability-*,
-  -portability-avoid-pragma-once,             # pragma once is widely supported and preferred
   readability-*,
-  -readability-braces-around-statements,
-  -readability-function-cognitive-complexity,
-  -readability-identifier-length,
-  -readability-magic-numbers,
-  -readability-named-parameter,
-  -readability-simplify-boolean-expr,         # Allow explicit boolean comparisons for clarity
+  -readability-braces-around-statements,      # Style preference
+  -readability-function-cognitive-complexity, # Too subjective
+  -readability-identifier-length,             # Style preference
+  -readability-magic-numbers,                 # Style preference
+  -readability-named-parameter,               # Optional
   -readability-uppercase-literal-suffix
 
 CheckOptions:

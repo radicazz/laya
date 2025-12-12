@@ -14,7 +14,7 @@ Robots: obey these rules or be unplugged.
 - Reference directory AGENTS.md files for context-specific instructions.
 - Scripts, tools, and tests have their own AGENTS.md files—consult them before acting in those areas.
 - Follow conventional commit prefixes (e.g., feat:, fix:, chore:, docs:, test:) for commit messages.
-- After changes, build, run tests, and execute `uv run --project tools --group dev pre-commit run --all-files` before any commits.
+- **Before EVERY commit**: Run `./scripts/run-pre-commit.sh` to ensure all checks pass (formatting, linting, clang-tidy, etc.).
 
 ## Quicklinks
 
