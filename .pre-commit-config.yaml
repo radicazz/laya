@@ -30,6 +30,11 @@ repos:
         entry: uv run --project tools --group format isort --profile black --check-only --diff
         language: system
         types: [python]
+      - id: mdformat
+        name: mdformat (uv)
+        entry: uv run --project tools --group format mdformat
+        language: system
+        types: [markdown]
       - id: yamllint
         name: yamllint (uv)
         entry: uv run --project tools yamllint
