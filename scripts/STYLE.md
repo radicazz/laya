@@ -2,29 +2,35 @@
 
 This document defines conventions for Bash (`.sh`) and PowerShell (`.ps1`) scripts used in this project. The goal is to enforce **clarity, consistency, and portability** across platforms.
 
----
+______________________________________________________________________
 
 ## General Rules
 
 - All scripts must include **neat, consistent, detailed, and legible internal documentation**.
+
 - Words in script names and parameters are separated with **hyphens (`-`)**.
+
 - Scripts intended for both platforms must share the same logical name, e.g.:
+
   - `verify-tools.sh` (Linux/macOS/WSL)
   - `Verify-Tools.ps1` (Windows)
+
 - Each script must provide **help/usage information**:
+
   - Bash → `-h` / `--help`
   - PowerShell → `Get-Help`
 
 - If a script supports an "install missing" mode (for automatically installing required tools/dependencies), it MUST prompt the user *before performing any installation* with a clear, single confirmation message that:
+
   - Summarizes what will be installed (package/tool name and source), for example:
 
-    "Install Missing Enabled - This script will automatically install\n    - uv (from PyPI)\n    - docker (via system package manager)\n    Do you wish to continue? (y/n)"
+    "Install Missing Enabled - This script will automatically install\\n - uv (from PyPI)\\n - docker (via system package manager)\\n Do you wish to continue? (y/n)"
 
   - Lists the package(s) and their expected sources (e.g. PyPI, apt, brew, pipx, GitHub releases). The prompt must require an explicit positive confirmation (e.g. `y` or `Y`) before proceeding. If the user declines, the script must exit without making changes.
 
   - Include a TODO note in the script header if alternative, non-automatic installation strategies are planned (requirements.txt, manual steps, or other package managers).
 
----
+______________________________________________________________________
 
 ## Bash Scripts (`.sh`)
 
@@ -37,10 +43,15 @@ This document defines conventions for Bash (`.sh`) and PowerShell (`.ps1`) scrip
   ```
 
 - File names: **lowercase**, words separated with `-`.
+
   - Example: `verify-tools.sh`, `build-release.sh`.
+
 - Parameters: **short** and **long** flags.
+
   - Example: `-h`, `--help`, `--install-missing`.
+
 - Required:
+
   - Implement `usage()` function with detailed examples.
   - Provide `-h`/`--help` flags that call `usage()`.
 
@@ -59,7 +70,7 @@ case "$response" in
 esac
 ```
 
----
+______________________________________________________________________
 
 ## PowerShell Scripts (`.ps1`)
 
@@ -130,7 +141,7 @@ Notes:
 - When writing CI scripts, detect non-TTY output and disable colors to keep logs clean.
 - Document these helpers at the top of each script (or source a shared small `lib/colors.sh` / `lib/Colors.ps1` helper in the repo).
 
----
+______________________________________________________________________
 
 ## Platform Scope
 
@@ -138,7 +149,7 @@ Notes:
 - **PowerShell scripts** → Windows environments.
 - CI/CD should call the platform-appropriate script (`.sh` on Linux/macOS, `.ps1` on Windows).
 
----
+______________________________________________________________________
 
 ## Examples
 

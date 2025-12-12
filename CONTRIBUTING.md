@@ -2,16 +2,16 @@
 
 Thank you for your interest in contributing to *laya*! This document describes the philosophy and style guidelines for the project.
 
----
+______________________________________________________________________
 
 ## Contribution Workflow
 
 1. Fork the repository and create a branch for your feature or fix.
-2. Ensure your code follows the style and scope described above.
-3. Run tests and verify builds on all supported platforms (if possible).
-4. Submit a pull request with a clear description of your changes in English.
+1. Ensure your code follows the style and scope described above.
+1. Run tests and verify builds on all supported platforms (if possible).
+1. Submit a pull request with a clear description of your changes in English.
 
----
+______________________________________________________________________
 
 ## Scope
 
@@ -26,13 +26,13 @@ The scope of the project is clear and limited:
 
 Contributions must stay within this scope. If you want to propose functionality outside of SDL3, it must be justified and discussed first.
 
----
+______________________________________________________________________
 
 ## Style Guidelines
 
 Code style is enforced via `.clang-format` and a pre-commit hook for automatic formatting. For detailed style guidelines including naming conventions, class organization, include order, and C++ best practices, see [STYLE.md](STYLE.md).
 
----
+______________________________________________________________________
 
 ## License
 

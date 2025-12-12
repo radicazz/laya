@@ -2,13 +2,13 @@
 
 This document contains detailed style guidelines for the *laya* project. These rules enforce consistency and readability across the codebase.
 
----
+______________________________________________________________________
 
 ## Overview
 
 The codebase follows conventions inspired by the C++ Standard Library. Consistency is critical and enforced via `.clang-format`. A pre-commit hook automatically formats code before committing.
 
----
+______________________________________________________________________
 
 ## Naming Conventions
 
@@ -40,7 +40,7 @@ auto filter_events(EventType&& events, Predicate&& pred);
 }  // namespace laya
 ```
 
----
+______________________________________________________________________
 
 ## Classes & Structs
 
@@ -48,9 +48,9 @@ auto filter_events(EventType&& events, Predicate&& pred);
 - **Use `struct`** if no encapsulation is needed
 - **Member organization** within a class:
   1. Access specifiers in order: `public`, `protected`, `private`
-  2. Within each section, group by: types, then methods, then variables
-  3. Always explicitly specify access level (no implicit `private` in classes)
-  4. Non-public member variables should be prefixed with `m_`
+  1. Within each section, group by: types, then methods, then variables
+  1. Always explicitly specify access level (no implicit `private` in classes)
+  1. Non-public member variables should be prefixed with `m_`
 - **Inline class definitions are prohibited**; define classes at namespace scope and place every implementation in a translation unit.
 - **No inline definitions in headers**: headers must only declare types and functions; implement them in the corresponding source file, using forward declarations as needed.
 - **Header layout matters**: declare public APIs (concepts, aliases, function signatures) before type definitions and keep headers free of function bodies.
@@ -102,16 +102,16 @@ struct window_event_data_position {
 };
 ```
 
----
+______________________________________________________________________
 
 ## Include Order
 
 Includes should be organized in the following order with blank lines between groups:
 
 1. **For source files (`.cpp`)**: The corresponding header file(s) first
-2. **Standard library** headers (`<...>`)
-3. **External library** headers (SDL3, doctest, etc.)
-4. **Project headers** (relative paths `"..."`)
+1. **Standard library** headers (`<...>`)
+1. **External library** headers (SDL3, doctest, etc.)
+1. **Project headers** (relative paths `"..."`)
 
 Example for a source file:
 
@@ -150,7 +150,7 @@ Example for a header file:
 #include "event_polling.hpp"
 ```
 
----
+______________________________________________________________________
 
 ## Comments & Documentation
 
@@ -196,7 +196,7 @@ get_position(const window_event& event) noexcept;
 }  // namespace laya
 ```
 
----
+______________________________________________________________________
 
 ## Templates vs Macros
 
@@ -229,7 +229,7 @@ void process(typename T::value_type value);
 void process(const auto& value);
 ```
 
----
+______________________________________________________________________
 
 ## Type Safety & Modern C++
 
@@ -327,7 +327,7 @@ Mark functions `noexcept` when they cannot throw:
 [[nodiscard]] constexpr std::uint32_t value() const noexcept { return m_value; }
 ```
 
----
+______________________________________________________________________
 
 ## Namespaces
 
@@ -352,7 +352,7 @@ void some_function() {
 // using namespace std;
 ```
 
----
+______________________________________________________________________
 
 ## Formatting
 
@@ -401,3 +401,4 @@ if (condition) do_something();
 if (condition) {
     do_something();
 }
+```

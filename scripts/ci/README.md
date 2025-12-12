@@ -5,6 +5,7 @@ Reusable automation scripts for CI/CD workflows.
 ## Overview
 
 These scripts extract common functionality from GitHub Actions workflows, making them:
+
 - **Testable locally** - Run without GitHub Actions infrastructure
 - **Reusable** - Share logic across different workflows
 - **Maintainable** - Single source of truth for common operations
@@ -15,6 +16,7 @@ These scripts extract common functionality from GitHub Actions workflows, making
 ### Environment Setup
 
 #### `setup-xvfb.sh`
+
 Setup headless X11 display server for GUI testing.
 
 ```bash
@@ -23,6 +25,7 @@ Setup headless X11 display server for GUI testing.
 ```
 
 #### `cleanup-xvfb.sh`
+
 Stop Xvfb display server.
 
 ```bash
@@ -31,6 +34,7 @@ Stop Xvfb display server.
 ```
 
 #### `install-ubuntu-deps.sh`
+
 Install Ubuntu dependencies.
 
 ```bash
@@ -40,6 +44,7 @@ Install Ubuntu dependencies.
 ```
 
 #### `install-compiler.sh`
+
 Install specific compiler versions.
 
 ```bash
@@ -51,6 +56,7 @@ Install specific compiler versions.
 ### Library Management
 
 #### `find-sdl3-lib.sh`
+
 Locate SDL3 shared library and setup LD_LIBRARY_PATH.
 
 ```bash
@@ -63,6 +69,7 @@ eval "$(./scripts/ci/find-sdl3-lib.sh --dir build)"
 ### Testing & Benchmarking
 
 #### `run-tests.sh`
+
 Run unit tests with various output formats.
 
 ```bash
@@ -72,6 +79,7 @@ Run unit tests with various output formats.
 ```
 
 #### `generate-coverage.sh`
+
 Generate code coverage reports using lcov.
 
 ```bash
@@ -81,6 +89,7 @@ Generate code coverage reports using lcov.
 ```
 
 #### `run-benchmarks-linux.sh`
+
 Run benchmarks with JSON and console output.
 
 ```bash

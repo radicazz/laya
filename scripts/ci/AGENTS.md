@@ -40,9 +40,9 @@ Robots: obey these rules or be unplugged.
 When adding new workflow steps:
 
 1. Extract repeated bash blocks (>5 lines) into scripts
-2. Ensure scripts have `--help` documentation
-3. Update this file and README.md with the new script
-4. Test locally before using in workflows
+1. Ensure scripts have `--help` documentation
+1. Update this file and README.md with the new script
+1. Test locally before using in workflows
 
 ## Quicklinks
 
