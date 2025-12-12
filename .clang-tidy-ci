@@ -13,7 +13,6 @@ Checks: >
   bugprone-infinite-loop,
   bugprone-assert-side-effect,
   bugprone-move-forwarding-reference,
-  bugprone-null-dereference,
   bugprone-signed-char-misuse,
   bugprone-sizeof-expression,
   bugprone-string-constructor,

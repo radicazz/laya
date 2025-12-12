@@ -42,7 +42,7 @@ repos:
         types: [yaml]
       - id: clang-tidy
         name: clang-tidy
-        entry: uv run --project tools clang-tidy
+        entry: clang-tidy
         language: system
         types_or: [c++, c]
         args: [--config-file=.clang-tidy]

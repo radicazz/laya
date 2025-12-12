@@ -9,20 +9,20 @@
 Checks: >
   -*,
   bugprone-*,
-  -bugprone-easily-swappable-parameters,      # Too noisy for function parameters
-  -bugprone-empty-catch,                      # Allow intentional empty catch blocks
-  -bugprone-exception-escape,                 # Noisy with destructors
+  -bugprone-easily-swappable-parameters,
+  -bugprone-empty-catch,
+  -bugprone-exception-escape,
   cert-*,
-  -cert-dcl21-cpp,                            # Postfix operators are fine
-  -cert-err58-cpp,                            # Static initialization is acceptable
+  -cert-dcl51-cpp,
+  -cert-err58-cpp,
   clang-analyzer-*,
   concurrency-*,
   cppcoreguidelines-*,
-  -cppcoreguidelines-avoid-c-arrays,          # SDL compatibility
-  -cppcoreguidelines-avoid-magic-numbers,     # Style preference
-  -cppcoreguidelines-macro-usage,             # Macros sometimes necessary
+  -cppcoreguidelines-avoid-c-arrays,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-macro-usage,
   -cppcoreguidelines-non-private-member-variables-in-classes,
-  -cppcoreguidelines-owning-memory,           # RAII handles this
+  -cppcoreguidelines-owning-memory,
   -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
   -cppcoreguidelines-pro-bounds-constant-array-index,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
@@ -30,21 +30,21 @@ Checks: >
   -cppcoreguidelines-pro-type-union-access,
   -cppcoreguidelines-special-member-functions,
   misc-*,
-  -misc-const-correctness,                    # Too noisy
-  -misc-include-cleaner,                      # Overly strict
+  -misc-const-correctness,
+  -misc-include-cleaner,
   -misc-non-private-member-variables-in-classes,
   -misc-no-recursion,
-  -misc-use-internal-linkage,                 # Public API functions
+  -misc-use-internal-linkage,
   modernize-*,
-  -modernize-avoid-c-arrays,                  # SDL compatibility
-  -modernize-use-trailing-return-type,        # Style preference
+  -modernize-avoid-c-arrays,
+  -modernize-use-trailing-return-type,
   performance-*,
   readability-*,
-  -readability-braces-around-statements,      # Style preference
-  -readability-function-cognitive-complexity, # Too subjective
-  -readability-identifier-length,             # Style preference
-  -readability-magic-numbers,                 # Style preference
-  -readability-named-parameter,               # Optional
+  -readability-braces-around-statements,
+  -readability-function-cognitive-complexity,
+  -readability-identifier-length,
+  -readability-magic-numbers,
+  -readability-named-parameter,
   -readability-uppercase-literal-suffix
 
 CheckOptions:
@@ -75,8 +75,6 @@ CheckOptions:
   - key: readability-identifier-naming.ConstexprVariableCase
     value: lower_case
   - key: readability-identifier-naming.GlobalConstantCase
-    value: lower_case
-  - key: readability-identifier-naming.MemberConstantCase
     value: lower_case
   - key: readability-identifier-naming.StaticConstantCase
     value: lower_case
