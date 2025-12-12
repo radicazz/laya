@@ -15,6 +15,7 @@ laya::log_critical("Critical");
 ```
 
 With formatting:
+
 ```cpp
 laya::log_info("Window size: {}x{}", 800, 600);
 laya::log_debug("Frame time: {:.2f}ms", frame_time);
@@ -39,6 +40,7 @@ Available categories: `application`, `error`, `system`, `audio`, `video`, `rende
 ## Priority Control
 
 Set minimum priority levels:
+
 ```cpp
 laya::set_log_priority(laya::log_category::render, laya::log_priority::warn);
 laya::set_all_log_priorities(laya::log_priority::info);
@@ -58,4 +60,5 @@ laya::renderer ren{win};
 laya::log(laya::log_category::render, laya::log_priority::info, "Renderer ready");
 ```
 
+```
 ```

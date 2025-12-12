@@ -2,7 +2,7 @@
 
 This document outlines the C++20 design patterns, techniques, and architectural principles used to create safe, efficient wrappers around SDL3's C API.
 
----
+______________________________________________________________________
 
 ## Core Principles
 
@@ -106,7 +106,7 @@ auto flags = window_flags::resizable | window_flags::borderless;
 window win("Title", {800, 600}, flags);
 ```
 
----
+______________________________________________________________________
 
 ## Error Handling
 
@@ -135,7 +135,7 @@ window::window(std::string_view title, size sz, window_flags flags) {
 }
 ```
 
----
+______________________________________________________________________
 
 ## Modern C++20 Features
 
@@ -208,7 +208,7 @@ inline void log_info(std::format_string<Args...> fmt, Args&&... args) {
 laya::log_info("Window size: {}x{}", width, height);
 ```
 
----
+______________________________________________________________________
 
 ## Event System Design
 
@@ -283,7 +283,7 @@ for (const auto& ev : laya::poll_events()) {
 }
 ```
 
----
+______________________________________________________________________
 
 ## Efficient Abstractions
 
@@ -324,7 +324,7 @@ static_assert(static_cast<uint32_t>(window_flags::resizable)
               == SDL_WINDOW_RESIZABLE);
 ```
 
----
+______________________________________________________________________
 
 ## Memory Management
 
@@ -361,7 +361,7 @@ public:
 };
 ```
 
----
+______________________________________________________________________
 
 ## Design Patterns
 
@@ -406,7 +406,7 @@ namespace {  // anonymous namespace - internal only
 }
 ```
 
----
+______________________________________________________________________
 
 ## File Organization
 
@@ -441,7 +441,7 @@ src/laya/
 └── subsystems.cpp       # Subsystem initialization
 ```
 
----
+______________________________________________________________________
 
 ## Testing Strategy
 
@@ -483,7 +483,7 @@ void benchmark_laya_wrapper() {
 
 Test real-world usage patterns in the `examples/` directory.
 
----
+______________________________________________________________________
 
 ## Summary
 

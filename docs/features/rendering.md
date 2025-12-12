@@ -27,6 +27,7 @@ while (running) {
 ## Colors
 
 Create colors:
+
 ```cpp
 laya::color c1{255, 128, 0, 255};              // RGBA
 auto c2 = laya::color::rgb(255, 0, 0);         // RGB (alpha = 255)
@@ -34,6 +35,7 @@ constexpr auto c3 = laya::color::from_hex(0xFF8000);  // From hex
 ```
 
 Predefined colors:
+
 ```cpp
 laya::color::white()
 laya::color::black()
@@ -43,8 +45,10 @@ laya::color::blue()
 ```
 
 ## Drawing Shapes
+
 laya::color::magenta()
-```
+
+````
 
 ---
 
@@ -53,9 +57,10 @@ Rectangles:
 ren.set_draw_color(laya::color::red());
 ren.draw_rect({100, 100, 200, 150});    // Outline
 ren.fill_rect({350, 100, 200, 150});    // Filled
-```
+````
 
 Clear and present:
+
 ```cpp
 ren.clear(laya::color::black());  // Clear screen
 ren.present();                     // Show what you drew
@@ -64,6 +69,7 @@ ren.present();                     // Show what you drew
 ## Example
 
 Simple animation:
+
 ```cpp
 laya::context ctx{laya::subsystem::video};
 laya::window win{"Animation", {800, 600}};
@@ -88,16 +94,21 @@ while (running) {
     if (x > 800) x = 0;
 }
 ```
-    laya::context ctx{laya::subsystem::video};
-    laya::window win{"Test", {800, 600}};
 
-    laya::renderer ren1{win};
-    laya::renderer ren2 = std::move(ren1);  // Transfer ownership
-    // ren1 is now invalid, ren2 owns the renderer
-
-    return 0;
-}
 ```
+laya::context ctx{laya::subsystem::video};
+laya::window win{"Test", {800, 600}};
+
+laya::renderer ren1{win};
+laya::renderer ren2 = std::move(ren1);  // Transfer ownership
+// ren1 is now invalid, ren2 owns the renderer
+
+return 0;
+```
+
+}
+
+````
 
 ---
 
@@ -119,7 +130,7 @@ tex.set_color_mod(laya::color{255, 255, 255});
 ren.clear(laya::color::black());
 ren.render(tex, {100, 100, 256, 256});
 ren.present();
-```
+````
 
 See the dedicated [Surfaces](surfaces.md) and [Textures](textures.md) feature pages for a deeper dive.
 
@@ -141,7 +152,7 @@ SDL_Renderer* native = ren.native_handle();
 // (though you should rarely need this)
 ```
 
----
+______________________________________________________________________
 
 ## Practical Examples
 

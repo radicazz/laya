@@ -21,6 +21,7 @@ while (running) {
 ## Event Types
 
 Quit event:
+
 ```cpp
 if (std::holds_alternative<laya::quit_event>(event)) {
     running = false;
@@ -28,6 +29,7 @@ if (std::holds_alternative<laya::quit_event>(event)) {
 ```
 
 Key events:
+
 ```cpp
 if (std::holds_alternative<laya::key_event>(event)) {
     auto& key = std::get<laya::key_event>(event);
@@ -36,6 +38,7 @@ if (std::holds_alternative<laya::key_event>(event)) {
 ```
 
 Mouse events:
+
 ```cpp
 if (std::holds_alternative<laya::mouse_button_event>(event)) {
     auto& mouse = std::get<laya::mouse_button_event>(event);
@@ -46,6 +49,7 @@ if (std::holds_alternative<laya::mouse_button_event>(event)) {
 ## Pattern Matching
 
 Using `std::visit`:
+
 ```cpp
 for (const auto& event : laya::poll_events()) {
     std::visit([&](const auto& ev) {
@@ -64,6 +68,7 @@ for (const auto& event : laya::poll_events()) {
 ## Example
 
 Complete event handling:
+
 ```cpp
 laya::context ctx{laya::subsystem::video};
 laya::window win{"Input", {800, 600}};
@@ -82,23 +87,27 @@ while (running) {
 }
 ```
 
-    bool running = true;
-    while (running) {
-        // Process all pending events
-        for (const auto& event : laya::poll_events()) {
-            if (std::holds_alternative<laya::quit_event>(event)) {
-                running = false;
-            }
+```
+bool running = true;
+while (running) {
+    // Process all pending events
+    for (const auto& event : laya::poll_events()) {
+        if (std::holds_alternative<laya::quit_event>(event)) {
+            running = false;
         }
-
-        // Render
-        ren.clear(laya::color::black());
-        ren.present();
     }
 
-    return 0;
+    // Render
+    ren.clear(laya::color::black());
+    ren.present();
 }
+
+return 0;
 ```
+
+}
+
+````
 
 ### Event Logging
 
@@ -118,7 +127,7 @@ for (const auto& event : laya::poll_events()) {
         }
     }, event);
 }
-```
+````
 
 ### Filtering Events
 
@@ -140,13 +149,14 @@ laya::log_info("Quit events: {}, Window events: {}",
                quit_count, window_count);
 ```
 
----
+______________________________________________________________________
 
 ## Advanced Usage
 
 ### Event Processing with Lambda
 
-```cpp
+````cpp
 auto process_events = [&running](const laya::event& event) {
     std::visit([&running](const auto& ev) {
         ```
+````

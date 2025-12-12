@@ -66,9 +66,10 @@ float opacity = win.get_opacity();
 
 auto id = win.id();
 if (id) {
-    laya::log_info("Window ID: {}", id.value());
+laya::log_info("Window ID: {}", id.value());
 }
-```
+
+````
 
 ---
 
@@ -93,9 +94,9 @@ int main() {
 
     return 0;
 }
-```
+````
 
----
+______________________________________________________________________
 
 ## Error Handling
 
@@ -112,17 +113,20 @@ for (const auto& event : laya::poll_events()) {
 ## Examples
 
 Basic window:
+
 ```cpp
 laya::context ctx{laya::subsystem::video};
 laya::window win{"My App", {800, 600}, laya::window_flags::resizable};
 ```
 
 Fullscreen:
+
 ```cpp
 laya::window win{"Game", {1920, 1080}, laya::window_flags::fullscreen};
 ```
 
 Borderless:
+
 ```cpp
 laya::window win{
     "Borderless",

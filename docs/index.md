@@ -1,68 +1,65 @@
-# laya docs
+# in a nutshell
 
-A modern C++20 wrapper around SDL3 that makes multimedia programming safer and more pleasant.
+Laya is a modern C++20 wrapper around SDL3 that keeps the low-level power but adds safety rails and friendlier ergonomics.
 
-## What is *laya*?
+## Why laya exists
 
-Think of it as SDL3 with the safety rails up. *laya* wraps the C API in idiomatic C++20:
+- SDL3 is great at cross‑platform multimedia, but its C API makes it easy to leak, crash, or mix up parameters.
+- Laya wraps that API with RAII, strong types, and modern C++ features so you spend time shipping features—not chasing segfaults.
+- The goal is a thin layer: zero‑surprise, zero‑overhead, still letting you drop to SDL when you need to.
 
-- **Memory Safety** - Resources clean themselves up automatically
-- **Type Safety** - Catch bugs at compile time instead of runtime
-- **Modern C++** - Concepts, ranges, `std::format` and friends
-- **Cross-Platform** - Works everywhere SDL3 and C++20 work
+## What you get
 
-## Quick Example
+- Automatic cleanup for windows, renderers, textures, and more (RAII all the way).
+- Strongly‑typed flags, sizes, positions, and colors that catch mistakes at compile time.
+- Range-based event polling with `std::variant` events.
+- Built-in logging that uses `std::format`.
+- Cross-platform defaults and an SDL dependency that can fetch itself when you build.
+
+## 60-second start
+
+1. Add Laya with CMake FetchContent:
+
+   ```cmake
+   include(FetchContent)
+   FetchContent_Declare(
+     laya
+     GIT_REPOSITORY https://github.com/radicazz/laya.git
+     GIT_TAG        main
+   )
+   FetchContent_MakeAvailable(laya)
+   target_link_libraries(your_app PRIVATE laya::laya)
+   ```
+
+1. Configure and build:
+
+   ```bash
+   cmake -B build -S .
+   cmake --build build
+   ```
+
+## Tiny example
 
 ```cpp
 #include <laya/laya.hpp>
 
 int main() {
     laya::context ctx{laya::subsystem::video};
+    laya::window win{"Hello laya", {800, 600}};
+    laya::renderer ren{win};
 
-    laya::window win{"My Game", {800, 600}, laya::window_flags::resizable};
-    laya::renderer renderer{win};
-
-    bool running = true;
-    while (running) {
-        for (const auto& event : laya::poll_events()) {
-            if (std::holds_alternative<laya::quit_event>(event)) {
-                running = false;
-            }
+    for (bool running = true; running; ) {
+        for (auto& ev : laya::poll_events()) {
+            if (std::holds_alternative<laya::quit_event>(ev)) running = false;
         }
-
-        renderer.clear(laya::color::black());
-        // Drawing code here
-        renderer.present();
+        ren.clear(laya::color::black());
+        ren.present();
     }
-
-    return 0;
 }
 ```
 
----
+## Next steps
 
-## Why Use *laya*?
-
-Resources clean themselves up:
-```cpp
-{
-    laya::window win{"Title", {800, 600}};
-    laya::renderer ren{win};
-} // Everything freed automatically
-```
-
-Strong types catch mistakes:
-```cpp
-win.set_size({800, 600});      // OK
-win.set_position({100, 50});   // OK
-// win.set_size({100, 50});    // Won't compile!
-```
-
----
-
-## Next Steps
-
-- **[Getting Started](getting-started.md)** - Installation and first app
-- **[Goals](goals.md)** - Design philosophy and objectives
-- **[Architecture](architecture.md)** - How it works under the hood
-- **[Features](features/windows.md)** - Explore specific capabilities
+- **Getting Started** for a quick setup walkthrough.
+- **Key Features** to see what Laya covers today.
+- Dive deeper in the repo when you need implementation details.
