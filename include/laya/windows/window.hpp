@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <string_view>
 
 #include "window_flags.hpp"
@@ -13,6 +14,7 @@ namespace laya {
 struct window_args {
     std::string_view title;
     dimentions size{800, 600};
+    std::optional<position> position;  ///< Optional initial position
     window_flags flags = window_flags::none;
 };
 
@@ -67,13 +69,51 @@ public:
     /// Raise the window above other windows
     void raise();
 
+    /// Toggle fullscreen mode
+    void set_fullscreen(bool enabled);
+
+    /// Toggle window decorations
+    void set_borderless(bool borderless);
+
+    /// Toggle window resizability
+    void set_resizable(bool resizable);
+
+    /// Set minimum allowed window size
+    void set_minimum_size(dimentions size);
+
+    /// Set maximum allowed window size
+    void set_maximum_size(dimentions size);
+
+    /// Get minimum allowed window size
+    [[nodiscard]] dimentions get_minimum_size() const;
+
+    /// Get maximum allowed window size
+    [[nodiscard]] dimentions get_maximum_size() const;
+
+    /// Set window opacity (0.0 transparent, 1.0 opaque)
+    void set_opacity(float opacity);
+
+    /// Get window opacity (0.0 transparent, 1.0 opaque)
+    [[nodiscard]] float get_opacity() const;
+
+    /// Enable or disable mouse grab
+    void set_mouse_grab(bool grab);
+
+    /// Enable or disable keyboard grab
+    void set_keyboard_grab(bool grab);
+
     /// Get the window ID for event correlation
     [[nodiscard]] window_id id() const noexcept;
 
     /// Get the native SDL window handle
     [[nodiscard]] SDL_Window* native_handle() const noexcept;
 
+    /// Check if the window owns a valid native handle
+    [[nodiscard]] bool is_valid() const noexcept;
+
 private:
+    [[nodiscard]] SDL_Window* ensure_handle() const;
+
     SDL_Window* m_window;
     window_id m_id;  ///< Cache this because it never changes.
 };

@@ -15,12 +15,13 @@ int main() {
 }
 ```
 
-With flags:
+With flags and an explicit position:
 
 ```cpp
 laya::window win{
     "Resizable Window",
     {1024, 768},
+    std::optional<laya::position>{laya::position{100, 100}},
     laya::window_flags::resizable | laya::window_flags::always_on_top
 };
 ```
@@ -31,15 +32,14 @@ Get and set window properties:
 
 ```cpp
 // Size and position
-auto sz = win.size();
+auto sz = win.get_size();
 win.set_size({1024, 768});
 
-auto pos = win.position();
+auto pos = win.get_position();
 win.set_position({100, 100});
 
 // Title
 win.set_title("New Title");
-std::string_view title = win.title();
 
 // State
 win.show();
@@ -48,6 +48,18 @@ win.maximize();
 win.minimize();
 win.restore();
 win.set_fullscreen(true);
+win.set_borderless(true);
+win.set_resizable(true);
+win.set_minimum_size({640, 480});
+win.set_maximum_size({1920, 1080});
+win.set_mouse_grab(true);
+win.set_keyboard_grab(true);
+win.set_opacity(0.9f);
+
+// Queries
+auto min_size = win.get_minimum_size();
+auto max_size = win.get_maximum_size();
+float opacity = win.get_opacity();
 ```
 
 ## Window Events
