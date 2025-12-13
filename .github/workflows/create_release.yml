@@ -56,8 +56,10 @@ jobs:
         LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
         if [[ -n "$LAST_TAG" ]]; then
           CHANGELOG=$(git log --pretty=format:"- %s (%h)" $LAST_TAG..HEAD)
+          COMPARE_LINK="**Full Changelog**: https://github.com/${{ github.repository }}/compare/$LAST_TAG...${{ steps.get_version.outputs.VERSION }}"
         else
           CHANGELOG=$(git log --pretty=format:"- %s (%h)" --max-count=20)
+          COMPARE_LINK="_This is the first release._"
         fi
 
         cat > changelog.md << EOF
@@ -65,7 +67,7 @@ jobs:
 
         $CHANGELOG
 
-        **Full Changelog**: https://github.com/${{ github.repository }}/compare/$LAST_TAG...${{ steps.get_version.outputs.VERSION }}
+        $COMPARE_LINK
         EOF
 
     - name: Create Release
