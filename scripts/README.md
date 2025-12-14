@@ -10,6 +10,36 @@ See [ci/README.md](./ci/README.md) for automation scripts used in GitHub Actions
 
 Please refer to the [Scripting Style Guide](./STYLE.md) for conventions and best practices when creating or modifying scripts in this project.
 
+## run-examples-headless.sh
+
+Runs examples and tests in a headless environment using Xvfb. Perfect for SSH/remote development environments where no physical display is available.
+
+```bash
+# Run everything (tests + examples)
+./scripts/run-examples-headless.sh
+
+# Run only examples
+./scripts/run-examples-headless.sh --examples-only
+
+# Run only CTest tests
+./scripts/run-examples-headless.sh --tests-only
+
+# Custom display number and build directory
+./scripts/run-examples-headless.sh --display :1 --build-dir ./my-build
+
+# Get help
+./scripts/run-examples-headless.sh --help
+```
+
+The script will:
+
+- Automatically setup Xvfb virtual display server
+- Export the DISPLAY environment variable
+- Run CTest tests (if enabled)
+- Run all examples with `--ci` flag for non-interactive execution
+- Cleanup Xvfb on exit (even if script fails or is interrupted)
+- Provide color-coded output with success/failure summaries
+
 ## serve-docs.sh
 
 Serves the MkDocs documentation site locally for development and preview.
