@@ -15,9 +15,17 @@
 
 namespace {
 
-constexpr int runs_per_test = 5;
-constexpr int iterations = 5'000;
-constexpr int events_per_iteration = 1'000;
+constexpr int runs_per_test = 10;
+constexpr int iterations = 500;
+constexpr int events_per_iteration = 100;
+
+// Global storage for benchmark results to enable summary printing
+struct benchmark_results {
+    laya_bench::statistics event_range_stats;
+    laya_bench::statistics event_view_stats;
+    laya_bench::statistics raw_sdl_stats;
+    bool populated = false;
+} g_event_benchmark_results;
 
 /// Generate synthetic events for benchmarking
 /// @param count Number of events to generate
@@ -87,135 +95,216 @@ void flush_all_events() {
 }  // anonymous namespace
 
 TEST_SUITE("benchmark") {
-    TEST_CASE("laya event_range polling benchmark") {
-        laya::context ctx(laya::subsystem::video);
-        laya::window window("Benchmark Window", {800, 600});
+    TEST_CASE("event polling performance comparison") {
+        laya_bench::print_header("Event Polling Performance Comparison");
 
-        std::vector<double> run_times;
-        run_times.reserve(runs_per_test);
+        std::cout << "\n  Configuration:\n";
+        std::cout << "    Runs per test:        " << runs_per_test << "\n";
+        std::cout << "    Iterations per run:   " << iterations << "\n";
+        std::cout << "    Events per iteration: " << events_per_iteration << "\n";
+        std::cout << "    Total events/run:     " << (iterations * events_per_iteration) << "\n";
 
-        for (int run = 0; run < runs_per_test; ++run) {
-            double total_time = 0.0;
+        // Storage for all benchmark results
+        laya_bench::statistics event_range_stats;
+        laya_bench::statistics event_view_stats;
+        laya_bench::statistics raw_sdl_stats;
 
-            for (int i = 0; i < iterations; ++i) {
-                // Generate synthetic events
-                generate_synthetic_events(events_per_iteration, window.id().value());
+        // Benchmark 1: laya::event_range
+        {
+            laya_bench::print_separator();
+            std::cout << "\n  Running: laya::event_range benchmark...\n";
 
-                auto start = std::chrono::high_resolution_clock::now();
+            laya::context ctx(laya::subsystem::video);
+            laya::window window("Benchmark Window", {800, 600});
 
-                // Poll events using event_range
-                auto events = laya::events_range();
+            std::vector<double> run_times;
+            run_times.reserve(runs_per_test);
 
-                // Process events (simulate real work)
-                std::size_t count = 0;
-                for (const auto& event : events) {
-                    ++count;
-                    // Touch the event data to prevent optimization
-                    std::visit([](const auto&) {}, event);
+            for (int run = 0; run < runs_per_test; ++run) {
+                double total_time = 0.0;
+
+                for (int i = 0; i < iterations; ++i) {
+                    generate_synthetic_events(events_per_iteration, window.id().value());
+
+                    auto start = std::chrono::high_resolution_clock::now();
+
+                    // Poll events using event_range
+                    auto events = laya::events_range();
+
+                    // Process events (simulate real work)
+                    std::size_t count = 0;
+                    for (const auto& event : events) {
+                        ++count;
+                        // Touch the event data to prevent optimization
+                        std::visit([](const auto&) {}, event);
+                    }
+
+                    auto end = std::chrono::high_resolution_clock::now();
+                    auto duration = std::chrono::duration<double, std::micro>(end - start);
+                    total_time += duration.count();
+
+                    flush_all_events();  // Ensure clean slate
                 }
 
-                auto end = std::chrono::high_resolution_clock::now();
-                auto duration = std::chrono::duration<double, std::micro>(end - start);
-                total_time += duration.count();
-
-                flush_all_events();  // Ensure clean slate
+                double avg = total_time / iterations;
+                run_times.push_back(avg);
             }
 
-            double avg = total_time / iterations;
-            run_times.push_back(avg);
-            MESSAGE("  Run ", run + 1, ": ", laya_bench::format_time(avg));
+            event_range_stats = laya_bench::calculate_statistics(run_times);
+            laya_bench::print_statistics("laya::event_range", event_range_stats, events_per_iteration);
         }
 
-        double overall_avg = std::accumulate(run_times.begin(), run_times.end(), 0.0) / runs_per_test;
-        MESSAGE("laya::event_range overall average (", events_per_iteration,
-                " events): ", laya_bench::format_time(overall_avg));
+        // Benchmark 2: laya::event_view
+        {
+            laya_bench::print_separator();
+            std::cout << "\n  Running: laya::event_view benchmark...\n";
+
+            laya::context ctx(laya::subsystem::video);
+            laya::window window("Benchmark Window", {800, 600});
+
+            std::vector<double> run_times;
+            run_times.reserve(runs_per_test);
+
+            for (int run = 0; run < runs_per_test; ++run) {
+                double total_time = 0.0;
+
+                for (int i = 0; i < iterations; ++i) {
+                    generate_synthetic_events(events_per_iteration, window.id().value());
+
+                    auto start = std::chrono::high_resolution_clock::now();
+
+                    // Poll events using event_view (lazy, zero-allocation)
+                    std::size_t count = 0;
+                    for (const auto& event : laya::events_view()) {
+                        ++count;
+                        // Touch the event data to prevent optimization
+                        std::visit([](const auto&) {}, event);
+                    }
+
+                    auto end = std::chrono::high_resolution_clock::now();
+                    auto duration = std::chrono::duration<double, std::micro>(end - start);
+                    total_time += duration.count();
+
+                    flush_all_events();  // Ensure clean slate
+                }
+
+                double avg = total_time / iterations;
+                run_times.push_back(avg);
+            }
+
+            event_view_stats = laya_bench::calculate_statistics(run_times);
+            laya_bench::print_statistics("laya::event_view", event_view_stats, events_per_iteration);
+        }
+
+        // Benchmark 3: raw SDL3
+        {
+            laya_bench::print_separator();
+            std::cout << "\n  Running: raw SDL3 benchmark...\n";
+
+            SDL_Init(SDL_INIT_VIDEO);
+            SDL_Window* window = SDL_CreateWindow("Benchmark Window", 800, 600, 0);
+            std::uint32_t window_id = SDL_GetWindowID(window);
+
+            std::vector<double> run_times;
+            run_times.reserve(runs_per_test);
+
+            for (int run = 0; run < runs_per_test; ++run) {
+                double total_time = 0.0;
+
+                for (int i = 0; i < iterations; ++i) {
+                    generate_synthetic_events(events_per_iteration, window_id);
+
+                    auto start = std::chrono::high_resolution_clock::now();
+
+                    // Poll events using raw SDL
+                    SDL_Event event;
+                    std::size_t count = 0;
+                    while (SDL_PollEvent(&event)) {
+                        ++count;
+                        // Touch the event data to prevent optimization
+                        volatile auto timestamp = event.common.timestamp;
+                        (void)timestamp;
+                    }
+
+                    auto end = std::chrono::high_resolution_clock::now();
+                    auto duration = std::chrono::duration<double, std::micro>(end - start);
+                    total_time += duration.count();
+
+                    flush_all_events();  // Ensure clean slate
+                }
+
+                double avg = total_time / iterations;
+                run_times.push_back(avg);
+            }
+
+            raw_sdl_stats = laya_bench::calculate_statistics(run_times);
+            laya_bench::print_statistics("raw SDL3", raw_sdl_stats, events_per_iteration);
+
+            SDL_DestroyWindow(window);
+            SDL_Quit();
+        }
+
+        // Comparative analysis
+        laya_bench::print_separator();
+        std::cout << "\n  Performance Comparisons:\n";
+        laya_bench::print_comparison("raw SDL3", raw_sdl_stats, "laya::event_range", event_range_stats);
+        laya_bench::print_comparison("raw SDL3", raw_sdl_stats, "laya::event_view", event_view_stats);
+        laya_bench::print_comparison("laya::event_range", event_range_stats, "laya::event_view", event_view_stats);
+
+        laya_bench::print_separator();
+        std::cout << "\n";
+
+        // Store results for summary printing
+        g_event_benchmark_results.event_range_stats = event_range_stats;
+        g_event_benchmark_results.event_view_stats = event_view_stats;
+        g_event_benchmark_results.raw_sdl_stats = raw_sdl_stats;
+        g_event_benchmark_results.populated = true;
     }
 
-    TEST_CASE("laya event_view polling benchmark") {
-        laya::context ctx(laya::subsystem::video);
-        laya::window window("Benchmark Window", {800, 600});
-
-        std::vector<double> run_times;
-        run_times.reserve(runs_per_test);
-
-        for (int run = 0; run < runs_per_test; ++run) {
-            double total_time = 0.0;
-
-            for (int i = 0; i < iterations; ++i) {
-                // Generate synthetic events
-                generate_synthetic_events(events_per_iteration, window.id().value());
-
-                auto start = std::chrono::high_resolution_clock::now();
-
-                // Poll events using event_view (lazy, zero-allocation)
-                std::size_t count = 0;
-                for (const auto& event : laya::events_view()) {
-                    ++count;
-                    // Touch the event data to prevent optimization
-                    std::visit([](const auto&) {}, event);
-                }
-
-                auto end = std::chrono::high_resolution_clock::now();
-                auto duration = std::chrono::duration<double, std::micro>(end - start);
-                total_time += duration.count();
-
-                flush_all_events();  // Ensure clean slate
-            }
-
-            double avg = total_time / iterations;
-            run_times.push_back(avg);
-            MESSAGE("  Run ", run + 1, ": ", laya_bench::format_time(avg));
+    // Summary test case - runs last due to '~' prefix (comes after all alphanumeric in ASCII)
+    TEST_CASE("~benchmark_summary") {
+        if (!g_event_benchmark_results.populated) {
+            std::cout << "\n  Warning: Event benchmark results not available for summary\n";
+            return;
         }
 
-        double overall_avg = std::accumulate(run_times.begin(), run_times.end(), 0.0) / runs_per_test;
-        MESSAGE("laya::event_view overall average (", events_per_iteration,
-                " events): ", laya_bench::format_time(overall_avg));
-    }
+        // Print Laya vs SDL3 summary
+        laya_bench::print_header("Laya vs SDL3 Summary");
+        std::cout << "\n  Event Polling Performance:\n\n";
+        std::cout << std::format("    {:20} {:>15} {:>20}\n", "Approach", "Performance", "vs SDL3");
+        std::cout << "    " << std::string(60, '-') << "\n";
+        std::cout << std::format("    {:20} {:>15} {:>20}\n", "raw SDL3",
+                                 laya_bench::format_time_auto(g_event_benchmark_results.raw_sdl_stats.mean),
+                                 "Baseline");
+        std::cout << std::format(
+            "    {:20} {:>15} {:>20}\n", "laya::event_view",
+            laya_bench::format_time_auto(g_event_benchmark_results.event_view_stats.mean),
+            std::format(
+                "{:.0f}% slower ({:.2f}x)",
+                ((g_event_benchmark_results.event_view_stats.mean - g_event_benchmark_results.raw_sdl_stats.mean) /
+                 g_event_benchmark_results.raw_sdl_stats.mean) *
+                    100.0,
+                g_event_benchmark_results.event_view_stats.mean / g_event_benchmark_results.raw_sdl_stats.mean));
+        std::cout << std::format(
+            "    {:20} {:>15} {:>20}\n", "laya::event_range",
+            laya_bench::format_time_auto(g_event_benchmark_results.event_range_stats.mean),
+            std::format(
+                "{:.0f}% slower ({:.2f}x)",
+                ((g_event_benchmark_results.event_range_stats.mean - g_event_benchmark_results.raw_sdl_stats.mean) /
+                 g_event_benchmark_results.raw_sdl_stats.mean) *
+                    100.0,
+                g_event_benchmark_results.event_range_stats.mean / g_event_benchmark_results.raw_sdl_stats.mean));
 
-    TEST_CASE("raw SDL3 event polling benchmark") {
-        SDL_Init(SDL_INIT_VIDEO);
-        SDL_Window* window = SDL_CreateWindow("Benchmark Window", 800, 600, 0);
-        std::uint32_t window_id = SDL_GetWindowID(window);
+        std::cout << "\n  Key Insights:\n";
+        std::cout << "    • event_view is the recommended choice (zero-allocation lazy iteration)\n";
+        std::cout << "    • Overhead is ~"
+                  << std::format("{:.2f}", g_event_benchmark_results.event_view_stats.mean -
+                                               g_event_benchmark_results.raw_sdl_stats.mean)
+                  << "µs per iteration for type-safe abstractions\n";
+        std::cout << "    • Trade-off: Type safety + modern C++ vs raw performance\n";
 
-        std::vector<double> run_times;
-        run_times.reserve(runs_per_test);
-
-        for (int run = 0; run < runs_per_test; ++run) {
-            double total_time = 0.0;
-
-            for (int i = 0; i < iterations; ++i) {
-                // Generate synthetic events
-                generate_synthetic_events(events_per_iteration, window_id);
-
-                auto start = std::chrono::high_resolution_clock::now();
-
-                // Poll events using raw SDL
-                SDL_Event event;
-                std::size_t count = 0;
-                while (SDL_PollEvent(&event)) {
-                    ++count;
-                    // Touch the event data to prevent optimization
-                    volatile auto timestamp = event.common.timestamp;
-                    (void)timestamp;
-                }
-
-                auto end = std::chrono::high_resolution_clock::now();
-                auto duration = std::chrono::duration<double, std::micro>(end - start);
-                total_time += duration.count();
-
-                flush_all_events();  // Ensure clean slate
-            }
-
-            double avg = total_time / iterations;
-            run_times.push_back(avg);
-            MESSAGE("  Run ", run + 1, ": ", laya_bench::format_time(avg));
-        }
-
-        double overall_avg = std::accumulate(run_times.begin(), run_times.end(), 0.0) / runs_per_test;
-        MESSAGE("raw SDL3 overall average (", events_per_iteration, " events): ", laya_bench::format_time(overall_avg));
-
-        SDL_DestroyWindow(window);
-        SDL_Quit();
+        laya_bench::print_separator();
+        std::cout << "\n";
     }
 
 }  // TEST_SUITE("benchmark")
