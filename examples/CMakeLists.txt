@@ -4,5 +4,6 @@
 
 add_subdirectory(common)
 add_subdirectory(events)
+add_subdirectory(input)
 add_subdirectory(rendering)
 add_subdirectory(logging)

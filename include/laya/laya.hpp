@@ -6,6 +6,8 @@
 
 #include "events/event_types.hpp"
 #include "events/event_polling.hpp"
+#include "input/keyboard.hpp"
+#include "input/mouse.hpp"
 #include "renderers/renderer.hpp"
 #include "surfaces/pixel_format.hpp"
 #include "surfaces/surface_flags.hpp"

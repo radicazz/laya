@@ -45,5 +45,9 @@ repos:
         entry: clang-tidy
         language: system
         types_or: [c++, c]
-        args: [--config-file=.clang-tidy]
+        # clang-tidy is intended for project translation units (not vendored code or headers).
+        # Running on headers/third-party can be extremely slow and is often not meaningful.
+        files: ^(src|tests|examples)/.*\.(c|cc|cpp|cxx)$
+        exclude: ^extern/
+        args: ["-p=build", "--config-file=.clang-tidy", "--quiet"]
         require_serial: true

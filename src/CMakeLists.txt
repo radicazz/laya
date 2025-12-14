@@ -8,6 +8,8 @@ target_sources(
     laya/window.cpp
     laya/event_types.cpp
     laya/event_polling.cpp
+    laya/keyboard.cpp
+    laya/mouse.cpp
     laya/renderer.cpp
     laya/surface.cpp
     laya/texture.cpp

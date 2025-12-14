@@ -91,6 +91,10 @@ fi
 # Show what we're about to do
 info "Running pre-commit hooks with: uv run --project tools --group dev pre-commit run $*"
 
+# Prefer a workspace-local uv cache to avoid permission/sandbox issues with ~/.cache.
+export UV_CACHE_DIR="${UV_CACHE_DIR:-"$(pwd)/.uv-cache"}"
+mkdir -p "$UV_CACHE_DIR"
+
 # Execute pre-commit via uv
 if uv run --project tools --group dev pre-commit run "$@"; then
     success "Pre-commit hooks completed successfully"
