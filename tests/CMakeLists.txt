@@ -60,7 +60,6 @@ if(LAYA_TESTS_UNIT)
     laya_copy_sdl_shared_libs(laya_tests_unit)
 
     # Register tests with CTest
-    add_test(NAME laya_all_unit_tests COMMAND laya_tests_unit)
     add_test(NAME laya_unit_tests COMMAND laya_tests_unit --test-suite=unit)
 endif()
 
