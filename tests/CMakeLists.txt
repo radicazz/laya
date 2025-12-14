@@ -69,6 +69,7 @@ if(LAYA_TESTS_BENCHMARK)
     set(LAYA_BENCHMARK_SOURCES
         test_main.cpp
         benchmark/test_events_benchmark.cpp
+        benchmark/test_rendering_benchmark.cpp
     )
 
     add_executable(laya_tests_benchmark ${LAYA_BENCHMARK_SOURCES})
