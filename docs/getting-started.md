@@ -1,13 +1,13 @@
 # Getting Started
 
-Quick path to a first window with Laya.
+Quick path to your first window with laya.
 
 ## Prerequisites
 
 - C++20 compiler (GCC 11+, Clang 14+, MSVC 2022+)
 - CMake 3.21 or newer
 
-## Add Laya to your project
+## Add to your project
 
 Recommended: CMake FetchContent handles SDL3 for you.
 

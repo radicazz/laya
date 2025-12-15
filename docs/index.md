@@ -1,65 +1,67 @@
-# in a nutshell
+# Welcome to Laya Documentation
 
-Laya is a modern C++20 wrapper around SDL3 that keeps the low-level power but adds safety rails and friendlier ergonomics.
+**Laya** is a modern C++20 wrapper around SDL3 that brings safety, ergonomics, and modern C++ features to cross-platform multimedia development.
 
-## Why laya exists
+Whether you're building games, creative tools, or interactive applications, Laya gives you SDL3's power with the comfort and safety of modern C++.
 
-- SDL3 is great at cross‑platform multimedia, but its C API makes it easy to leak, crash, or mix up parameters.
-- Laya wraps that API with RAII, strong types, and modern C++ features so you spend time shipping features—not chasing segfaults.
-- The goal is a thin layer: zero‑surprise, zero‑overhead, still letting you drop to SDL when you need to.
+---
 
-## What you get
+## 🚀 Getting Started
 
-- Automatic cleanup for windows, renderers, textures, and more (RAII all the way).
-- Strongly‑typed flags, sizes, positions, and colors that catch mistakes at compile time.
-- Range-based event polling with `std::variant` events.
-- Built-in logging that uses `std::format`.
-- Cross-platform defaults and an SDL dependency that can fetch itself when you build.
+New to Laya? Start here:
 
-## 60-second start
+- **[Getting Started](getting-started.md)** – Installation, setup, and your first program
+- **[Goals & Philosophy](goals.md)** – Why Laya exists and what it optimizes for
 
-1. Add Laya with CMake FetchContent:
+---
 
-   ```cmake
-   include(FetchContent)
-   FetchContent_Declare(
-     laya
-     GIT_REPOSITORY https://github.com/radicazz/laya.git
-     GIT_TAG        main
-   )
-   FetchContent_MakeAvailable(laya)
-   target_link_libraries(your_app PRIVATE laya::laya)
-   ```
+## 📚 Core Documentation
 
-1. Configure and build:
+### Understanding Laya
 
-   ```bash
-   cmake -B build -S .
-   cmake --build build
-   ```
+- **[Architecture](architecture.md)** – Deep dive into design patterns, RAII, type safety, and C++20 features
 
-## Tiny example
+### Feature Guides
 
-```cpp
-#include <laya/laya.hpp>
+Explore specific functionality:
 
-int main() {
-    laya::context ctx{laya::subsystem::video};
-    laya::window win{"Hello laya", {800, 600}};
-    laya::renderer ren{win};
+- **[Features Overview](features/overview.md)** – High-level summary of what Laya provides
+- **[Windows](features/windows.md)** – Creating and managing windows
+- **[Rendering](features/rendering.md)** – Drawing to the screen
+- **[Events](features/events.md)** – Handling keyboard, mouse, and window events
+- **[Textures](features/textures.md)** – Working with textures
+- **[Surfaces](features/surfaces.md)** – Pixel data and surface operations
+- **[Logging](features/logging.md)** – Type-safe logging with std::format
 
-    for (bool running = true; running; ) {
-        for (auto& ev : laya::poll_events()) {
-            if (std::holds_alternative<laya::quit_event>(ev)) running = false;
-        }
-        ren.clear(laya::color::black());
-        ren.present();
-    }
-}
-```
+---
 
-## Next steps
+## 🎯 Quick Navigation
 
-- **Getting Started** for a quick setup walkthrough.
-- **Key Features** to see what Laya covers today.
-- Dive deeper in the repo when you need implementation details.
+| I want to...                          | Go to                                     |
+|---------------------------------------|-------------------------------------------|
+| Install and build Laya               | [Getting Started](getting-started.md)     |
+| Understand the design philosophy     | [Goals](goals.md)                         |
+| Learn about RAII and type safety     | [Architecture](architecture.md)           |
+| Create a window                      | [Windows](features/windows.md)            |
+| Draw shapes and colors               | [Rendering](features/rendering.md)        |
+| Handle input events                  | [Events](features/events.md)              |
+
+---
+
+## 💡 What Makes Laya Different?
+
+✅ **RAII everywhere** – No manual cleanup, no resource leaks  
+✅ **Type-safe** – Strong types prevent parameter mix-ups at compile time  
+✅ **Modern C++20** – Concepts, `std::variant`, `std::format`, constexpr  
+✅ **Thin wrapper** – Near-zero overhead, direct mapping to SDL3  
+✅ **No SDL exposure** – Clean public API hides SDL internals  
+
+---
+
+## 🤔 Need Help?
+
+- Check the [Getting Started](getting-started.md) guide for common setup issues
+- Review the [Architecture](architecture.md) document for design decisions
+- Browse the [Features](features/overview.md) section for API examples
+
+Ready to dive in? Head to **[Getting Started](getting-started.md)** and build your first Laya program!
